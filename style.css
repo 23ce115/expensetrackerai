@@ -3154,12 +3154,12 @@ body::before {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: 78px;
   background: #0f172a;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
   display: flex;
   align-items: center;
-  padding: 0 0.5rem env(safe-area-inset-bottom, 0);
+  padding: 0.35rem 0.65rem calc(0.35rem + env(safe-area-inset-bottom, 0));
   z-index: 8500;
 }
 
@@ -3169,25 +3169,26 @@ body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   border: none;
   background: none;
   color: #94a3b8;
   cursor: pointer;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.3px;
-  padding: 0.4rem 0;
-  border-radius: 14px;
+  padding: 0.7rem 0.3rem 0.65rem;
+  border-radius: 16px;
   opacity: 0.72;
   transition:
     color 0.15s,
     background 0.15s,
     opacity 0.15s;
-  min-height: 48px;
+  min-height: 62px;
+  -webkit-tap-highlight-color: transparent;
 }
 .bn-tab i {
-  font-size: 1.15rem;
+  font-size: 1.28rem;
   color: currentColor;
 }
 .bn-tab--active {
@@ -3226,15 +3227,15 @@ body::before {
 
 /* Add button centre ring */
 .bn-add-ring {
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f59e0b, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   transition: transform 0.15s;
 }
 .bn-tab:active .bn-add-ring {
@@ -3448,7 +3449,7 @@ body::before {
 /* Push content above bottom nav */
 @media (max-width: 768px) {
   .main-content {
-    padding-bottom: 80px;
+    padding-bottom: 96px;
   }
   /* Desktop settings dropdown hidden on mobile */
   #settingsDropdown {
