@@ -14,6 +14,11 @@ const PIN_LOCKOUT_MS = 30 * 1000; // 30 seconds
 const AUTO_LOCK_MS = 5 * 60 * 1000;
 const STORAGE_KEY = "bl_vault";
 const VERIFY_TOKEN = "BL_OK_v1";
+const VAULT_SCHEMA_VERSION = 1;
+const SYNC_PENDING_KEY = "bl_sync_pending_v1";
+const SYNC_DEVICE_KEY = "bl_sync_device_v1";
+const SYNC_TABLE = "encrypted_vaults";
+const SYNC_POLL_MS = 30 * 1000;
 
 function encrypt(data, pin) {
   return CryptoJS.AES.encrypt(JSON.stringify(data), pin).toString();
@@ -55,6 +60,16 @@ let searchQuery = "";
 let deleteTargetId = null;
 let summaryMonth = new Date().getMonth();
 let summaryYear = new Date().getFullYear();
+let txnExpanded = false;
+let pendingAddFlow = null;
+let syncConfig = null;
+let supabaseClient = null;
+let syncChannel = null;
+let syncPushTimer = null;
+let syncPollTimer = null;
+let syncBusy = false;
+let suppressSyncPush = false;
+let syncFocusHandlerBound = false;
 
 const BASE_INCOME_CATS = [
   "Salary",
@@ -101,6 +116,31 @@ const CAT_COLORS = {
 };
 
 const CARD_ACCENT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
+const TXN_PREVIEW_LIMITS = {
+  daily: 6,
+  weekly: 7,
+  monthly: 8,
+  picked: 8,
+};
+
+function defaultSyncConfig() {
+  return {
+    enabled: false,
+    url: "",
+    anonKey: "",
+    email: "",
+    userId: "",
+    syncKeyHex: "",
+    deviceId: "",
+    lastSyncedHash: "",
+    lastSyncedAt: "",
+    lastRemoteUpdatedAt: "",
+    lastLocalChangeAt: "",
+    status: "local",
+  };
+}
+
+syncConfig = defaultSyncConfig();
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    MULTI-CARD HELPERS
@@ -129,24 +169,543 @@ function loadActiveCard() {
   recurringTemplates = c.recurringTemplates || [];
 }
 
+function getCardDisplayName(card, idx = 0) {
+  if (!card) return `Account ${idx + 1}`;
+  const nickname = card.userData?.nickname?.trim();
+  if (nickname) return nickname;
+  const name = card.userData?.name?.trim();
+  if (name) return name;
+  const last4 = (card.userData?.cardNumber || "").replace(/\D/g, "").slice(-4);
+  return last4 ? `Account ${last4}` : `Account ${idx + 1}`;
+}
+
+function getCardDisplaySub(card) {
+  const last4 = (card?.userData?.cardNumber || "").replace(/\D/g, "").slice(-4);
+  return last4 ? `Card ending ${last4}` : "Stored account";
+}
+
+function updateAddAccountUI() {
+  const currentName = getCardDisplayName(cards[activeCardIdx], activeCardIdx);
+  const currentLabel = document.getElementById("bnCurrentAccountLabel");
+  if (currentLabel) currentLabel.textContent = currentName;
+  const incomeName = document.getElementById("incomeAccountName");
+  if (incomeName) incomeName.textContent = currentName;
+  const expenseName = document.getElementById("expenseAccountName");
+  if (expenseName) expenseName.textContent = currentName;
+}
+
+function cleanSyncConfig(raw) {
+  return {
+    ...defaultSyncConfig(),
+    ...(raw || {}),
+  };
+}
+
+function getDeviceId() {
+  let id = localStorage.getItem(SYNC_DEVICE_KEY);
+  if (!id) {
+    id =
+      (window.crypto?.randomUUID && window.crypto.randomUUID()) ||
+      `device-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+    localStorage.setItem(SYNC_DEVICE_KEY, id);
+  }
+  return id;
+}
+
+function getVaultPayload() {
+  syncActiveToCards();
+  return {
+    cards,
+    activeCardIdx,
+  };
+}
+
+function applyVaultPayload(payload) {
+  cards = Array.isArray(payload?.cards) ? payload.cards : [];
+  activeCardIdx = Math.max(
+    0,
+    Math.min(payload?.activeCardIdx || 0, Math.max(cards.length - 1, 0)),
+  );
+  if (cards.length > 0) loadActiveCard();
+  else {
+    userData = null;
+    transactions = [];
+    customCategories = [];
+    categoryBudgets = {};
+    recurringTemplates = [];
+  }
+}
+
+function hashVaultPayload(payload) {
+  return CryptoJS.SHA256(JSON.stringify(payload || {})).toString();
+}
+
+function getPendingSyncSetup() {
+  try {
+    return JSON.parse(localStorage.getItem(SYNC_PENDING_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function setPendingSyncSetup(cfg) {
+  localStorage.setItem(SYNC_PENDING_KEY, JSON.stringify(cfg));
+}
+
+function clearPendingSyncSetup() {
+  localStorage.removeItem(SYNC_PENDING_KEY);
+}
+
+function currentSyncFormValues() {
+  return {
+    url: document.getElementById("syncSupabaseUrl")?.value.trim() || "",
+    anonKey: document.getElementById("syncSupabaseKey")?.value.trim() || "",
+    email: document.getElementById("syncEmail")?.value.trim() || "",
+    passphrase: document.getElementById("syncPassphrase")?.value || "",
+  };
+}
+
+async function deriveSyncKeyHex(passphrase, userId) {
+  const words = CryptoJS.PBKDF2(passphrase, userId, {
+    keySize: 256 / 32,
+    iterations: 120000,
+  });
+  return words.toString();
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ENCRYPTED PERSISTENCE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function saveToStorage() {
+function saveToStorage(options = {}) {
   if (!sessionPin) return;
   syncActiveToCards();
   try {
-    const vault = { verify: VERIFY_TOKEN, cards, activeCardIdx };
+    if (!options.skipDirtyMark && syncConfig?.enabled) {
+      syncConfig.lastLocalChangeAt = new Date().toISOString();
+      syncConfig.status = "dirty";
+    }
+    const vault = {
+      verify: VERIFY_TOKEN,
+      schemaVersion: VAULT_SCHEMA_VERSION,
+      cards,
+      activeCardIdx,
+      syncConfig,
+    };
     localStorage.setItem(STORAGE_KEY, encrypt(vault, sessionPin));
   } catch (e) {
     console.warn("Save failed", e);
   }
+  if (!options.skipCloudPush) scheduleSyncPush();
 }
 
 // Returns true if encrypted data exists (show lock screen), false if first launch
 function hasStoredData() {
   return !!localStorage.getItem(STORAGE_KEY);
+}
+
+function updateSyncStatus(kind, badgeText, bodyText, metaText) {
+  if (syncConfig) syncConfig.status = kind;
+  const badge = document.getElementById("syncStatusBadge");
+  const body = document.getElementById("syncStatusText");
+  const meta = document.getElementById("syncStatusMeta");
+  if (badge) {
+    badge.textContent = badgeText;
+    badge.className = "sync-status-badge";
+    if (kind === "ok") badge.classList.add("sync-status-badge--ok");
+    if (kind === "warn") badge.classList.add("sync-status-badge--warn");
+  }
+  if (body) body.textContent = bodyText;
+  if (meta)
+    meta.textContent =
+      metaText ||
+      (syncConfig?.lastSyncedAt
+        ? `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`
+        : "Local-only vault");
+}
+
+function openSyncModal() {
+  openModal("syncModal");
+}
+
+function populateSyncModal() {
+  const pending = getPendingSyncSetup();
+  const cfg = syncConfig?.enabled ? syncConfig : pending || {};
+  const setVal = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value || "";
+  };
+  setVal("syncSupabaseUrl", cfg.url);
+  setVal("syncSupabaseKey", cfg.anonKey);
+  setVal("syncEmail", cfg.email);
+  const pass = document.getElementById("syncPassphrase");
+  if (pass) pass.value = "";
+
+  if (!syncConfig?.enabled) {
+    updateSyncStatus(
+      "local",
+      "Not connected",
+      pending
+        ? "Magic link sent. After opening the email link, enter the same sync passphrase here and click Finish Link."
+        : "Set up Supabase live sync to keep your phone and laptop on the same encrypted vault.",
+      pending ? `Pending link for ${pending.email}` : "Local-only vault",
+    );
+  } else {
+    if (syncConfig.status === "warn") {
+      updateSyncStatus(
+        "warn",
+        "Reconnect needed",
+        "This vault is configured for cloud sync, but the current session needs attention.",
+      );
+    } else {
+      updateSyncStatus(
+        "ok",
+        "Connected",
+        "Automatic encrypted sync is active for this vault.",
+      );
+    }
+  }
+}
+
+function ensureSupabaseClient(url, anonKey) {
+  if (!window.supabase?.createClient) {
+    throw new Error("Supabase client library not loaded");
+  }
+  if (
+    supabaseClient &&
+    syncConfig?.url === url &&
+    syncConfig?.anonKey === anonKey
+  ) {
+    return supabaseClient;
+  }
+  supabaseClient = window.supabase.createClient(url, anonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+  return supabaseClient;
+}
+
+async function getSyncUser(url, anonKey) {
+  const client = ensureSupabaseClient(url, anonKey);
+  const { data, error } = await client.auth.getUser();
+  if (error) throw error;
+  return data.user;
+}
+
+function stopCloudSync() {
+  clearTimeout(syncPushTimer);
+  clearInterval(syncPollTimer);
+  syncPushTimer = null;
+  syncPollTimer = null;
+  if (syncChannel && supabaseClient) {
+    supabaseClient.removeChannel(syncChannel);
+  }
+  syncChannel = null;
+}
+
+async function sendSyncMagicLink() {
+  try {
+    const { url, anonKey, email } = currentSyncFormValues();
+    if (!url || !anonKey || !email) {
+      notify("Enter your Supabase URL, anon key, and email", "error");
+      return;
+    }
+    setPendingSyncSetup({ url, anonKey, email });
+    const client = ensureSupabaseClient(url, anonKey);
+    const { error } = await client.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.href.split("#")[0],
+      },
+    });
+    if (error) throw error;
+    updateSyncStatus(
+      "warn",
+      "Magic link sent",
+      "Open the email link on this device, then come back here, enter your sync passphrase, and click Finish Link.",
+      `Pending link for ${email}`,
+    );
+    notify("Magic link sent", "success");
+  } catch (e) {
+    notify(e.message || "Unable to send magic link", "error");
+    updateSyncStatus(
+      "warn",
+      "Link failed",
+      "Could not send the Supabase magic link.",
+    );
+  }
+}
+
+async function finishSyncLink() {
+  try {
+    const pending = getPendingSyncSetup();
+    const { url, anonKey, email, passphrase } = {
+      ...(pending || {}),
+      ...currentSyncFormValues(),
+    };
+    if (!url || !anonKey || !email) {
+      notify("Enter your Supabase URL, anon key, and email", "error");
+      return;
+    }
+    if (!passphrase) {
+      notify("Enter your sync passphrase", "error");
+      return;
+    }
+    const user = await getSyncUser(url, anonKey);
+    if (!user) {
+      notify("Open your magic link first, then finish setup", "error");
+      updateSyncStatus(
+        "warn",
+        "Waiting for login",
+        "No active Supabase session yet. Open the email link, then tap Finish Link again.",
+      );
+      return;
+    }
+    syncConfig = cleanSyncConfig({
+      ...syncConfig,
+      enabled: true,
+      url,
+      anonKey,
+      email,
+      userId: user.id,
+      syncKeyHex: await deriveSyncKeyHex(passphrase, user.id),
+      deviceId: syncConfig.deviceId || getDeviceId(),
+    });
+    clearPendingSyncSetup();
+    saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+    await initSyncAfterUnlock({ forceSyncNow: true });
+    populateSyncModal();
+    notify("Cloud sync connected", "success");
+  } catch (e) {
+    notify(e.message || "Unable to finish sync setup", "error");
+    updateSyncStatus(
+      "warn",
+      "Setup failed",
+      "We could not finish the sync connection.",
+    );
+  }
+}
+
+async function disconnectSync() {
+  try {
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    }
+  } catch {}
+  stopCloudSync();
+  clearPendingSyncSetup();
+  syncConfig = defaultSyncConfig();
+  saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+  populateSyncModal();
+  notify("Cloud sync disconnected", "info");
+}
+
+function scheduleSyncPush() {
+  if (!sessionPin || !syncConfig?.enabled || suppressSyncPush) return;
+  clearTimeout(syncPushTimer);
+  syncPushTimer = setTimeout(() => {
+    pushCloudVault("auto").catch((e) => {
+      console.warn("Cloud push failed", e);
+      updateSyncStatus(
+        "warn",
+        "Sync paused",
+        "Automatic cloud sync hit an error.",
+      );
+    });
+  }, 1200);
+}
+
+async function fetchRemoteVault() {
+  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
+  const { data, error } = await client
+    .from(SYNC_TABLE)
+    .select("ciphertext,vault_version,updated_at,updated_by")
+    .eq("user_id", syncConfig.userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+async function upsertRemoteVault(payload) {
+  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
+  const ciphertext = encrypt(payload, syncConfig.syncKeyHex);
+  const { data: existing } = await client
+    .from(SYNC_TABLE)
+    .select("vault_version")
+    .eq("user_id", syncConfig.userId)
+    .maybeSingle();
+  const nextVersion = (existing?.vault_version || 0) + 1;
+  const { error } = await client.from(SYNC_TABLE).upsert({
+    user_id: syncConfig.userId,
+    ciphertext,
+    vault_version: nextVersion,
+    schema_version: VAULT_SCHEMA_VERSION,
+    updated_by: syncConfig.deviceId || getDeviceId(),
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+  syncConfig.lastSyncedHash = hashVaultPayload(payload);
+  syncConfig.lastSyncedAt = new Date().toISOString();
+  syncConfig.lastRemoteUpdatedAt = syncConfig.lastSyncedAt;
+  syncConfig.status = "ok";
+  saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+  updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.");
+}
+
+async function pullRemoteVault(reason = "manual") {
+  if (!syncConfig?.enabled || syncBusy) return;
+  syncBusy = true;
+  try {
+    const remote = await fetchRemoteVault();
+    if (!remote?.ciphertext) {
+      if (reason !== "event") {
+        await upsertRemoteVault(getVaultPayload());
+      }
+      return;
+    }
+    const remotePayload = tryDecrypt(remote.ciphertext, syncConfig.syncKeyHex);
+    if (!remotePayload) throw new Error("Cloud vault could not be decrypted");
+
+    const localPayload = getVaultPayload();
+    const remoteHash = hashVaultPayload(remotePayload);
+    const localHash = hashVaultPayload(localPayload);
+
+    if (remoteHash === localHash) {
+      syncConfig.lastSyncedHash = remoteHash;
+      syncConfig.lastSyncedAt = new Date().toISOString();
+      syncConfig.lastRemoteUpdatedAt = remote.updated_at || "";
+      saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+      updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.");
+      return;
+    }
+
+    if (
+      syncConfig.lastSyncedHash &&
+      localHash !== syncConfig.lastSyncedHash &&
+      remoteHash !== syncConfig.lastSyncedHash
+    ) {
+      const remoteTime = new Date(remote.updated_at || 0).getTime();
+      const localTime = new Date(syncConfig.lastLocalChangeAt || 0).getTime();
+      if (localTime > remoteTime) {
+        await upsertRemoteVault(localPayload);
+        return;
+      }
+      localStorage.setItem(
+        "bl_sync_conflict_backup",
+        encrypt(
+          {
+            savedAt: new Date().toISOString(),
+            payload: localPayload,
+          },
+          sessionPin,
+        ),
+      );
+      notify("Cloud had newer changes. A local backup was saved.", "info");
+    }
+
+    applyVaultPayload(remotePayload);
+    populateCategorySelects();
+    updateMyCardWidget();
+    updateAddAccountUI();
+    refreshAll();
+    syncConfig.lastSyncedHash = remoteHash;
+    syncConfig.lastSyncedAt = new Date().toISOString();
+    syncConfig.lastRemoteUpdatedAt = remote.updated_at || "";
+    suppressSyncPush = true;
+    saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+    suppressSyncPush = false;
+    updateSyncStatus(
+      "ok",
+      "Connected",
+      "Loaded the latest encrypted cloud data.",
+    );
+  } finally {
+    syncBusy = false;
+  }
+}
+
+async function pushCloudVault(reason = "manual") {
+  if (!syncConfig?.enabled || syncBusy) return;
+  syncBusy = true;
+  try {
+    await upsertRemoteVault(getVaultPayload());
+  } finally {
+    syncBusy = false;
+  }
+}
+
+async function syncNow() {
+  try {
+    await initSyncAfterUnlock({ forceSyncNow: true });
+    notify("Sync complete", "success");
+  } catch (e) {
+    notify(e.message || "Sync failed", "error");
+  }
+}
+
+function subscribeToCloudChanges() {
+  if (!supabaseClient || !syncConfig?.enabled) return;
+  if (syncChannel) supabaseClient.removeChannel(syncChannel);
+  syncChannel = supabaseClient
+    .channel(`vault-${syncConfig.userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: SYNC_TABLE,
+        filter: `user_id=eq.${syncConfig.userId}`,
+      },
+      (payload) => {
+        if (payload.new?.updated_by === syncConfig.deviceId) return;
+        pullRemoteVault("event").catch((e) =>
+          console.warn("Realtime pull failed", e),
+        );
+      },
+    )
+    .subscribe();
+}
+
+async function initSyncAfterUnlock(options = {}) {
+  if (!sessionPin) return;
+  if (!syncConfig?.enabled) {
+    populateSyncModal();
+    return;
+  }
+  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
+  const { data, error } = await client.auth.getUser();
+  if (error || !data.user || data.user.id !== syncConfig.userId) {
+    updateSyncStatus(
+      "warn",
+      "Reconnect needed",
+      "Your cloud session expired. Open Cloud Sync and finish the link again.",
+    );
+    return;
+  }
+  subscribeToCloudChanges();
+  clearInterval(syncPollTimer);
+  syncPollTimer = setInterval(() => {
+    pullRemoteVault("poll").catch((e) => console.warn("Sync poll failed", e));
+  }, SYNC_POLL_MS);
+  if (options.forceSyncNow) {
+    await pullRemoteVault("manual");
+  } else {
+    updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.");
+  }
+  if (!syncFocusHandlerBound) {
+    syncFocusHandlerBound = true;
+    window.addEventListener(
+      "focus",
+      () => {
+        if (sessionPin && syncConfig?.enabled)
+          pullRemoteVault("focus").catch(() => {});
+      },
+      { passive: true },
+    );
+  }
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -268,6 +827,8 @@ function attemptUnlock() {
   sessionPin = pin;
   cards = vault.cards || [];
   activeCardIdx = vault.activeCardIdx || 0;
+  syncConfig = cleanSyncConfig(vault.syncConfig);
+  syncConfig.deviceId = syncConfig.deviceId || getDeviceId();
   if (activeCardIdx >= cards.length) activeCardIdx = 0;
   if (cards.length > 0) loadActiveCard();
 
@@ -279,7 +840,16 @@ function attemptUnlock() {
     processRecurring();
   }
   populateCategorySelects();
+  updateAddAccountUI();
   refreshAll();
+  initSyncAfterUnlock().catch((e) => {
+    console.warn("Sync init failed", e);
+    updateSyncStatus(
+      "warn",
+      "Cloud sync needs attention",
+      "Open Cloud Sync in Settings to reconnect.",
+    );
+  });
 }
 
 // Keyboard support on lock screen
@@ -312,6 +882,7 @@ function resetAutoLock() {
 function lockApp() {
   if (!sessionPin) return;
   saveToStorage();
+  stopCloudSync();
   sessionPin = null;
   pinBuffer = "";
   clearTimeout(autoLockTimer);
@@ -323,6 +894,7 @@ function lockApp() {
   customCategories = [];
   categoryBudgets = {};
   recurringTemplates = [];
+  syncConfig = defaultSyncConfig();
   showLockScreen();
   notify("App locked", "info");
 }
@@ -401,6 +973,7 @@ function switchCard(idx) {
   updateMyCardWidget();
   processRecurring();
   populateCategorySelects();
+  updateAddAccountUI();
   searchQuery = "";
   const si = document.getElementById("txnSearch");
   if (si) si.value = "";
@@ -652,6 +1225,7 @@ function applyPickedMonth() {
   if (!pickerSelected) return;
   pickedMonth = { ...pickerSelected };
   currentPeriod = "picked";
+  txnExpanded = false;
   closeModal("monthPickerModal");
   const name = MONTH_SHORT[pickedMonth.month] + " " + pickedMonth.year;
   document.getElementById("periodLabel").textContent = name;
@@ -737,6 +1311,44 @@ const sumExp = (tx) =>
   tx
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+function isTransferLikeTransaction(t) {
+  if (!t || t.type !== "expense") return false;
+  const category = (t.category || "").trim();
+  const text = [t.category, t.description, t.notes]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return (
+    /^to\s+/i.test(category) ||
+    /^from\s+/i.test(category) ||
+    /\bself transfer\b/.test(text) ||
+    /\bbank transfer\b/.test(text) ||
+    /\btransfer to\b/.test(text) ||
+    /\btransfer from\b/.test(text) ||
+    /\bcredit card bill\b/.test(text) ||
+    /\bcard bill\b/.test(text)
+  );
+}
+
+function getSpendingExpenses(tx) {
+  return tx.filter(
+    (t) => t.type === "expense" && !isTransferLikeTransaction(t),
+  );
+}
+
+function sumSpend(tx) {
+  return getSpendingExpenses(tx).reduce((s, t) => s + Math.abs(t.amount), 0);
+}
+
+function getTxnPreviewLimit(period) {
+  return TXN_PREVIEW_LIMITS[period] || TXN_PREVIEW_LIMITS.monthly;
+}
+
+function toggleTxnExpanded() {
+  txnExpanded = !txnExpanded;
+  renderTxns(currentPeriod);
+}
 
 function getCatColor(cat) {
   if (CAT_COLORS[cat]) return CAT_COLORS[cat];
@@ -1064,11 +1676,10 @@ function renderDashboard(period) {
       ),
     );
   if (userData) {
-    const mExp = sumExp(getTxns("monthly").filter((t) => t.type === "expense"));
-    const pct = Math.min((mExp / userData.spendingLimit) * 100, 100);
-    document.getElementById("spendLimitVal").textContent = fmt(
-      userData.spendingLimit,
-    );
+    const limit = userData.spendingLimit || 0;
+    const mExp = sumSpend(getTxns("monthly"));
+    const pct = limit > 0 ? Math.min((mExp / limit) * 100, 100) : 0;
+    document.getElementById("spendLimitVal").textContent = fmt(limit);
     document.getElementById("spendUsedVal").textContent = "Used: " + fmt(mExp);
     const fill = document.getElementById("progressFill");
     fill.style.width = pct + "%";
@@ -1084,6 +1695,8 @@ function renderDashboard(period) {
 function renderTxns(period) {
   let txns = getTxns(period);
   const totalAll = txns.length;
+  const isFilteredBase =
+    !!searchQuery || filterCfg.type !== "all" || filterCfg.cats.length > 0;
   if (filterCfg.type !== "all")
     txns = txns.filter((t) => t.type === filterCfg.type);
   if (filterCfg.cats.length > 0)
@@ -1112,13 +1725,19 @@ function renderTxns(period) {
     if (va > vb) return sortCfg.order === "asc" ? 1 : -1;
     return 0;
   });
+  const previewLimit = getTxnPreviewLimit(period);
+  const shouldClamp =
+    !isFilteredBase && !txnExpanded && txns.length > previewLimit;
+  const visibleTxns = shouldClamp ? txns.slice(0, previewLimit) : txns;
   const countEl = document.getElementById("txnCount");
   if (countEl) {
-    const isFiltered =
-      searchQuery || filterCfg.type !== "all" || filterCfg.cats.length > 0;
-    countEl.textContent = isFiltered
-      ? `Showing ${txns.length} of ${totalAll}`
-      : `${totalAll} transaction${totalAll !== 1 ? "s" : ""}`;
+    if (isFilteredBase) {
+      countEl.textContent = `Showing ${txns.length} of ${totalAll}`;
+    } else if (shouldClamp) {
+      countEl.textContent = `Showing ${visibleTxns.length} of ${txns.length}`;
+    } else {
+      countEl.textContent = `${totalAll} transaction${totalAll !== 1 ? "s" : ""}`;
+    }
   }
   document
     .getElementById("filterBtn")
@@ -1128,13 +1747,15 @@ function renderTxns(period) {
     );
   const body = document.getElementById("txnBody");
   const mobileList = document.getElementById("txnMobileList");
+  const footer = document.getElementById("txnListFooter");
   if (txns.length === 0) {
     const emptyHtml = `<div class="empty-transactions"><i class="fas fa-receipt"></i>${searchQuery ? "No results" : "No transactions for this period"}</div>`;
     body.innerHTML = `<tr><td colspan="6">${emptyHtml}</td></tr>`;
     if (mobileList) mobileList.innerHTML = emptyHtml;
+    if (footer) footer.innerHTML = "";
     return;
   }
-  const tableRows = txns
+  const tableRows = visibleTxns
     .map((t) => {
       const ds = new Date(t.date + "T00:00:00").toLocaleDateString("en-US", {
         month: "short",
@@ -1156,7 +1777,7 @@ function renderTxns(period) {
     </tr>`;
     })
     .join("");
-  const mobileCards = txns
+  const mobileCards = visibleTxns
     .map((t) => {
       const ds = new Date(t.date + "T00:00:00").toLocaleDateString("en-US", {
         month: "short",
@@ -1192,6 +1813,13 @@ function renderTxns(period) {
     .join("");
   body.innerHTML = tableRows;
   if (mobileList) mobileList.innerHTML = mobileCards;
+  if (footer) {
+    if (!isFilteredBase && txns.length > previewLimit) {
+      footer.innerHTML = `<button class="txn-toggle-btn" onclick="toggleTxnExpanded()">${txnExpanded ? "Show less" : `Show all ${txns.length} transactions`}</button>${txnExpanded ? "" : `<div class="txn-toggle-hint">Home is previewing the latest ${previewLimit} transactions for this view.</div>`}`;
+    } else {
+      footer.innerHTML = "";
+    }
+  }
 }
 
 function onSearchInput(val) {
@@ -1206,7 +1834,8 @@ function onSearchInput(val) {
 function renderInsights() {
   const section = document.getElementById("insightsSection");
   if (!section) return;
-  const allExp = transactions.filter((t) => t.type === "expense");
+  const spendingTxns = getSpendingExpenses(transactions);
+  const allExp = spendingTxns;
   if (allExp.length < 3) {
     section.style.display = "none";
     return;
@@ -1214,21 +1843,17 @@ function renderInsights() {
   section.style.display = "block";
 
   const now = new Date();
-  const thisMonth = transactions.filter((t) => {
+  const thisMonth = spendingTxns.filter((t) => {
     const d = new Date(t.date + "T00:00:00");
     return (
-      t.type === "expense" &&
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth()
+      d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
     );
   });
-  const lastMonth = transactions.filter((t) => {
+  const lastMonth = spendingTxns.filter((t) => {
     const d = new Date(t.date + "T00:00:00");
     const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     return (
-      t.type === "expense" &&
-      d.getFullYear() === lm.getFullYear() &&
-      d.getMonth() === lm.getMonth()
+      d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth()
     );
   });
 
@@ -1280,11 +1905,22 @@ function renderInsights() {
 
   // Day of week
   const dow = [0, 0, 0, 0, 0, 0, 0];
-  allExp.slice(0, 90).forEach((t) => {
-    dow[new Date(t.date + "T00:00:00").getDay()] += Math.abs(t.amount);
-  });
+  [...allExp]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 90)
+    .forEach((t) => {
+      dow[new Date(t.date + "T00:00:00").getDay()] += Math.abs(t.amount);
+    });
   const dowMax = Math.max(...dow, 1);
-  const dowNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dowNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   // Savings rate
   const monthInc = sumInc(
@@ -1359,7 +1995,7 @@ function renderInsights() {
       <div class="insight-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-calendar-day"></i></div>
       <div class="insight-body">
         <div class="insight-value" style="color:#3b82f6">${fmt(Math.round(dailyAvg))} / day</div>
-        <div class="insight-label">Average daily spending this month</div>
+        <div class="insight-label">Average daily spending so far this month</div>
       </div></div>`);
   }
   if (sorted.length >= 2) {
@@ -1449,6 +2085,7 @@ function togglePeriodMenu() {
 function setPeriod(p) {
   currentPeriod = p;
   pickedMonth = null;
+  txnExpanded = false;
   document.getElementById("periodMenu").classList.remove("open");
   refreshAll();
 }
@@ -1607,8 +2244,9 @@ function addExpense() {
   saveToStorage();
   refreshAll();
   if (userData) {
-    const mExp = sumExp(getTxns("monthly").filter((t) => t.type === "expense"));
-    const pct = (mExp / userData.spendingLimit) * 100;
+    const limit = userData.spendingLimit || 0;
+    const mExp = sumSpend(getTxns("monthly"));
+    const pct = limit > 0 ? (mExp / limit) * 100 : 0;
     if (pct >= 100) notify("Monthly limit exceeded", "error");
     else if (pct >= 80) notify(`${Math.round(pct)}% of limit used`, "info");
     else
@@ -1996,6 +2634,7 @@ function bnSwitch(tab) {
 }
 
 function openBnSheet() {
+  updateAddAccountUI();
   document.getElementById("bnAddSheet").classList.add("open");
   document.getElementById("bnSheetOverlay").classList.add("open");
 }
@@ -2007,6 +2646,94 @@ function closeBnSheet() {
     .querySelectorAll(".bn-tab")
     .forEach((t) => t.classList.remove("bn-tab--active"));
   document.getElementById("bnHome")?.classList.add("bn-tab--active");
+}
+
+function captureTxnDraft(type) {
+  return {
+    amount: document.getElementById(type + "Amount")?.value || "",
+    date: document.getElementById(type + "Date")?.value || todayStr(),
+    category: document.getElementById(type + "Category")?.value || "",
+    desc: document.getElementById(type + "Desc")?.value || "",
+    notes: document.getElementById(type + "Notes")?.value || "",
+    recurring: !!document.getElementById(type + "Recurring")?.checked,
+    frequency: document.getElementById(type + "Frequency")?.value || "monthly",
+  };
+}
+
+function applyTxnDraft(type, draft) {
+  if (!draft) return;
+  document.getElementById(type + "Amount").value = draft.amount || "";
+  document.getElementById(type + "Date").value = draft.date || todayStr();
+  document.getElementById(type + "Category").value = draft.category || "";
+  document.getElementById(type + "Desc").value = draft.desc || "";
+  const notesEl = document.getElementById(type + "Notes");
+  if (notesEl) notesEl.value = draft.notes || "";
+  const recurringEl = document.getElementById(type + "Recurring");
+  if (recurringEl) recurringEl.checked = !!draft.recurring;
+  document.getElementById(type + "FrequencyRow").style.display = draft.recurring
+    ? "block"
+    : "none";
+  document.getElementById(type + "Frequency").value =
+    draft.frequency || "monthly";
+}
+
+function closeAddTargetSheet() {
+  pendingAddFlow = null;
+  document.getElementById("bnAddTargetSheet")?.classList.remove("open");
+  document.getElementById("bnAddTargetOverlay")?.classList.remove("open");
+}
+
+function openAddTargetPicker(type, source = "sheet") {
+  if (cards.length < 2) {
+    notify("Add another account first to use this shortcut", "info");
+    return;
+  }
+  pendingAddFlow = {
+    type,
+    draft: source === "modal" ? captureTxnDraft(type) : null,
+  };
+  if (source === "modal") {
+    closeModal(type === "income" ? "incomeModal" : "expenseModal");
+  } else {
+    closeBnSheet();
+  }
+
+  const title = document.getElementById("bnAddTargetTitle");
+  if (title)
+    title.textContent = type === "income" ? "Add Income To" : "Add Expense To";
+  const flow = document.getElementById("bnAddTargetFlow");
+  if (flow) flow.textContent = type === "income" ? "income" : "expense";
+
+  const list = document.getElementById("bnAddTargetList");
+  if (list) {
+    list.innerHTML = cards
+      .map((card, idx) => {
+        if (idx === activeCardIdx) return "";
+        return `<button type="button" class="bn-account-option" onclick="switchCardForAdd(${idx})">
+          <div class="bn-account-meta">
+            <span class="bn-account-dot" style="background:${CARD_ACCENT_COLORS[idx % CARD_ACCENT_COLORS.length]}"></span>
+            <div>
+              <div class="bn-account-name">${getCardDisplayName(card, idx)}</div>
+              <div class="bn-account-sub">${getCardDisplaySub(card)}</div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right"></i>
+        </button>`;
+      })
+      .join("");
+  }
+
+  document.getElementById("bnAddTargetSheet").classList.add("open");
+  document.getElementById("bnAddTargetOverlay").classList.add("open");
+}
+
+function switchCardForAdd(idx) {
+  const flow = pendingAddFlow;
+  closeAddTargetSheet();
+  if (!flow) return;
+  switchCard(idx);
+  const modalId = flow.type === "income" ? "incomeModal" : "expenseModal";
+  openModal(modalId, { draft: flow.draft });
 }
 
 function openBnSettings() {
@@ -2258,8 +2985,9 @@ function closeActionSheet() {
   if (icon) icon.className = "fas fa-plus";
 }
 
-function openModal(id) {
+function openModal(id, options = {}) {
   closeBnSheet();
+  closeAddTargetSheet();
   document.getElementById(id).style.display = "block";
   document.body.style.overflow = "hidden";
   syncFabVisibility();
@@ -2275,6 +3003,7 @@ function openModal(id) {
     document.getElementById("incomeFrequencyRow").style.display = "none";
     populateCategorySelects();
     document.getElementById("incomeCategory").value = "";
+    applyTxnDraft("income", options.draft);
   }
   if (id === "expenseModal") {
     ["expenseAmount", "expenseDesc"].forEach(
@@ -2287,7 +3016,12 @@ function openModal(id) {
     document.getElementById("expenseFrequencyRow").style.display = "none";
     populateCategorySelects();
     document.getElementById("expenseCategory").value = "";
+    applyTxnDraft("expense", options.draft);
   }
+  if (id === "syncModal") {
+    populateSyncModal();
+  }
+  updateAddAccountUI();
 }
 
 function closeModal(id) {
@@ -2325,6 +3059,7 @@ const ALL_MODALS = [
   "budgetModal",
   "summaryModal",
   "changePinModal",
+  "syncModal",
   "resetModal",
   "editLimitModal",
   "importModal",
@@ -2447,6 +3182,7 @@ function completeOnboarding() {
   renderCardSwitcher();
   updateMyCardWidget();
   populateCategorySelects();
+  updateAddAccountUI();
   refreshAll();
   syncFabVisibility();
   notify(
@@ -2907,6 +3643,7 @@ function confirmImport() {
 }
 
 function confirmReset() {
+  stopCloudSync();
   localStorage.clear();
   closeModal("resetModal");
   notify("App reset. Reloading...", "info");
