@@ -12,13 +12,13 @@
       content="BlueLedger — encrypted personal finance dashboard"
     />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="BlueLedger" />
     <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <title>BlueLedger</title>
     <link
@@ -31,6 +31,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body class="modal-open">
     <!-- ═══════════════ LOCK SCREEN ═══════════════ -->
@@ -408,6 +409,15 @@
               class="settings-menu-item"
               onclick="
                 closeSettingsMenu();
+                openSyncModal();
+              "
+            >
+              <i class="fas fa-cloud"></i> Cloud Sync
+            </div>
+            <div
+              class="settings-menu-item"
+              onclick="
+                closeSettingsMenu();
                 exportCSV();
               "
             >
@@ -729,6 +739,7 @@
           </table>
         </div>
         <div class="txn-mobile-list" id="txnMobileList"></div>
+        <div class="txn-list-footer" id="txnListFooter"></div>
       </div>
 
       <!-- ═══════════════ INSIGHTS ═══════════════ -->
@@ -803,6 +814,10 @@
         <span class="bn-sheet-title">Add Transaction</span>
         <button class="bn-sheet-cancel" onclick="closeBnSheet()">Cancel</button>
       </div>
+      <div class="bn-sheet-account">
+        Current account:
+        <span id="bnCurrentAccountLabel">This account</span>
+      </div>
       <button
         class="bn-sheet-btn bn-sheet-income"
         onclick="
@@ -831,6 +846,26 @@
         </div>
         <i class="fas fa-chevron-right"></i>
       </button>
+    </div>
+
+    <div
+      class="bn-sheet-overlay"
+      id="bnAddTargetOverlay"
+      onclick="closeAddTargetSheet()"
+    ></div>
+    <div class="bn-sheet bn-sheet--auto" id="bnAddTargetSheet">
+      <div class="bn-sheet-handle"></div>
+      <div class="bn-sheet-title-row">
+        <span class="bn-sheet-title" id="bnAddTargetTitle">Choose Account</span>
+        <button class="bn-sheet-cancel" onclick="closeAddTargetSheet()">
+          Cancel
+        </button>
+      </div>
+      <div class="bn-sheet-account">
+        Switch account and continue in
+        <span id="bnAddTargetFlow">this flow</span>
+      </div>
+      <div class="bn-account-list" id="bnAddTargetList"></div>
     </div>
 
     <!-- Report picker sheet -->
@@ -1002,6 +1037,15 @@
         class="bn-settings-row"
         onclick="
           closeBnSettings();
+          openSyncModal();
+        "
+      >
+        <i class="fas fa-cloud"></i> Cloud Sync
+      </div>
+      <div
+        class="bn-settings-row"
+        onclick="
+          closeBnSettings();
           exportCSV();
         "
       >
@@ -1125,6 +1169,26 @@
           </button>
         </div>
         <div class="modal-body">
+          <div class="form-group modal-account-group">
+            <label class="form-label">Account</label>
+            <div class="modal-account-card">
+              <div>
+                <div class="modal-account-name" id="incomeAccountName">
+                  This account
+                </div>
+                <div class="modal-account-sub">
+                  This income will be added to the current account.
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary modal-account-switch"
+                onclick="openAddTargetPicker('income', 'modal')"
+              >
+                Use another account
+              </button>
+            </div>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Amount (₹)</label>
@@ -1207,6 +1271,26 @@
           </button>
         </div>
         <div class="modal-body">
+          <div class="form-group modal-account-group">
+            <label class="form-label">Account</label>
+            <div class="modal-account-card">
+              <div>
+                <div class="modal-account-name" id="expenseAccountName">
+                  This account
+                </div>
+                <div class="modal-account-sub">
+                  This expense will be added to the current account.
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary modal-account-switch"
+                onclick="openAddTargetPicker('expense', 'modal')"
+              >
+                Use another account
+              </button>
+            </div>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Amount (₹)</label>
@@ -1756,6 +1840,132 @@
     </div>
 
     <!-- ═══════════════ CARD OPTIONS MENU ═══════════════ -->
+    <div id="syncModal" class="modal">
+      <div class="modal-content" style="width: 560px">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i
+              class="fas fa-cloud"
+              style="color: #60a5fa; margin-right: 0.5rem"
+            ></i
+            >Encrypted Cloud Sync
+          </h2>
+          <button class="close-btn" onclick="closeModal('syncModal')">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="sync-status-card">
+            <div class="sync-status-top">
+              <span class="sync-status-badge" id="syncStatusBadge"
+                >Not connected</span
+              >
+              <span class="sync-status-meta" id="syncStatusMeta"
+                >Local-only vault</span
+              >
+            </div>
+            <div class="sync-status-text" id="syncStatusText">
+              Set up Supabase live sync to keep your phone and laptop on the
+              same encrypted vault.
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supabase Project URL</label>
+            <input
+              type="text"
+              class="form-input"
+              id="syncSupabaseUrl"
+              placeholder="https://your-project.supabase.co"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supabase Publishable / Anon Key</label>
+            <textarea
+              class="form-input"
+              id="syncSupabaseKey"
+              rows="3"
+              placeholder="Paste your Supabase anon key"
+              style="resize: vertical; min-height: 76px"
+            ></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Sync Email</label>
+              <input
+                type="email"
+                class="form-input"
+                id="syncEmail"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sync Passphrase</label>
+              <input
+                type="password"
+                class="form-input"
+                id="syncPassphrase"
+                placeholder="Used to encrypt cloud data"
+              />
+            </div>
+          </div>
+          <div class="sync-helper">
+            Your local PIN stays on-device. The sync passphrase derives a
+            separate encryption key for the cloud vault.
+          </div>
+          <details class="sync-setup-details">
+            <summary>Supabase table setup</summary>
+            <pre class="sync-sql">
+create table if not exists public.encrypted_vaults (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  ciphertext text not null,
+  vault_version bigint not null default 0,
+  schema_version integer not null default 1,
+  updated_at timestamptz not null default timezone('utc', now()),
+  updated_by text
+);
+
+alter table public.encrypted_vaults enable row level security;
+
+create policy "Users can read own vault"
+on public.encrypted_vaults
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can insert own vault"
+on public.encrypted_vaults
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can update own vault"
+on public.encrypted_vaults
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+alter publication supabase_realtime add table public.encrypted_vaults;</pre
+            >
+          </details>
+        </div>
+        <div class="modal-footer sync-footer">
+          <button class="btn btn-secondary" onclick="sendSyncMagicLink()">
+            Send Magic Link
+          </button>
+          <button class="btn btn-secondary" onclick="finishSyncLink()">
+            Finish Link
+          </button>
+          <button class="btn btn-secondary" onclick="syncNow()">
+            Sync Now
+          </button>
+          <button class="btn btn-danger" onclick="disconnectSync()">
+            Disconnect
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div
       id="cardOptionsMenu"
       style="
@@ -1930,7 +2140,7 @@
             </div>
             <div
               style="
-                font-family: Consolas, 'Courier New', monospace;
+                font-family: Consolas, &quot;Courier New&quot;, monospace;
                 font-size: 0.72rem;
                 line-height: 1.7;
                 color: #cbd5e1;
@@ -1938,10 +2148,10 @@
                 word-break: break-word;
               "
             >
-Date,Type,Category,Description,Amount,Recurring
-2026-03-01,expense,Food,Lunch,250,No
-2026-03-02,income,Salary,March salary,50000,No
-2026-03-03,expense,Transport,Cab to office,180,No
+              Date,Type,Category,Description,Amount,Recurring
+              2026-03-01,expense,Food,Lunch,250,No
+              2026-03-02,income,Salary,March salary,50000,No
+              2026-03-03,expense,Transport,Cab to office,180,No
             </div>
             <button
               class="btn btn-secondary"
@@ -1991,10 +2201,7 @@ Date,Type,Category,Description,Amount,Recurring
         <div class="modal-body" style="padding: 1.5rem">
           <div style="text-align: center; margin-bottom: 1.25rem">
             <div style="font-size: 2.5rem; margin-bottom: 0.75rem">
-              <i
-                class="fas fa-triangle-exclamation"
-                style="color: #f59e0b"
-              ></i>
+              <i class="fas fa-triangle-exclamation" style="color: #f59e0b"></i>
             </div>
             <p
               style="
