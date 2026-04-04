@@ -332,13 +332,20 @@ function openSyncModal() {
 function populateSyncModal() {
   if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
     updateSyncStatus(
-      "ok", "Connected", "Encrypted cloud sync is active.",
+      "ok",
+      "Connected",
+      "Encrypted cloud sync is active.",
       `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`,
     );
   } else if (syncConfig?.enabled) {
     updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.", "");
   } else {
-    updateSyncStatus("local", "Not connected", "Log in to activate cloud sync.", "Local-only vault");
+    updateSyncStatus(
+      "local",
+      "Not connected",
+      "Log in to activate cloud sync.",
+      "Local-only vault",
+    );
   }
 }
 
@@ -349,7 +356,13 @@ function getBLClient() {
     supabaseClient = window.supabase.createClient(
       BL_SUPABASE_URL,
       BL_SUPABASE_ANON_KEY,
-      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      },
     );
   }
   return supabaseClient;
@@ -602,21 +615,25 @@ async function initSyncAfterUnlock(options = {}) {
    AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let _pendingCardSetup = null;   // { name, email, password, userId }
-let _migrationVault = null;     // decrypted old PIN vault awaiting re-encryption
+let _pendingCardSetup = null; // { name, email, password, userId }
+let _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
 
 function showAuthScreen(tab = "login") {
   document.getElementById("authScreen").style.display = "flex";
   document.getElementById("onboardingModal").style.display = "none";
   document.getElementById("lockScreen").style.display = "none";
   switchAuthTab(tab);
-  // Show biometric button if credentials API available
+
+  // Biometric only works reliably on mobile browsers with stored credentials
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const hasStoredCreds =
+    "credentials" in navigator && window.PasswordCredential;
   const bioBtn = document.getElementById("authBiometricBtn");
   const bioDivider = document.getElementById("authBiometricDivider");
   if (bioBtn && bioDivider) {
-    const canBio = "credentials" in navigator && window.PasswordCredential;
-    bioBtn.style.display = canBio ? "flex" : "none";
-    bioDivider.style.display = canBio ? "block" : "none";
+    const showBio = isMobile && hasStoredCreds;
+    bioBtn.style.display = showBio ? "flex" : "none";
+    bioDivider.style.display = showBio ? "block" : "none";
   }
 }
 
@@ -629,8 +646,12 @@ function switchAuthTab(tab) {
     tab === "login" ? "block" : "none";
   document.getElementById("signupPanel").style.display =
     tab === "signup" ? "block" : "none";
-  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
-  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
+  document
+    .getElementById("tabLogin")
+    .classList.toggle("active", tab === "login");
+  document
+    .getElementById("tabSignup")
+    .classList.toggle("active", tab === "signup");
   document.getElementById("loginError").textContent = "";
   document.getElementById("signupError").textContent = "";
 }
@@ -674,7 +695,10 @@ async function doSignUp() {
 
     if (data.user && !data.session) {
       // Store pending credentials so we can sign in after confirmation
-      localStorage.setItem("bl_pending_signup", JSON.stringify({ email, name }));
+      localStorage.setItem(
+        "bl_pending_signup",
+        JSON.stringify({ email, name }),
+      );
       // Email confirmation required
       document.getElementById("authScreen").innerHTML = `
         <div class="auth-card">
@@ -725,22 +749,7 @@ async function switchToLoginAfterConfirm(email) {
   location.reload();
 }
 
-// On page load — if we have a pending signup email, pre-fill login
-window.addEventListener("DOMContentLoaded", () => {
-  try {
-    const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
-    if (pending?.email) {
-      setTimeout(() => {
-        const loginEmail = document.getElementById("loginEmail");
-        if (loginEmail) {
-          loginEmail.value = pending.email;
-          switchAuthTab("login");
-          localStorage.removeItem("bl_pending_signup");
-        }
-      }, 500);
-    }
-  } catch {}
-});
+// Pre-fill handled inside initApp
 
 async function doSignIn() {
   const email = document.getElementById("loginEmail").value.trim();
@@ -759,10 +768,17 @@ async function doSignIn() {
 
   try {
     const client = getBLClient();
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) throw error;
 
-    await _unlockWithPassword(password, data.user.id, data.user.user_metadata?.name || "");
+    await _unlockWithPassword(
+      password,
+      data.user.id,
+      data.user.user_metadata?.name || "",
+    );
 
     // Save credentials for biometric re-use
     try {
@@ -804,7 +820,10 @@ async function _unlockWithPassword(password, userId, displayName) {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
     const vault = tryDecrypt(raw, password);
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+    if (
+      vault &&
+      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+    ) {
       cards = vault.cards || [];
       activeCardIdx = vault.activeCardIdx || 0;
       syncConfig = cleanSyncConfig(vault.syncConfig);
@@ -925,7 +944,9 @@ async function completeCardSetup() {
     addingNewCard = false;
     document.getElementById("cardSetupModal").style.display = "none";
     // Reset modal title back
-    document.getElementById("cardSetupModal").querySelector(".modal-title").innerHTML =
+    document
+      .getElementById("cardSetupModal")
+      .querySelector(".modal-title").innerHTML =
       '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Set Up Your First Card';
     saveToStorage();
     renderCardSwitcher();
@@ -966,7 +987,10 @@ async function completeCardSetup() {
   refreshAll();
   initSyncAfterUnlock({ forceSyncNow: true }).catch(() => {});
 
-  notify(`Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`, "success");
+  notify(
+    `Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`,
+    "success",
+  );
 
   setTimeout(() => {
     if ("credentials" in navigator && window.PasswordCredential) {
@@ -992,11 +1016,17 @@ async function registerBiometricNow() {
 async function tryLockScreenBiometric() {
   try {
     if (!("credentials" in navigator) || !window.PasswordCredential) return;
-    const cred = await navigator.credentials.get({ password: true, mediation: "required" });
+    const cred = await navigator.credentials.get({
+      password: true,
+      mediation: "required",
+    });
     if (!cred) return;
     const raw = localStorage.getItem(STORAGE_KEY);
     const vault = tryDecrypt(raw, cred.password);
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+    if (
+      vault &&
+      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+    ) {
       await _lockScreenSuccess(cred.password, vault);
     } else {
       notify("Biometric credential mismatch. Use your password.", "error");
@@ -1012,7 +1042,10 @@ async function unlockWithLockPassword() {
 
   const raw = localStorage.getItem(STORAGE_KEY);
   const vault = tryDecrypt(raw, password);
-  if (!vault || (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)) {
+  if (
+    !vault ||
+    (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)
+  ) {
     const errEl = document.getElementById("lockError");
     document.getElementById("lockPasswordInput").value = "";
     // shake
@@ -1027,12 +1060,16 @@ async function unlockWithLockPassword() {
       errEl.textContent = "Too many attempts — locked for 30s";
       const countdown = setInterval(() => {
         const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
-        if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
-        else errEl.textContent = `Locked — try again in ${s}s`;
+        if (s <= 0) {
+          clearInterval(countdown);
+          errEl.textContent = "";
+        } else errEl.textContent = `Locked — try again in ${s}s`;
       }, 500);
     } else {
       errEl.textContent = `Incorrect password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
-      setTimeout(() => { errEl.textContent = ""; }, 2000);
+      setTimeout(() => {
+        errEl.textContent = "";
+      }, 2000);
     }
     return;
   }
@@ -1066,7 +1103,10 @@ async function _lockScreenSuccess(password, vault) {
 async function startMigration() {
   const pin = document.getElementById("migrationPin").value.trim();
   const errEl = document.getElementById("migrationError");
-  if (!pin) { errEl.textContent = "Enter your current PIN"; return; }
+  if (!pin) {
+    errEl.textContent = "Enter your current PIN";
+    return;
+  }
 
   const now = Date.now();
   if (now < pinLockedUntil) {
@@ -1122,7 +1162,10 @@ async function _applyMigrationVault(password, userId) {
   hideAuthScreen();
 
   renderCardSwitcher();
-  if (userData) { updateMyCardWidget(); processRecurring(); }
+  if (userData) {
+    updateMyCardWidget();
+    processRecurring();
+  }
   populateCategorySelects();
   updateAddAccountUI();
   refreshAll();
@@ -1158,13 +1201,15 @@ async function doSignOut() {
 /* ── Backup: .bl file export/import + QR ── */
 
 function exportBLFile() {
-  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  if (!sessionPin) {
+    notify("Unlock the app first", "error");
+    return;
+  }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
-  const blob = new Blob(
-    [JSON.stringify({ bl: 1, data: encrypted })],
-    { type: "application/json" }
-  );
+  const blob = new Blob([JSON.stringify({ bl: 1, data: encrypted })], {
+    type: "application/json",
+  });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `blueledger-backup-${new Date().toISOString().slice(0, 10)}.bl`;
@@ -1182,16 +1227,25 @@ async function handleBLFileImport(input) {
   try {
     const text = await file.text();
     const obj = JSON.parse(text);
-    if (!obj.bl || !obj.data) throw new Error("Not a valid BlueLedger backup file");
-    const password = prompt("Enter the password used when this backup was created:");
+    if (!obj.bl || !obj.data)
+      throw new Error("Not a valid BlueLedger backup file");
+    const password = prompt(
+      "Enter the password used when this backup was created:",
+    );
     if (!password) return;
     const payload = tryDecrypt(obj.data, password);
-    if (!payload) { notify("Wrong password — cannot decrypt backup", "error"); return; }
+    if (!payload) {
+      notify("Wrong password — cannot decrypt backup", "error");
+      return;
+    }
     if (!confirm("This will replace your current data. Continue?")) return;
     applyVaultPayload(payload);
     saveToStorage();
     renderCardSwitcher();
-    if (userData) { updateMyCardWidget(); processRecurring(); }
+    if (userData) {
+      updateMyCardWidget();
+      processRecurring();
+    }
     populateCategorySelects();
     updateAddAccountUI();
     refreshAll();
@@ -1203,13 +1257,19 @@ async function handleBLFileImport(input) {
 }
 
 async function exportQRCode() {
-  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  if (!sessionPin) {
+    notify("Unlock the app first", "error");
+    return;
+  }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
   const jsonStr = JSON.stringify({ bl: 1, data: encrypted });
 
   if (jsonStr.length > 2500) {
-    notify("Vault is too large for a QR code. Use the .bl backup file instead.", "warn");
+    notify(
+      "Vault is too large for a QR code. Use the .bl backup file instead.",
+      "warn",
+    );
     return;
   }
 
@@ -1245,11 +1305,16 @@ function showLockScreen(subtitle) {
     if (pinArea) pinArea.style.display = "none";
     if (pwdArea) pwdArea.style.display = "block";
     const pwdInput = document.getElementById("lockPasswordInput");
-    if (pwdInput) { pwdInput.value = ""; setTimeout(() => pwdInput.focus(), 300); }
+    if (pwdInput) {
+      pwdInput.value = "";
+      setTimeout(() => pwdInput.focus(), 300);
+    }
     // Show biometric button if available
     const bioBtn = document.getElementById("lockBiometricBtn");
     if (bioBtn) {
-      const canBio = "credentials" in navigator && window.PasswordCredential;
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const canBio =
+        isMobile && "credentials" in navigator && window.PasswordCredential;
       bioBtn.style.display = canBio ? "flex" : "none";
       if (canBio) setTimeout(tryLockScreenBiometric, 600);
     }
@@ -1270,7 +1335,6 @@ function showLockScreen(subtitle) {
   document.getElementById("lockError").textContent = "";
   document.getElementById("lockAttempts").textContent = "";
 }
-
 
 function hideLockScreen() {
   document.getElementById("lockScreen").style.display = "none";
@@ -1503,7 +1567,10 @@ async function changePin() {
   ["cpOld", "cpNew", "cpNew2"].forEach(
     (id) => (document.getElementById(id).value = ""),
   );
-  notify(authMode === "password" ? "Password updated" : "PIN updated", "success");
+  notify(
+    authMode === "password" ? "Password updated" : "PIN updated",
+    "success",
+  );
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4140,59 +4207,98 @@ if ("serviceWorker" in navigator) {
   const authMode = localStorage.getItem(AUTH_MODE_KEY);
   const hasVault = hasStoredData();
 
-  // Hide all entry points first
   document.getElementById("onboardingModal").style.display = "none";
   document.getElementById("lockScreen").style.display = "none";
   document.getElementById("authScreen").style.display = "none";
 
-  // Handle Supabase magic-link redirect (email confirmation)
-  // Supabase auto-processes the hash when detectSessionInUrl:true
-  // We just need to check if a session exists after that processing
   try {
     const client = getBLClient();
 
-    // Listen for auth state (fires on magic link redirect)
-    client.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session && !sessionPin) {
-        const localVault = localStorage.getItem(STORAGE_KEY);
-        if (!localVault) {
-          // Email confirmed, fresh user — show card setup
-          document.getElementById("authScreen").style.display = "none";
-          _pendingCardSetup = {
-            name: session.user.user_metadata?.name || "",
-            email: session.user.email,
-            password: "", // will need re-entry — handled in card setup
-            userId: session.user.id,
-          };
-          _openCardSetupModal();
-        }
+    // Detect if this is a Supabase email confirmation redirect
+    // Supabase puts #access_token or #type=signup in the URL hash
+    const hash = window.location.hash;
+    const isConfirmationRedirect =
+      hash.includes("access_token") ||
+      hash.includes("type=signup") ||
+      hash.includes("type=recovery");
+
+    if (isConfirmationRedirect) {
+      // Let Supabase process the hash (detectSessionInUrl:true does this)
+      // Wait briefly for it to settle
+      await new Promise((r) => setTimeout(r, 800));
+      const { data: fresh } = await client.auth.getSession();
+
+      // Clean the URL hash so it doesn't persist
+      history.replaceState(null, "", window.location.pathname);
+
+      if (fresh?.session) {
+        const userEmail = fresh.session.user?.email || "";
+        // Show confirmed success screen
+        document.getElementById("authScreen").style.display = "flex";
+        document.getElementById("authScreen").innerHTML = `
+          <div class="auth-card">
+            <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
+            <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
+            <div style="text-align:center;padding:2rem 1.5rem">
+              <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+              <p style="font-size:1.1rem;font-weight:700;color:#10b981;margin-bottom:.6rem">Email Confirmed!</p>
+              <p style="color:#94a3b8;font-size:.88rem;line-height:1.7;margin-bottom:1.5rem">
+                You're all set. Log in with your password to get started.
+              </p>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem"
+                onclick="_goToLoginAfterConfirm('${userEmail}')">
+                <i class="fas fa-sign-in-alt"></i> Log In Now
+              </button>
+            </div>
+          </div>`;
+        return;
       }
-    });
+    }
 
     const { data: sessionData } = await client.auth.getSession();
 
     if (sessionData?.session && hasVault) {
-      // Has both a Supabase session and a local vault — show lock screen
       showLockScreen();
     } else if (hasVault && authMode === "pin") {
-      // Old PIN vault — show migration
       document.getElementById("migrationModal").style.display = "flex";
     } else if (hasVault && authMode === "password") {
-      // Password vault but no active session — show auth login
       showAuthScreen("login");
     } else if (hasVault) {
-      // Unknown state — show lock screen (handles both modes)
       showLockScreen();
     } else {
-      // First launch — show auth screen signup
       showAuthScreen("signup");
     }
+
+    // Pre-fill login email if returning after confirmation
+    try {
+      const pending = JSON.parse(
+        localStorage.getItem("bl_pending_signup") || "null",
+      );
+      if (pending?.email) {
+        setTimeout(() => {
+          const loginEmail = document.getElementById("loginEmail");
+          if (loginEmail) loginEmail.value = pending.email;
+          switchAuthTab("login");
+          localStorage.removeItem("bl_pending_signup");
+        }, 400);
+      }
+    } catch {}
   } catch (e) {
     console.warn("initApp error", e);
-    if (hasVault) showLockScreen();
+    if (hasStoredData()) showLockScreen();
     else showAuthScreen("signup");
   }
 })();
+
+function _goToLoginAfterConfirm(email) {
+  document.getElementById("authScreen").innerHTML = "";
+  showAuthScreen("login");
+  setTimeout(() => {
+    const el = document.getElementById("loginEmail");
+    if (el && email) el.value = email;
+    document.getElementById("loginPassword")?.focus();
+  }, 200);
+}
 
 renderCardSwitcher();
 populateCategorySelects();
