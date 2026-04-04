@@ -26,7 +26,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style (2).css" />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -39,244 +39,245 @@
       <div class="lock-card">
         <div class="lock-logo"><img src="logo2.svg" alt="BlueLedger" /></div>
         <div class="lock-title">BlueLedger</div>
-        <div class="lock-subtitle" id="lockSubtitle">
-          Enter your PIN to continue
-        </div>
-        <div class="pin-dots" id="pinDots">
-          <span class="pin-dot" id="pd1"></span>
-          <span class="pin-dot" id="pd2"></span>
-          <span class="pin-dot" id="pd3"></span>
-          <span class="pin-dot" id="pd4"></span>
-        </div>
-        <div class="pin-pad">
-          <button class="pin-key" onclick="pinPress('1')">1</button>
-          <button class="pin-key" onclick="pinPress('2')">2</button>
-          <button class="pin-key" onclick="pinPress('3')">3</button>
-          <button class="pin-key" onclick="pinPress('4')">4</button>
-          <button class="pin-key" onclick="pinPress('5')">5</button>
-          <button class="pin-key" onclick="pinPress('6')">6</button>
-          <button class="pin-key" onclick="pinPress('7')">7</button>
-          <button class="pin-key" onclick="pinPress('8')">8</button>
-          <button class="pin-key" onclick="pinPress('9')">9</button>
-          <button class="pin-key pin-key--empty"></button>
-          <button class="pin-key" onclick="pinPress('0')">0</button>
-          <button class="pin-key pin-key--del" onclick="pinBackspace()">
-            <i class="fas fa-backspace"></i>
+        <div class="lock-subtitle" id="lockSubtitle">Enter your password to continue</div>
+
+        <!-- Password mode -->
+        <div id="passwordArea" style="display:none;width:100%">
+          <button class="biometric-btn" id="lockBiometricBtn" style="display:none" onclick="tryLockScreenBiometric()">
+            <i class="fas fa-fingerprint"></i>
+            <span>Use Face ID / Fingerprint</span>
+          </button>
+          <div class="auth-divider" style="margin:0.75rem 0">or enter password</div>
+          <div class="form-group" style="margin-bottom:0.75rem">
+            <input
+              type="password"
+              class="form-input"
+              id="lockPasswordInput"
+              placeholder="Your password"
+              onkeydown="if(event.key==='Enter') unlockWithLockPassword()"
+            />
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="unlockWithLockPassword()">
+            <i class="fas fa-unlock-alt"></i> Unlock
           </button>
         </div>
+
+        <!-- PIN mode (legacy / migration) -->
+        <div id="pinArea">
+          <div class="pin-dots" id="pinDots">
+            <span class="pin-dot" id="pd1"></span>
+            <span class="pin-dot" id="pd2"></span>
+            <span class="pin-dot" id="pd3"></span>
+            <span class="pin-dot" id="pd4"></span>
+          </div>
+          <div class="pin-pad">
+            <button class="pin-key" onclick="pinPress('1')">1</button>
+            <button class="pin-key" onclick="pinPress('2')">2</button>
+            <button class="pin-key" onclick="pinPress('3')">3</button>
+            <button class="pin-key" onclick="pinPress('4')">4</button>
+            <button class="pin-key" onclick="pinPress('5')">5</button>
+            <button class="pin-key" onclick="pinPress('6')">6</button>
+            <button class="pin-key" onclick="pinPress('7')">7</button>
+            <button class="pin-key" onclick="pinPress('8')">8</button>
+            <button class="pin-key" onclick="pinPress('9')">9</button>
+            <button class="pin-key pin-key--empty"></button>
+            <button class="pin-key" onclick="pinPress('0')">0</button>
+            <button class="pin-key pin-key--del" onclick="pinBackspace()">
+              <i class="fas fa-backspace"></i>
+            </button>
+          </div>
+        </div>
+
         <div class="lock-error" id="lockError"></div>
         <div class="lock-attempts" id="lockAttempts"></div>
       </div>
     </div>
 
-    <!-- ═══════════════ ONBOARDING ═══════════════ -->
-    <div id="onboardingModal" class="modal" style="display: block">
-      <div class="modal-content onboarding-content">
-        <div class="logo-container-centered">
-          <img
-            src="icon-192.png"
-            alt="BlueLedger Logo"
-            class="onboarding-logo"
-          />
+    <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+    <div id="authScreen" class="auth-screen" style="display: none">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <img src="icon-192.png" alt="BlueLedger" />
         </div>
-        <div class="ob-sub">
-          Your personal finance dashboard — let's get you set up
+        <div class="auth-brand">Blue<span>Ledger</span></div>
+        <div class="auth-tagline">Your private finance companion</div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
+          <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
         </div>
-        <div class="ob-divider"></div>
-        <div class="ob-body">
-          <!-- Tooltip: step 1 -->
-          <div class="ob-tooltip" id="tip-name">
-            <i class="fas fa-info-circle"></i> This is just a display name —
-            used to identify your wallet
+
+        <!-- Login Panel -->
+        <div id="loginPanel">
+          <button class="biometric-btn" id="authBiometricBtn" style="display:none" onclick="tryBiometricLogin()">
+            <i class="fas fa-fingerprint"></i>
+            <span>Use Face ID / Fingerprint</span>
+          </button>
+          <div class="auth-divider" id="authBiometricDivider" style="display:none">or enter password</div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"
+              onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()" />
           </div>
-          <div class="ob-section" style="padding: 0; margin-top: 0.75rem">
-            Your Details
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="Your password"
+              onkeydown="if(event.key==='Enter') doSignIn()" />
           </div>
+          <div class="auth-error" id="loginError"></div>
+          <button class="btn btn-primary auth-submit" id="loginBtn" onclick="doSignIn()">
+            <i class="fas fa-sign-in-alt"></i> Log In
+          </button>
+        </div>
+
+        <!-- Signup Panel -->
+        <div id="signupPanel" style="display:none">
           <div class="form-group">
             <label class="form-label">Full Name</label>
-            <input
-              type="text"
-              class="form-input"
-              id="ob-name"
-              onfocus="showTip('tip-name')"
-              onblur="hideTip('tip-name')"
-            />
+            <input type="text" class="form-input" id="signupName" placeholder="Your name"
+              onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()" />
           </div>
           <div class="form-group">
-            <label class="form-label"
-              >Card Nickname
-              <span style="color: #64748b; font-weight: 400"
-                >(optional)</span
-              ></label
-            >
-            <input
-              type="text"
-              class="form-input"
-              id="ob-nickname"
-              placeholder="e.g. HDFC Savings, SBI Credit"
-            />
-            <div class="form-hint">
-              <i class="fas fa-tag"></i> Helps tell cards apart if you have
-              multiple
-            </div>
-          </div>
-
-          <div class="ob-section" style="padding: 0; margin-top: 1rem">
-            Card Details
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com"
+              onkeydown="if(event.key==='Enter') document.getElementById('signupPassword').focus()" />
           </div>
           <div class="form-group">
-            <label class="form-label">Last 4 digits of card number</label>
-            <input
-              type="text"
-              class="form-input"
-              id="ob-card"
-              placeholder="e.g. 4567"
-              maxlength="4"
-              pattern="[0-9]{4}"
-              inputmode="numeric"
-              onfocus="showTip('tip-card')"
-              onblur="hideTip('tip-card')"
-            />
-            <div class="form-hint">
-              <i class="fas fa-shield-alt"></i> Only the last 4 digits are
-              stored — never your full number
+            <label class="form-label">Password <span style="color:#64748b;font-weight:400">(min 8 characters)</span></label>
+            <input type="password" class="form-input" id="signupPassword" placeholder="Choose a strong password"
+              onkeydown="if(event.key==='Enter') document.getElementById('signupPassword2').focus()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" id="signupPassword2" placeholder="Repeat password"
+              onkeydown="if(event.key==='Enter') doSignUp()" />
+          </div>
+          <div class="auth-error" id="signupError"></div>
+          <div class="auth-privacy-note">
+            <i class="fas fa-shield-alt"></i> Your data is AES-encrypted on device. We never see your transactions.
+          </div>
+          <button class="btn btn-primary auth-submit" id="signupBtn" onclick="doSignUp()">
+            <i class="fas fa-user-plus"></i> Create Account
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CARD SETUP MODAL ═══════════════ -->
+    <div id="cardSetupModal" class="modal" style="display:none">
+      <div class="modal-content" style="width:460px">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>
+            Set Up Your First Card
+          </h2>
+        </div>
+        <div class="modal-body" style="padding:1.5rem">
+          <p style="color:#94a3b8;font-size:.88rem;margin-bottom:1.25rem">
+            Tell us about your card. You can add more cards anytime from the dashboard.
+          </p>
+          <div class="form-group">
+            <label class="form-label">Card Nickname <span style="color:#64748b;font-weight:400">(optional)</span></label>
+            <input type="text" class="form-input" id="cs-nickname" placeholder="e.g. HDFC Savings, SBI Credit" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Bank Name</label>
+              <input type="text" class="form-input" id="cs-bank" placeholder="e.g. HDFC, SBI, ICICI" />
             </div>
-            <div
-              class="ob-tooltip"
-              id="tip-card"
-              style="display: none; margin-top: 0.4rem"
-            >
-              <i class="fas fa-lock"></i> Your full card number is never entered
-              or saved here
+            <div class="form-group">
+              <label class="form-label">Card Type</label>
+              <select class="form-input" id="cs-cardtype">
+                <option value="Debit">Debit Card</option>
+                <option value="Credit">Credit Card</option>
+              </select>
             </div>
           </div>
-
-          <div class="ob-section" style="padding: 0; margin-top: 1rem">
-            Budget
+          <div class="form-group">
+            <label class="form-label">Last 4 Digits of Card Number</label>
+            <input type="text" class="form-input" id="cs-card4"
+              inputmode="numeric" maxlength="4" placeholder="e.g. 4567"
+              pattern="[0-9]{4}" />
+            <div class="form-hint"><i class="fas fa-shield-alt"></i> Only last 4 digits — your full number is never stored</div>
           </div>
           <div class="form-group">
             <label class="form-label">Monthly Spending Limit (₹)</label>
-            <input
-              type="number"
-              class="form-input"
-              id="ob-limit"
-              placeholder="e.g. 30000"
-              min="1"
-              onfocus="showTip('tip-limit')"
-              onblur="hideTip('tip-limit')"
-            />
-            <div
-              class="ob-tooltip"
-              id="tip-limit"
-              style="display: none; margin-top: 0.4rem"
-            >
-              <i class="fas fa-info-circle"></i> You'll get a warning when
-              you're close to this limit. You can change it anytime.
-            </div>
-          </div>
-
-          <div class="pin-section">
-            <div class="ob-section" style="padding: 0; margin-top: 1rem">
-              Security
-            </div>
-            <div class="form-group">
-              <label class="form-label">Set a PIN (4–6 digits)</label>
-              <input
-                type="password"
-                class="form-input"
-                id="ob-pin"
-                placeholder="e.g. 1234"
-                maxlength="6"
-                inputmode="numeric"
-                pattern="[0-9]{4,6}"
-                onfocus="showTip('tip-pin')"
-                onblur="hideTip('tip-pin')"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Confirm PIN</label>
-              <input
-                type="password"
-                class="form-input"
-                id="ob-pin2"
-                placeholder="Repeat PIN"
-                maxlength="6"
-                inputmode="numeric"
-              />
-              <div
-                class="ob-tooltip"
-                id="tip-pin"
-                style="display: none; margin-top: 0.4rem"
-              >
-                <i
-                  class="fas fa-exclamation-triangle"
-                  style="color: #f59e0b"
-                ></i>
-                Your data is encrypted with this PIN. If you forget it, your
-                data cannot be recovered. Write it down somewhere safe.
-              </div>
-            </div>
-          </div>
-
-          <div
-            style="
-              text-align: center;
-              margin-top: 1rem;
-              padding: 0.75rem;
-              background: rgba(16, 185, 129, 0.08);
-              border-radius: 8px;
-              border: 1px solid rgba(16, 185, 129, 0.2);
-            "
-          >
-            <div
-              style="
-                font-size: 0.72rem;
-                color: #10b981;
-                font-weight: 600;
-                margin-bottom: 0.3rem;
-              "
-            >
-              <i class="fas fa-database"></i> 100% Private — No Servers
-            </div>
-            <div style="font-size: 0.7rem; color: #64748b">
-              Your data never leaves your device. Everything is AES-256
-              encrypted locally.
-            </div>
+            <input type="number" class="form-input" id="cs-limit" placeholder="e.g. 30000" min="1" />
           </div>
         </div>
-        <div class="ob-footer dual-buttons">
-          <button
-            class="btn btn-cancel-ob"
-            onclick="closeModal('onboardingModal')"
-          >
-            Cancel
-          </button>
-          <button class="btn btn-onboard" onclick="completeOnboarding()">
-            Get Started
+        <div class="modal-footer">
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="completeCardSetup()">
+            <i class="fas fa-rocket"></i> Get Started
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════ SPLASH (shown when onboarding cancelled) ═══════════════ -->
-    <div id="splashScreen" class="splash-screen" style="display: none">
-      <div class="splash-inner">
-        <img src="BlueLedger Icon.png" alt="BlueLedger" class="splash-icon" />
-        <div class="splash-title">
-          Blue<span style="color: #3b82f6">Ledger</span>
+    <!-- ═══════════════ BIOMETRIC SETUP MODAL ═══════════════ -->
+    <div id="biometricSetupModal" class="modal" style="display:none">
+      <div class="modal-content" style="width:380px">
+        <div class="modal-header">
+          <h2 class="modal-title"><i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login</h2>
         </div>
-        <div class="splash-sub">Your private finance companion</div>
-        <button
-          class="splash-btn"
-          onclick="
-            document.getElementById('splashScreen').style.display = 'none';
-            document.getElementById('onboardingModal').style.display = 'block';
-          "
-        >
-          Get Started
-        </button>
+        <div class="modal-body" style="padding:1.75rem;text-align:center">
+          <div style="font-size:3rem;margin-bottom:1rem">
+            <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
+          </div>
+          <p style="color:#94a3b8;font-size:.9rem;line-height:1.7">
+            Use <strong style="color:#e2e8f0">Face ID or fingerprint</strong> to unlock BlueLedger instantly.<br>
+            Your password is still required on new devices.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="document.getElementById('biometricSetupModal').style.display='none'">Skip</button>
+          <button class="btn btn-primary" onclick="registerBiometricNow()">
+            <i class="fas fa-fingerprint"></i> Enable
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- ═══════════════ MIGRATION MODAL ═══════════════ -->
+    <div id="migrationModal" class="modal" style="display:none">
+      <div class="modal-content" style="width:460px">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="fas fa-shield-alt" style="color:#3b82f6;margin-right:.5rem"></i>
+            Account Upgrade Required
+          </h2>
+        </div>
+        <div class="modal-body" style="padding:1.5rem">
+          <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:1rem;margin-bottom:1.25rem">
+            <div style="font-size:.8rem;font-weight:700;color:#3b82f6;margin-bottom:.4rem">
+              <i class="fas fa-info-circle"></i> What's changing
+            </div>
+            <div style="font-size:.78rem;color:#cbd5e1;line-height:1.7">
+              BlueLedger now uses <strong>email &amp; password</strong> for login — enabling secure cross-device sync and easier recovery.<br>
+              Enter your current PIN below to access your data, then create a free account.
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Current PIN</label>
+            <input type="password" class="form-input" id="migrationPin"
+              inputmode="numeric" maxlength="6" placeholder="Your current PIN"
+              onkeydown="if(event.key==='Enter') startMigration()" />
+          </div>
+          <div class="auth-error" id="migrationError"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="startMigration()">
+            <i class="fas fa-arrow-right"></i> Continue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ONBOARDING (hidden, kept for compat) ═══════════════ -->
+    <div id="onboardingModal" class="modal" style="display: none">
+      <div class="modal-content onboarding-content" style="display:none"></div>
+    </div>
+
+</div>
 
     <!-- ═══════════════ HEADER ═══════════════ -->
     <div class="header">
@@ -403,7 +404,7 @@
                 openChangePinModal();
               "
             >
-              <i class="fas fa-key"></i> Change PIN
+              <i class="fas fa-key"></i> Change Password
             </div>
             <div
               class="settings-menu-item"
@@ -412,7 +413,7 @@
                 openSyncModal();
               "
             >
-              <i class="fas fa-cloud"></i> Cloud Sync
+              <i class="fas fa-cloud"></i> Cloud Sync &amp; Backup
             </div>
             <div
               class="settings-menu-item"
@@ -1031,7 +1032,7 @@
           openChangePinModal();
         "
       >
-        <i class="fas fa-key"></i> Change PIN
+        <i class="fas fa-key"></i> Change Password
       </div>
       <div
         class="bn-settings-row"
@@ -1040,7 +1041,7 @@
           openSyncModal();
         "
       >
-        <i class="fas fa-cloud"></i> Cloud Sync
+        <i class="fas fa-cloud"></i> Cloud Sync &amp; Backup
       </div>
       <div
         class="bn-settings-row"
@@ -1780,187 +1781,83 @@
       <div class="modal-content" style="width: 360px">
         <div class="modal-header">
           <h2 class="modal-title">
-            <i
-              class="fas fa-key"
-              style="color: #f59e0b; margin-right: 0.5rem"
-            ></i
-            >Change PIN
+            <i class="fas fa-key" style="color: #f59e0b; margin-right: 0.5rem"></i>
+            Change Password
           </h2>
-          <button class="close-btn" onclick="closeModal('changePinModal')">
-            &times;
-          </button>
+          <button class="close-btn" onclick="closeModal('changePinModal')">&times;</button>
         </div>
         <div class="modal-body" style="padding: 1.25rem 1.5rem">
           <div class="form-group">
-            <label class="form-label">Current PIN</label>
-            <input
-              type="password"
-              class="form-input"
-              id="cpOld"
-              maxlength="6"
-              inputmode="numeric"
-              placeholder="Current PIN"
-            />
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-input" id="cpOld" placeholder="Current password" />
           </div>
           <div class="form-group">
-            <label class="form-label">New PIN (4–6 digits)</label>
-            <input
-              type="password"
-              class="form-input"
-              id="cpNew"
-              maxlength="6"
-              inputmode="numeric"
-              placeholder="New PIN"
-            />
+            <label class="form-label">New Password <span style="color:#64748b;font-weight:400">(min 8 characters)</span></label>
+            <input type="password" class="form-input" id="cpNew" placeholder="New password" />
           </div>
           <div class="form-group">
-            <label class="form-label">Confirm New PIN</label>
-            <input
-              type="password"
-              class="form-input"
-              id="cpNew2"
-              maxlength="6"
-              inputmode="numeric"
-              placeholder="Repeat new PIN"
-            />
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-input" id="cpNew2" placeholder="Repeat new password" />
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            onclick="closeModal('changePinModal')"
-          >
-            Cancel
-          </button>
-          <button class="btn btn-primary" onclick="changePin()">
-            Update PIN
-          </button>
+          <button class="btn btn-secondary" onclick="closeModal('changePinModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="changePin()">Update Password</button>
         </div>
       </div>
     </div>
 
     <!-- ═══════════════ CARD OPTIONS MENU ═══════════════ -->
     <div id="syncModal" class="modal">
-      <div class="modal-content" style="width: 560px">
+      <div class="modal-content" style="width: 500px">
         <div class="modal-header">
           <h2 class="modal-title">
-            <i
-              class="fas fa-cloud"
-              style="color: #60a5fa; margin-right: 0.5rem"
-            ></i
-            >Encrypted Cloud Sync
+            <i class="fas fa-cloud" style="color: #60a5fa; margin-right: 0.5rem"></i>
+            Cloud Sync
           </h2>
-          <button class="close-btn" onclick="closeModal('syncModal')">
-            &times;
-          </button>
+          <button class="close-btn" onclick="closeModal('syncModal')">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="padding:1.5rem">
           <div class="sync-status-card">
             <div class="sync-status-top">
-              <span class="sync-status-badge" id="syncStatusBadge"
-                >Not connected</span
-              >
-              <span class="sync-status-meta" id="syncStatusMeta"
-                >Local-only vault</span
-              >
+              <span class="sync-status-badge" id="syncStatusBadge">Not connected</span>
+              <span class="sync-status-meta" id="syncStatusMeta">Local-only vault</span>
             </div>
             <div class="sync-status-text" id="syncStatusText">
-              Set up Supabase live sync to keep your phone and laptop on the
-              same encrypted vault.
+              Log in to activate automatic encrypted sync.
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Supabase Project URL</label>
-            <input
-              type="text"
-              class="form-input"
-              id="syncSupabaseUrl"
-              placeholder="https://your-project.supabase.co"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Supabase Publishable / Anon Key</label>
-            <textarea
-              class="form-input"
-              id="syncSupabaseKey"
-              rows="3"
-              placeholder="Paste your Supabase anon key"
-              style="resize: vertical; min-height: 76px"
-            ></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Sync Email</label>
-              <input
-                type="email"
-                class="form-input"
-                id="syncEmail"
-                placeholder="you@example.com"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Sync Passphrase</label>
-              <input
-                type="password"
-                class="form-input"
-                id="syncPassphrase"
-                placeholder="Used to encrypt cloud data"
-              />
+
+          <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:10px;padding:1rem;margin-top:1rem">
+            <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.5rem"><i class="fas fa-info-circle"></i> How sync works</div>
+            <div style="font-size:.78rem;color:#94a3b8;line-height:1.7">
+              Every time you add or edit a transaction, your encrypted vault is pushed to the cloud automatically.<br>
+              Any device you're logged into will receive the update in real-time.
             </div>
           </div>
-          <div class="sync-helper">
-            Your local PIN stays on-device. The sync passphrase derives a
-            separate encryption key for the cloud vault.
+
+          <div style="margin-top:1.25rem">
+            <div style="font-size:.8rem;font-weight:700;color:#e2e8f0;margin-bottom:.75rem">Manual Backup</div>
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="exportBLFile()" style="font-size:.82rem">
+                <i class="fas fa-download"></i> Export .bl File
+              </button>
+              <button class="btn btn-secondary" onclick="importBLFileClick()" style="font-size:.82rem">
+                <i class="fas fa-upload"></i> Import .bl File
+              </button>
+              <button class="btn btn-secondary" onclick="exportQRCode()" style="font-size:.82rem">
+                <i class="fas fa-qrcode"></i> QR Code
+              </button>
+            </div>
+            <input type="file" id="blFileInput" accept=".bl,.json" style="display:none" onchange="handleBLFileImport(this)" />
           </div>
-          <details class="sync-setup-details">
-            <summary>Supabase table setup</summary>
-            <pre class="sync-sql">
-create table if not exists public.encrypted_vaults (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  ciphertext text not null,
-  vault_version bigint not null default 0,
-  schema_version integer not null default 1,
-  updated_at timestamptz not null default timezone('utc', now()),
-  updated_by text
-);
-
-alter table public.encrypted_vaults enable row level security;
-
-create policy "Users can read own vault"
-on public.encrypted_vaults
-for select
-to authenticated
-using (auth.uid() = user_id);
-
-create policy "Users can insert own vault"
-on public.encrypted_vaults
-for insert
-to authenticated
-with check (auth.uid() = user_id);
-
-create policy "Users can update own vault"
-on public.encrypted_vaults
-for update
-to authenticated
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
-
-alter publication supabase_realtime add table public.encrypted_vaults;</pre
-            >
-          </details>
         </div>
         <div class="modal-footer sync-footer">
-          <button class="btn btn-secondary" onclick="sendSyncMagicLink()">
-            Send Magic Link
-          </button>
-          <button class="btn btn-secondary" onclick="finishSyncLink()">
-            Finish Link
-          </button>
           <button class="btn btn-secondary" onclick="syncNow()">
-            Sync Now
+            <i class="fas fa-sync-alt"></i> Sync Now
           </button>
-          <button class="btn btn-danger" onclick="disconnectSync()">
-            Disconnect
+          <button class="btn btn-danger" onclick="doSignOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
           </button>
         </div>
       </div>
@@ -2301,38 +2198,35 @@ alter publication supabase_realtime add table public.encrypted_vaults;</pre
           "
         >
           <p style="color: #10b981; font-weight: 700; margin-bottom: 0.5rem">
-            Last updated: March 2026
+            Last updated: April 2026
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
             1. What we collect
           </p>
           <p>
-            BlueLedger collects nothing. This is a fully offline, client-side
-            application. No data is transmitted to any server, API, or third
-            party — ever.
+            BlueLedger stores your financial data locally on your device, encrypted with your password.
+            If you use cloud sync, an encrypted blob is stored on our Supabase server — we cannot read it without your password.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
             2. Where your data lives
           </p>
           <p>
-            All your financial data is stored exclusively in your browser's
-            <code
-              style="
-                background: rgba(255, 255, 255, 0.08);
-                padding: 0.1rem 0.3rem;
-                border-radius: 3px;
-              "
-              >localStorage</code
-            >
-            on your own device. It is AES-256 encrypted using your PIN as the
-            key. Nobody — including the developer — can read your data without
-            your PIN.
+            All transaction data is AES-256 encrypted on your device using your password as the key before
+            it is ever sent anywhere. The server stores only unreadable ciphertext.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
-            3. Card numbers
+            3. Authentication
+          </p>
+          <p>
+            Your email is used to create an account via Supabase Auth. We do not sell or share your email.
+            Your password is never sent to any server — only a derived encryption key is used locally.
+          </p>
+
+          <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
+            4. Card numbers
           </p>
           <p>
             BlueLedger never asks for or stores your full card number. Only the
@@ -2340,32 +2234,31 @@ alter publication supabase_realtime add table public.encrypted_vaults;</pre
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
-            4. Third-party services
+            5. Third-party services
           </p>
           <p>
-            BlueLedger loads Font Awesome icons and CryptoJS from
-            <strong>cdnjs.cloudflare.com</strong> for display and encryption. No
-            user data is shared with these services.
+            BlueLedger uses <strong>Supabase</strong> for authentication and encrypted vault storage,
+            and loads Font Awesome icons and CryptoJS from cdnjs.cloudflare.com.
+            No financial transaction data is shared with these services in readable form.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
-            5. Cookies & tracking
+            6. Cookies &amp; tracking
           </p>
-          <p>Zero cookies. Zero analytics. Zero tracking pixels. Zero ads.</p>
+          <p>Zero analytics. Zero tracking pixels. Zero ads.</p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
-            6. Data deletion
+            7. Data deletion
           </p>
           <p>
-            Use Settings → Reset App to permanently delete all your data from
-            your device. Clearing your browser's site data also removes
-            everything.
+            Use Settings → Reset App to permanently delete all your local data.
+            To delete your cloud account and data, contact us or use the Supabase auth deletion flow.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
-            7. Contact
+            8. Contact
           </p>
-          <p>Questions? You can open an issue on the GitHub repository.</p>
+          <p>Questions? Open an issue on the GitHub repository.</p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" onclick="closeModal('privacyModal')">
@@ -2375,6 +2268,6 @@ alter publication supabase_realtime add table public.encrypted_vaults;</pre
       </div>
     </div>
 
-    <script src="script.js" defer></script>
+    <script src="script (3).js" defer></script>
   </body>
 </html>
