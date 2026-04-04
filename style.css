@@ -14,7 +14,7 @@ body {
     -apple-system,
     "Segoe UI",
     sans-serif;
-  background: linear-gradient(to right, #0f172a, #1e293b);
+  background: linear-gradient(135deg, #0d1117 0%, #111318 50%, #131920 100%);
   color: #e2e8f0;
   line-height: 1.5;
 }
@@ -25,11 +25,19 @@ body::before {
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    circle 280px at var(--x, 50%) var(--y, 50%),
-    rgba(255, 255, 255, 0.05),
-    transparent 40%
+    circle 300px at var(--x, 50%) var(--y, 50%),
+    rgba(16, 185, 129, 0.07),
+    transparent 45%
   );
   z-index: -1;
+}
+
+[data-theme="light"] body::before {
+  background: radial-gradient(
+    circle 300px at var(--x, 50%) var(--y, 50%),
+    rgba(59, 130, 246, 0.09),
+    transparent 45%
+  );
 }
 
 .main-content,
@@ -43,7 +51,7 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .header {
-  background: #0f172a;
+  background: #111318;
   padding: 0 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
@@ -78,7 +86,7 @@ body::before {
 }
 .period-btn {
   background: white;
-  color: #0f172a;
+  color: #111318;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 0.45rem 1rem;
@@ -108,7 +116,7 @@ body::before {
 .period-menu-item {
   padding: 0.6rem 1.1rem;
   font-size: 0.875rem;
-  color: #1e293b;
+  color: #1c2230;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -125,7 +133,7 @@ body::before {
 /* Header controls */
 .date-pill {
   background: white;
-  color: #0f172a;
+  color: #111318;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 0.45rem 1rem;
@@ -562,7 +570,7 @@ body::before {
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  background: #0f172a;
+  background: #111318;
   color: #e2e8f0;
   padding: 0.35rem 0.6rem;
   border-radius: 6px;
@@ -811,10 +819,34 @@ body::before {
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 420px;
   -webkit-overflow-scrolling: touch;
+  /* Subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.3) transparent;
+}
+.table-wrapper::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.35);
+  border-radius: 99px;
 }
 .txn-mobile-list {
   display: none;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.3) transparent;
+}
+.txn-mobile-list::-webkit-scrollbar {
+  width: 4px;
+}
+.txn-mobile-list::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.35);
+  border-radius: 99px;
 }
 .txn-list-footer {
   display: flex;
@@ -859,6 +891,10 @@ body::before {
   font-weight: 600;
   color: #94a3b8;
   border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  position: sticky;
+  top: 0;
+  background: #111318;
+  z-index: 1;
 }
 .transaction-table td {
   padding: 0.7rem 1rem;
@@ -1107,7 +1143,7 @@ body::before {
 }
 .fab-income {
   background: #10b981;
-  color: #0f172a;
+  color: #111318;
 }
 .fab-expense {
   background: #ef4444;
@@ -1133,7 +1169,7 @@ body::before {
   animation: fadeIn 0.25s ease;
 }
 .modal-content {
-  background: #0f172a;
+  background: #111318;
   border-radius: 14px;
   width: 480px;
   max-width: 92vw;
@@ -1334,7 +1370,7 @@ body::before {
   cursor: pointer;
 }
 .form-select option {
-  background: #1e293b;
+  background: #1c2230;
   color: #e2e8f0;
 }
 
@@ -1397,7 +1433,7 @@ body::before {
 
 #onboardingModal .modal-content {
   width: 500px;
-  background: linear-gradient(145deg, #0f172a, #1a2d4a);
+  background: linear-gradient(145deg, #111318, #1a2d4a);
   max-height: 92vh;
   display: flex;
   flex-direction: column;
@@ -2082,7 +2118,7 @@ body::before {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: #1e293b;
+  background: #1c2230;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
@@ -2217,7 +2253,7 @@ body::before {
   color: #334155;
 }
 .chart-period-btn.active {
-  background: #0f172a;
+  background: #111318;
   color: #10b981;
   border-color: #10b981;
 }
@@ -2251,8 +2287,8 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 :root {
-  --bg: #0f172a;
-  --bg2: #1e293b;
+  --bg: #111318;
+  --bg2: #1c2230;
   --card-bg: #ffffff;
   --card-color: #1f2937;
   --text: #e2e8f0;
@@ -2265,14 +2301,14 @@ body::before {
   --bg2: #e2e8f0;
   --card-bg: #ffffff;
   --card-color: #1f2937;
-  --text: #0f172a;
+  --text: #111318;
   --text-muted: #64748b;
   --border: rgba(0, 0, 0, 0.08);
 }
 
 [data-theme="light"] body {
   background: linear-gradient(to right, #e2e8f0, #f1f5f9);
-  color: #0f172a;
+  color: #111318;
 }
 
 [data-theme="light"] .header {
@@ -2289,19 +2325,19 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .card-tab--active {
-  color: #0f172a;
+  color: #111318;
   background: rgba(59, 130, 246, 0.08);
 }
 [data-theme="light"] .card-tab:hover {
   background: rgba(0, 0, 0, 0.04);
-  color: #0f172a;
+  color: #111318;
 }
 
 [data-theme="light"] .lock-screen {
   background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 [data-theme="light"] .lock-title {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .lock-subtitle {
   color: #64748b;
@@ -2310,7 +2346,7 @@ body::before {
   font-size: 1rem !important; /* prevents iOS zoom */
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.1);
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .pin-key:hover {
   background: rgba(0, 0, 0, 0.1);
@@ -2328,7 +2364,7 @@ body::before {
   border-top-color: #e2e8f0;
 }
 [data-theme="light"] .modal-title {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .modal-body {
   color: #475569;
@@ -2353,24 +2389,24 @@ body::before {
   border-color: #e2e8f0;
 }
 [data-theme="light"] .sync-setup-details summary {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .sync-sql {
   background: #e2e8f0;
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .form-input,
 [data-theme="light"] .form-select {
   background: #f8fafc;
   border-color: #cbd5e1;
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .form-input[type="date"] {
   color-scheme: light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
 }
 [data-theme="light"] .form-input[type="date"]::-webkit-datetime-edit {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .form-label {
   color: #059669;
@@ -2431,7 +2467,7 @@ body::before {
   background: #ede9fe !important;
 }
 [data-theme="light"] .total-expenses {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .period-val-item .pv-value,
 [data-theme="light"] .category-amount {
@@ -2460,6 +2496,7 @@ body::before {
 [data-theme="light"] .transaction-table th {
   color: #6b7280;
   border-bottom-color: #e5e7eb;
+  background: #ffffff;
 }
 [data-theme="light"] .transaction-table td {
   color: #374151;
@@ -2482,7 +2519,7 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .txn-mobile-category {
-  color: #1e293b;
+  color: #1c2230;
 }
 [data-theme="light"] .txn-mobile-desc {
   color: #475569;
@@ -2504,7 +2541,7 @@ body::before {
 }
 [data-theme="light"] .chart-tooltip-box {
   background: #ffffff;
-  color: #1e293b;
+  color: #1c2230;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 [data-theme="light"] .chart-tooltip-box .ttl {
@@ -2515,7 +2552,7 @@ body::before {
 }
 [data-theme="light"] .btn-secondary {
   background: #e2e8f0;
-  color: #0f172a;
+  color: #111318;
   border-color: #cbd5e1;
 }
 [data-theme="light"] #deleteModal .modal-body p,
@@ -2531,14 +2568,14 @@ body::before {
 }
 [data-theme="light"] .summary-month-btn {
   background: #f8fafc;
-  color: #0f172a;
+  color: #111318;
   border: 1px solid #e2e8f0;
 }
 [data-theme="light"] .summary-month-btn:hover {
   background: #f1f5f9;
 }
 [data-theme="light"] .summary-month-title {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .summary-stat {
   background: #f8fafc;
@@ -2548,7 +2585,7 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .summary-value {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .summary-value.positive {
   color: #059669;
@@ -2557,7 +2594,7 @@ body::before {
   color: #dc2626;
 }
 [data-theme="light"] .summary-detail {
-  color: #0f172a !important;
+  color: #111318 !important;
 }
 [data-theme="light"] .summary-cat-bar-bg {
   background: #e2e8f0;
@@ -2566,7 +2603,7 @@ body::before {
   border-bottom-color: #e2e8f0;
 }
 [data-theme="light"] .summary-year-month {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .sf-option label {
   color: #374151;
@@ -2614,7 +2651,7 @@ body::before {
 }
 [data-theme="light"] .theme-btn:hover {
   background: rgba(0, 0, 0, 0.1);
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .lock-btn {
   background: rgba(0, 0, 0, 0.06);
@@ -2780,7 +2817,7 @@ body::before {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #1e293b;
+  background: #1c2230;
   border-radius: 20px 20px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.75rem 1rem 2rem;
@@ -3038,7 +3075,7 @@ body::before {
   color: #cbd5e1;
 }
 [data-theme="light"] .mp-cell.mp-has-data {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .mp-cell.mp-selected {
   background: rgba(124, 58, 237, 0.1);
@@ -3051,7 +3088,7 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .mp-year {
-  color: #0f172a;
+  color: #111318;
 }
 
 /* Prevent iOS auto-zoom on all inputs */
@@ -3314,7 +3351,7 @@ body::before {
   color: #3b82f6;
 }
 [data-theme="light"] .header-brand {
-  color: #0f172a;
+  color: #111318;
 }
 
 /* Hide old logo image on mobile (keep icon+name only) */
@@ -3334,7 +3371,7 @@ body::before {
   left: 0;
   right: 0;
   height: 78px;
-  background: #0f172a;
+  background: #111318;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
   display: flex;
   align-items: center;
@@ -3469,7 +3506,7 @@ body::before {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #1e293b;
+  background: #1c2230;
   border-radius: 22px 22px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.6rem 1.25rem calc(80px + env(safe-area-inset-bottom));
@@ -3668,7 +3705,7 @@ body::before {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #1e293b;
+  background: #1c2230;
   border-radius: 22px 22px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.6rem 0 calc(80px + env(safe-area-inset-bottom));
@@ -3732,7 +3769,7 @@ body::before {
 }
 [data-theme="light"] .bn-sheet-account span,
 [data-theme="light"] .bn-account-name {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-sheet-alt-row,
 [data-theme="light"] .bn-account-sub {
@@ -3744,26 +3781,26 @@ body::before {
 [data-theme="light"] .bn-account-option {
   background: #f8fafc;
   border-color: #e2e8f0;
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .modal-account-card {
   background: #f8fafc;
   border-color: #e2e8f0;
 }
 [data-theme="light"] .modal-account-name {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .modal-account-sub {
   color: #64748b;
 }
 [data-theme="light"] .bn-sheet-label {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-sheet-title {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-settings-row {
-  color: #0f172a;
+  color: #111318;
 }
 
 /* Push content above bottom nav */
@@ -3809,19 +3846,19 @@ body::before {
 
 /* Light mode fixes for report sheet */
 [data-theme="light"] .bn-sheet-title {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-sheet-cancel {
   color: #2563eb;
 }
 [data-theme="light"] .bn-sheet-label {
-  color: #0f172a !important;
+  color: #111318 !important;
 }
 [data-theme="light"] .bn-sheet-sub {
   color: #64748b !important;
 }
 [data-theme="light"] .bn-sheet-btn {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-sheet-btn > .fas {
   color: #94a3b8;
@@ -3833,7 +3870,7 @@ body::before {
   color: #94a3b8;
 }
 [data-theme="light"] .bn-settings-row {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-settings-row i {
   color: #64748b;
@@ -3843,7 +3880,7 @@ body::before {
 .splash-screen {
   position: fixed;
   inset: 0;
-  background: #0f172a;
+  background: #111318;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3905,7 +3942,7 @@ body::before {
   background: rgba(0, 0, 0, 0.12);
 }
 [data-theme="light"] .bn-sheet-title {
-  color: #0f172a !important;
+  color: #111318 !important;
 }
 [data-theme="light"] .bn-sheet-cancel {
   color: #2563eb;
@@ -3918,7 +3955,7 @@ body::before {
   background: #f1f5f9;
 }
 [data-theme="light"] .bn-sheet-label {
-  color: #0f172a !important;
+  color: #111318 !important;
 }
 [data-theme="light"] .bn-sheet-sub {
   color: #64748b !important;
@@ -3935,7 +3972,7 @@ body::before {
   color: #94a3b8;
 }
 [data-theme="light"] .bn-settings-row {
-  color: #0f172a;
+  color: #111318;
 }
 [data-theme="light"] .bn-settings-row i {
   color: #64748b;
@@ -3950,7 +3987,7 @@ body::before {
   background: #f1f5f9;
 }
 [data-theme="light"] .splash-title {
-  color: #0f172a;
+  color: #111318;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3964,7 +4001,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+  background: linear-gradient(135deg, #111318 0%, #1c2230 60%, #111318 100%);
   padding: 1rem;
   overflow-y: auto;
 }
@@ -4086,12 +4123,8 @@ body::before {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.auth-divider::before {
-  left: 0;
-}
-.auth-divider::after {
-  right: 0;
-}
+.auth-divider::before { left: 0; }
+.auth-divider::after  { right: 0; }
 
 /* ── Biometric Button ── */
 
@@ -4143,7 +4176,7 @@ body::before {
 }
 
 [data-theme="light"] .auth-brand {
-  color: #0f172a;
+  color: #111318;
 }
 
 [data-theme="light"] .auth-tabs {
