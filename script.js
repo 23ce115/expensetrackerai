@@ -309,6 +309,7 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
   const badge = document.getElementById("syncStatusBadge");
   const body = document.getElementById("syncStatusText");
   const meta = document.getElementById("syncStatusMeta");
+  const indicator = document.getElementById("syncLiveIndicator");
   if (badge) {
     badge.textContent = badgeText;
     badge.className = "sync-status-badge";
@@ -322,6 +323,16 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
       (syncConfig?.lastSyncedAt
         ? `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`
         : "Local-only vault");
+  // Show/hide header live dot
+  if (indicator) {
+    indicator.style.display = kind === "ok" ? "flex" : "none";
+    const synced = indicator.querySelector("span:last-child");
+    if (synced && syncConfig?.lastSyncedAt) {
+      const d = new Date(syncConfig.lastSyncedAt);
+      const mins = Math.round((Date.now() - d) / 60000);
+      synced.textContent = mins < 1 ? "Synced just now" : mins < 60 ? `Synced ${mins}m ago` : "Synced";
+    }
+  }
 }
 
 function openSyncModal() {
@@ -403,7 +414,7 @@ async function fetchRemoteVault() {
   const client = getBLClient();
   const { data, error } = await client
     .from(SYNC_TABLE)
-    .select("ciphertext,vault_version,updated_at,updated_by")
+    .select("ciphertext,updated_at,updated_by")
     .eq("user_id", syncConfig.userId)
     .maybeSingle();
   if (error) throw error;
@@ -413,20 +424,12 @@ async function fetchRemoteVault() {
 async function upsertRemoteVault(payload) {
   const client = getBLClient();
   const ciphertext = encrypt(payload, syncConfig.syncKeyHex);
-  const { data: existing } = await client
-    .from(SYNC_TABLE)
-    .select("vault_version")
-    .eq("user_id", syncConfig.userId)
-    .maybeSingle();
-  const nextVersion = (existing?.vault_version || 0) + 1;
   const { error } = await client.from(SYNC_TABLE).upsert({
     user_id: syncConfig.userId,
     ciphertext,
-    vault_version: nextVersion,
-    schema_version: VAULT_SCHEMA_VERSION,
     updated_by: syncConfig.deviceId || getDeviceId(),
     updated_at: new Date().toISOString(),
-  });
+  }, { onConflict: "user_id" });
   if (error) throw error;
   syncConfig.lastSyncedHash = hashVaultPayload(payload);
   syncConfig.lastSyncedAt = new Date().toISOString();
@@ -611,15 +614,15 @@ function showAuthScreen(tab = "login") {
   document.getElementById("lockScreen").style.display = "none";
   switchAuthTab(tab);
 
-  // Biometric only works reliably on mobile browsers with stored credentials
+  // Biometric only on mobile AND only after credentials have been saved once
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const hasStoredCreds = "credentials" in navigator && window.PasswordCredential;
+  const hasStoredCreds = localStorage.getItem("bl_has_stored_creds") === "1";
+  const canBio = isMobile && hasStoredCreds && "credentials" in navigator && window.PasswordCredential;
   const bioBtn = document.getElementById("authBiometricBtn");
   const bioDivider = document.getElementById("authBiometricDivider");
   if (bioBtn && bioDivider) {
-    const showBio = isMobile && hasStoredCreds;
-    bioBtn.style.display = showBio ? "flex" : "none";
-    bioDivider.style.display = showBio ? "block" : "none";
+    bioBtn.style.display = canBio ? "flex" : "none";
+    bioDivider.style.display = canBio ? "block" : "none";
   }
 }
 
@@ -790,6 +793,7 @@ async function doSignIn() {
       if ("credentials" in navigator && window.PasswordCredential) {
         const cred = new PasswordCredential({ id: email, password });
         await navigator.credentials.store(cred);
+        localStorage.setItem("bl_has_stored_creds", "1");
       }
     } catch {}
   } catch (e) {
@@ -1041,6 +1045,7 @@ async function registerBiometricNow() {
     if (email && password && window.PasswordCredential) {
       const cred = new PasswordCredential({ id: email, password });
       await navigator.credentials.store(cred);
+      localStorage.setItem("bl_has_stored_creds", "1");
       notify("Biometric login enabled", "success");
     }
   } catch {}
@@ -1077,42 +1082,133 @@ async function unlockWithLockPassword() {
     return;
   }
 
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const vault = tryDecrypt(raw, password);
-  if (!vault || (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)) {
-    document.getElementById("lockPasswordInput").value = "";
-    const dots = document.getElementById("pinDots");
-    dots?.classList.add("shake");
-    setTimeout(() => dots?.classList.remove("shake"), 700);
+  const btn = document.getElementById("lockUnlockBtn");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…'; }
 
-    pinAttempts++;
-    const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
-    const errEl = document.getElementById("lockError");
+  const errEl = document.getElementById("lockError");
+  errEl.textContent = "";
 
-    if (pinAttempts >= MAX_PIN_ATTEMPTS) {
-      pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const vault = raw ? tryDecrypt(raw, password) : null;
+
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+      // Local vault decrypted successfully
       pinAttempts = 0;
-      errEl.textContent = "Too many attempts — locked for 30s";
-      const countdown = setInterval(() => {
-        const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
-        if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
-        else errEl.textContent = `Locked — try again in ${s}s`;
-      }, 500);
-    } else if (pinAttempts >= 2) {
-      // After 2 failures show escape hatch
-      errEl.innerHTML = `Wrong password (${remaining} left). 
-        <a href="#" onclick="doSignOut();return false" 
-           style="color:#f87171;text-decoration:underline">Sign out &amp; start fresh</a>`;
-    } else {
-      errEl.textContent = `Wrong password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
-      setTimeout(() => { errEl.textContent = ""; }, 2500);
+      pinLockedUntil = 0;
+      await _lockScreenSuccess(password, vault);
+      return;
     }
-    return;
-  }
 
-  pinAttempts = 0;
-  pinLockedUntil = 0;
-  await _lockScreenSuccess(password, vault);
+    // Local decrypt failed — try cloud with active session
+    errEl.textContent = "Checking cloud…";
+    const client = getBLClient();
+    const { data: sessionData } = await client.auth.getSession();
+
+    if (sessionData?.session) {
+      const userId = sessionData.session.user.id;
+      // Re-authenticate to confirm password is correct
+      const userEmail = sessionData.session.user.email;
+      const { error: signInErr } = await client.auth.signInWithPassword({
+        email: userEmail,
+        password,
+      });
+
+      if (signInErr) {
+        // Wrong password
+        errEl.textContent = "";
+        _lockFailure(errEl);
+        return;
+      }
+
+      // Password correct — fetch cloud vault
+      const syncKeyHex = await deriveSyncKeyHex(password, userId);
+      const { data: remote } = await client
+        .from(SYNC_TABLE)
+        .select("ciphertext,updated_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (remote?.ciphertext) {
+        const remotePayload = tryDecrypt(remote.ciphertext, syncKeyHex);
+        if (remotePayload) {
+          // Cloud vault decrypted — bootstrap local vault
+          sessionPin = password;
+          localStorage.setItem(AUTH_MODE_KEY, "password");
+          syncConfig = {
+            ...defaultSyncConfig(),
+            enabled: true,
+            userId,
+            syncKeyHex,
+            deviceId: getDeviceId(),
+            status: "ok",
+          };
+          applyVaultPayload(remotePayload);
+          saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
+          pinAttempts = 0;
+          hideLockScreen();
+          await _afterUnlock(password, userId);
+          notify("Synced from cloud", "success");
+          return;
+        }
+      }
+
+      // Correct password but no cloud vault yet — fresh start
+      sessionPin = password;
+      localStorage.setItem(AUTH_MODE_KEY, "password");
+      const displayName = sessionData.session.user.user_metadata?.name || "";
+      syncConfig = {
+        ...defaultSyncConfig(),
+        enabled: true,
+        userId,
+        syncKeyHex,
+        deviceId: getDeviceId(),
+        status: "ok",
+      };
+      _pendingCardSetup = { name: displayName, email: userEmail, password, userId };
+      hideLockScreen();
+      _openCardSetupModal();
+      return;
+    }
+
+    // No session — wrong password
+    errEl.textContent = "";
+    _lockFailure(errEl);
+
+  } catch (e) {
+    console.warn("Unlock error", e);
+    errEl.textContent = "Something went wrong. Try again.";
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-unlock-alt"></i> Unlock'; }
+  }
+}
+
+function _lockFailure(errEl) {
+  document.getElementById("lockPasswordInput").value = "";
+  const dots = document.getElementById("pinDots");
+  dots?.classList.add("shake");
+  setTimeout(() => dots?.classList.remove("shake"), 700);
+
+  pinAttempts++;
+  const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
+
+  if (pinAttempts >= MAX_PIN_ATTEMPTS) {
+    pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
+    pinAttempts = 0;
+    errEl.textContent = "Too many attempts — locked for 30s";
+    const countdown = setInterval(() => {
+      const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
+      if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
+      else errEl.textContent = `Locked — try again in ${s}s`;
+    }, 500);
+  } else if (pinAttempts >= 2) {
+    errEl.innerHTML = `Wrong password (${remaining} left). 
+      <a href="#" onclick="doSignOut();return false" 
+         style="color:#f87171;text-decoration:underline">Sign out &amp; start fresh</a>`;
+  } else {
+    errEl.textContent = `Wrong password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
+    setTimeout(() => { errEl.textContent = ""; }, 2500);
+  }
 }
 
 async function _lockScreenSuccess(password, vault) {
@@ -1322,10 +1418,13 @@ function showLockScreen(subtitle) {
     if (pwdInput) { pwdInput.value = ""; setTimeout(() => pwdInput.focus(), 300); }
     // Show biometric button if available
     const bioBtn = document.getElementById("lockBiometricBtn");
+    const bioDivider = document.getElementById("lockBiometricDivider");
     if (bioBtn) {
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const canBio = isMobile && "credentials" in navigator && window.PasswordCredential;
+      const hasStoredCreds = localStorage.getItem("bl_has_stored_creds") === "1";
+      const canBio = isMobile && hasStoredCreds && "credentials" in navigator && window.PasswordCredential;
       bioBtn.style.display = canBio ? "flex" : "none";
+      if (bioDivider) bioDivider.style.display = canBio ? "block" : "none";
       if (canBio) setTimeout(tryLockScreenBiometric, 600);
     }
     document.getElementById("lockSubtitle").textContent =
