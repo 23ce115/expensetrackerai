@@ -4391,18 +4391,32 @@ if ("serviceWorker" in navigator) {
     if (hasVault && authMode === "pin") {
       // Legacy PIN vault — prompt migration
       document.getElementById("migrationModal").style.display = "flex";
-    } else if (hasVault && hasSession) {
-      // Has local vault + active session — show lock screen (normal returning user)
+
+    } else if (hasVault && authMode === "password" && hasSession) {
+      // Correct returning user with active session — show password lock screen
       showLockScreen();
+
     } else if (hasVault && authMode === "password" && !hasSession) {
-      // Has vault but session expired — show login
+      // Vault exists but session expired — show login
       showAuthScreen("login");
+
     } else if (hasVault && !authMode) {
-      // Unknown legacy state — try lock screen, escape available if fails
-      showLockScreen();
+      // Old data from before new auth system (no authMode set)
+      // Clear stale localStorage and show fresh auth screen
+      const keysToKeep = ["bl_sync_device_v1", "bl_has_stored_creds"];
+      const saved = {};
+      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      localStorage.clear();
+      keysToKeep.forEach(k => { if (saved[k]) localStorage.setItem(k, saved[k]); });
+      if (hasSession) {
+        showAuthScreen("login");
+      } else {
+        showAuthScreen("signup");
+      }
+
     } else if (!hasVault) {
-      // Fresh install or signed out — show signup
-      showAuthScreen("signup");
+      showAuthScreen(hasSession ? "login" : "signup");
+
     } else {
       showAuthScreen("login");
     }
@@ -4422,7 +4436,8 @@ if ("serviceWorker" in navigator) {
 
   } catch (e) {
     console.warn("initApp error", e);
-    if (hasStoredData()) showLockScreen();
+    const am = localStorage.getItem(AUTH_MODE_KEY);
+    if (hasStoredData() && am === "password") showLockScreen();
     else showAuthScreen("signup");
   }
 })();
