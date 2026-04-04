@@ -3920,6 +3920,27 @@ function toggleTheme() {
   syncThemeUi(newTheme);
 }
 
+function setGlassOpacity(val) {
+  const v = parseInt(val);
+  // Map 0-100 to opacity 0.02-0.18, blur 8-36px
+  const opacity = (v / 100) * 0.16 + 0.02;
+  const blur = (v / 100) * 28 + 8;
+  const border = (v / 100) * 0.18 + 0.04;
+  const shadow = (v / 100) * 0.35 + 0.25;
+  document.documentElement.style.setProperty("--glass-opacity", opacity.toFixed(3));
+  document.documentElement.style.setProperty("--glass-blur", blur.toFixed(0) + "px");
+  document.documentElement.style.setProperty("--glass-border", border.toFixed(3));
+  document.documentElement.style.setProperty("--glass-shadow", shadow.toFixed(2));
+  localStorage.setItem("bl_glass_opacity", val);
+  const slider = document.getElementById("glassSlider");
+  if (slider && slider.value !== String(val)) slider.value = val;
+}
+
+function loadGlassOpacity() {
+  const saved = localStorage.getItem("bl_glass_opacity") || "50";
+  setGlassOpacity(parseInt(saved));
+}
+
 function loadTheme() {
   const saved = localStorage.getItem("bl_theme") || "dark";
   document.documentElement.setAttribute("data-theme", saved);
@@ -3929,6 +3950,12 @@ function loadTheme() {
 function toggleSettingsMenu() {
   const menu = document.getElementById("settingsMenu");
   menu.classList.toggle("open");
+  // Sync glass slider with current saved value
+  if (menu.classList.contains("open")) {
+    const saved = localStorage.getItem("bl_glass_opacity") || "50";
+    const slider = document.getElementById("glassSlider");
+    if (slider) slider.value = saved;
+  }
 }
 
 function closeSettingsMenu() {
@@ -4305,6 +4332,7 @@ document.getElementById("headerDate").textContent =
     year: "numeric",
   });
 loadTheme();
+loadGlassOpacity();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
@@ -4388,6 +4416,18 @@ if ("serviceWorker" in navigator) {
     const { data: sessionData } = await client.auth.getSession();
     const hasSession = !!sessionData?.session;
 
+    // One-time migration: clear any old PIN-only vault that has no authMode set
+    // This runs once and sets a flag so it never repeats
+    if (hasVault && !authMode && !localStorage.getItem("bl_v2_migrated")) {
+      const keysToKeep = ["bl_sync_device_v1", "bl_has_stored_creds", "bl_glass_opacity", "bl_theme"];
+      const saved = {};
+      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      localStorage.clear();
+      keysToKeep.forEach(k => { if (saved[k]) localStorage.setItem(k, saved[k]); });
+      localStorage.setItem("bl_v2_migrated", "1");
+      showAuthScreen(hasSession ? "login" : "signup");
+      return;
+    }
     if (hasVault && authMode === "pin") {
       // Legacy PIN vault — prompt migration
       document.getElementById("migrationModal").style.display = "flex";
