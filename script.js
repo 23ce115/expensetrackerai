@@ -20,6 +20,13 @@ const SYNC_DEVICE_KEY = "bl_sync_device_v1";
 const SYNC_TABLE = "encrypted_vaults";
 const SYNC_POLL_MS = 30 * 1000;
 
+/* ── BlueLedger hosted Supabase (hardcoded) ── */
+const BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
+const BL_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
+const AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
+const VERIFY_TOKEN_V2 = "BL_OK_v2";
+
 function encrypt(data, pin) {
   return CryptoJS.AES.encrypt(JSON.stringify(data), pin).toString();
 }
@@ -126,8 +133,8 @@ const TXN_PREVIEW_LIMITS = {
 function defaultSyncConfig() {
   return {
     enabled: false,
-    url: "",
-    anonKey: "",
+    url: BL_SUPABASE_URL,
+    anonKey: BL_SUPABASE_ANON_KEY,
     email: "",
     userId: "",
     syncKeyHex: "",
@@ -256,14 +263,7 @@ function clearPendingSyncSetup() {
   localStorage.removeItem(SYNC_PENDING_KEY);
 }
 
-function currentSyncFormValues() {
-  return {
-    url: document.getElementById("syncSupabaseUrl")?.value.trim() || "",
-    anonKey: document.getElementById("syncSupabaseKey")?.value.trim() || "",
-    email: document.getElementById("syncEmail")?.value.trim() || "",
-    passphrase: document.getElementById("syncPassphrase")?.value || "",
-  };
-}
+/* currentSyncFormValues removed — hardcoded BL Supabase is used */
 
 async function deriveSyncKeyHex(passphrase, userId) {
   const words = CryptoJS.PBKDF2(passphrase, userId, {
@@ -325,67 +325,39 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
 }
 
 function openSyncModal() {
+  populateSyncModal();
   openModal("syncModal");
 }
 
 function populateSyncModal() {
-  const pending = getPendingSyncSetup();
-  const cfg = syncConfig?.enabled ? syncConfig : pending || {};
-  const setVal = (id, value) => {
-    const el = document.getElementById(id);
-    if (el) el.value = value || "";
-  };
-  setVal("syncSupabaseUrl", cfg.url);
-  setVal("syncSupabaseKey", cfg.anonKey);
-  setVal("syncEmail", cfg.email);
-  const pass = document.getElementById("syncPassphrase");
-  if (pass) pass.value = "";
-
-  if (!syncConfig?.enabled) {
+  if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
     updateSyncStatus(
-      "local",
-      "Not connected",
-      pending
-        ? "Magic link sent. After opening the email link, enter the same sync passphrase here and click Finish Link."
-        : "Set up Supabase live sync to keep your phone and laptop on the same encrypted vault.",
-      pending ? `Pending link for ${pending.email}` : "Local-only vault",
+      "ok", "Connected", "Encrypted cloud sync is active.",
+      `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`,
     );
+  } else if (syncConfig?.enabled) {
+    updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.", "");
   } else {
-    if (syncConfig.status === "warn") {
-      updateSyncStatus(
-        "warn",
-        "Reconnect needed",
-        "This vault is configured for cloud sync, but the current session needs attention.",
-      );
-    } else {
-      updateSyncStatus(
-        "ok",
-        "Connected",
-        "Automatic encrypted sync is active for this vault.",
-      );
-    }
+    updateSyncStatus("local", "Not connected", "Log in to activate cloud sync.", "Local-only vault");
   }
 }
 
-function ensureSupabaseClient(url, anonKey) {
-  if (!window.supabase?.createClient) {
-    throw new Error("Supabase client library not loaded");
+function getBLClient() {
+  if (!supabaseClient) {
+    if (!window.supabase?.createClient)
+      throw new Error("Supabase client library not loaded");
+    supabaseClient = window.supabase.createClient(
+      BL_SUPABASE_URL,
+      BL_SUPABASE_ANON_KEY,
+      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+    );
   }
-  if (
-    supabaseClient &&
-    syncConfig?.url === url &&
-    syncConfig?.anonKey === anonKey
-  ) {
-    return supabaseClient;
-  }
-  supabaseClient = window.supabase.createClient(url, anonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-    },
-  });
   return supabaseClient;
+}
+
+function ensureSupabaseClient(url, anonKey) {
+  // Always return the hardcoded BL client regardless of params
+  return getBLClient();
 }
 
 async function getSyncUser(url, anonKey) {
@@ -406,102 +378,11 @@ function stopCloudSync() {
   syncChannel = null;
 }
 
-async function sendSyncMagicLink() {
-  try {
-    const { url, anonKey, email } = currentSyncFormValues();
-    if (!url || !anonKey || !email) {
-      notify("Enter your Supabase URL, anon key, and email", "error");
-      return;
-    }
-    setPendingSyncSetup({ url, anonKey, email });
-    const client = ensureSupabaseClient(url, anonKey);
-    const { error } = await client.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.href.split("#")[0],
-      },
-    });
-    if (error) throw error;
-    updateSyncStatus(
-      "warn",
-      "Magic link sent",
-      "Open the email link on this device, then come back here, enter your sync passphrase, and click Finish Link.",
-      `Pending link for ${email}`,
-    );
-    notify("Magic link sent", "success");
-  } catch (e) {
-    notify(e.message || "Unable to send magic link", "error");
-    updateSyncStatus(
-      "warn",
-      "Link failed",
-      "Could not send the Supabase magic link.",
-    );
-  }
-}
+/* sendSyncMagicLink removed — auth now handled via email+password signup */
 
-async function finishSyncLink() {
-  try {
-    const pending = getPendingSyncSetup();
-    const { url, anonKey, email, passphrase } = {
-      ...(pending || {}),
-      ...currentSyncFormValues(),
-    };
-    if (!url || !anonKey || !email) {
-      notify("Enter your Supabase URL, anon key, and email", "error");
-      return;
-    }
-    if (!passphrase) {
-      notify("Enter your sync passphrase", "error");
-      return;
-    }
-    const user = await getSyncUser(url, anonKey);
-    if (!user) {
-      notify("Open your magic link first, then finish setup", "error");
-      updateSyncStatus(
-        "warn",
-        "Waiting for login",
-        "No active Supabase session yet. Open the email link, then tap Finish Link again.",
-      );
-      return;
-    }
-    syncConfig = cleanSyncConfig({
-      ...syncConfig,
-      enabled: true,
-      url,
-      anonKey,
-      email,
-      userId: user.id,
-      syncKeyHex: await deriveSyncKeyHex(passphrase, user.id),
-      deviceId: syncConfig.deviceId || getDeviceId(),
-    });
-    clearPendingSyncSetup();
-    saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
-    await initSyncAfterUnlock({ forceSyncNow: true });
-    populateSyncModal();
-    notify("Cloud sync connected", "success");
-  } catch (e) {
-    notify(e.message || "Unable to finish sync setup", "error");
-    updateSyncStatus(
-      "warn",
-      "Setup failed",
-      "We could not finish the sync connection.",
-    );
-  }
-}
+/* finishSyncLink removed — auth now handled via email+password */
 
-async function disconnectSync() {
-  try {
-    if (supabaseClient) {
-      await supabaseClient.auth.signOut();
-    }
-  } catch {}
-  stopCloudSync();
-  clearPendingSyncSetup();
-  syncConfig = defaultSyncConfig();
-  saveToStorage({ skipCloudPush: true, skipDirtyMark: true });
-  populateSyncModal();
-  notify("Cloud sync disconnected", "info");
-}
+/* disconnectSync removed — use doSignOut() instead */
 
 function scheduleSyncPush() {
   if (!sessionPin || !syncConfig?.enabled || suppressSyncPush) return;
@@ -519,7 +400,7 @@ function scheduleSyncPush() {
 }
 
 async function fetchRemoteVault() {
-  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
+  const client = getBLClient();
   const { data, error } = await client
     .from(SYNC_TABLE)
     .select("ciphertext,vault_version,updated_at,updated_by")
@@ -530,7 +411,7 @@ async function fetchRemoteVault() {
 }
 
 async function upsertRemoteVault(payload) {
-  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
+  const client = getBLClient();
   const ciphertext = encrypt(payload, syncConfig.syncKeyHex);
   const { data: existing } = await client
     .from(SYNC_TABLE)
@@ -675,37 +556,673 @@ async function initSyncAfterUnlock(options = {}) {
     populateSyncModal();
     return;
   }
-  const client = ensureSupabaseClient(syncConfig.url, syncConfig.anonKey);
-  const { data, error } = await client.auth.getUser();
-  if (error || !data.user || data.user.id !== syncConfig.userId) {
-    updateSyncStatus(
-      "warn",
-      "Reconnect needed",
-      "Your cloud session expired. Open Cloud Sync and finish the link again.",
-    );
+  try {
+    const client = getBLClient();
+    const { data } = await client.auth.getSession();
+    if (!data.session) {
+      updateSyncStatus(
+        "warn",
+        "Session expired",
+        "Please lock and log in again to reconnect sync.",
+      );
+      return;
+    }
+    // Ensure userId is set from live session
+    if (!syncConfig.userId && data.session.user?.id) {
+      syncConfig.userId = data.session.user.id;
+    }
+    subscribeToCloudChanges();
+    clearInterval(syncPollTimer);
+    syncPollTimer = setInterval(() => {
+      pullRemoteVault("poll").catch((e) => console.warn("Sync poll failed", e));
+    }, SYNC_POLL_MS);
+    if (options.forceSyncNow) {
+      await pullRemoteVault("manual");
+    } else {
+      updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.");
+    }
+    if (!syncFocusHandlerBound) {
+      syncFocusHandlerBound = true;
+      window.addEventListener(
+        "focus",
+        () => {
+          if (sessionPin && syncConfig?.enabled)
+            pullRemoteVault("focus").catch(() => {});
+        },
+        { passive: true },
+      );
+    }
+  } catch (e) {
+    console.warn("initSyncAfterUnlock error", e);
+    updateSyncStatus("warn", "Sync error", "Cloud sync encountered an issue.");
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+let _pendingCardSetup = null;   // { name, email, password, userId }
+let _migrationVault = null;     // decrypted old PIN vault awaiting re-encryption
+
+function showAuthScreen(tab = "login") {
+  document.getElementById("authScreen").style.display = "flex";
+  document.getElementById("onboardingModal").style.display = "none";
+  document.getElementById("lockScreen").style.display = "none";
+  switchAuthTab(tab);
+  // Show biometric button if credentials API available
+  const bioBtn = document.getElementById("authBiometricBtn");
+  const bioDivider = document.getElementById("authBiometricDivider");
+  if (bioBtn && bioDivider) {
+    const canBio = "credentials" in navigator && window.PasswordCredential;
+    bioBtn.style.display = canBio ? "flex" : "none";
+    bioDivider.style.display = canBio ? "block" : "none";
+  }
+}
+
+function hideAuthScreen() {
+  document.getElementById("authScreen").style.display = "none";
+}
+
+function switchAuthTab(tab) {
+  document.getElementById("loginPanel").style.display =
+    tab === "login" ? "block" : "none";
+  document.getElementById("signupPanel").style.display =
+    tab === "signup" ? "block" : "none";
+  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
+  document.getElementById("loginError").textContent = "";
+  document.getElementById("signupError").textContent = "";
+}
+
+async function doSignUp() {
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const password2 = document.getElementById("signupPassword2").value;
+  const errEl = document.getElementById("signupError");
+
+  if (!name || !email || !password) {
+    errEl.textContent = "All fields are required";
     return;
   }
-  subscribeToCloudChanges();
-  clearInterval(syncPollTimer);
-  syncPollTimer = setInterval(() => {
-    pullRemoteVault("poll").catch((e) => console.warn("Sync poll failed", e));
-  }, SYNC_POLL_MS);
-  if (options.forceSyncNow) {
-    await pullRemoteVault("manual");
-  } else {
-    updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.");
+  if (password.length < 8) {
+    errEl.textContent = "Password must be at least 8 characters";
+    return;
   }
-  if (!syncFocusHandlerBound) {
-    syncFocusHandlerBound = true;
-    window.addEventListener(
-      "focus",
-      () => {
-        if (sessionPin && syncConfig?.enabled)
-          pullRemoteVault("focus").catch(() => {});
+  if (password !== password2) {
+    errEl.textContent = "Passwords do not match";
+    return;
+  }
+
+  const btn = document.getElementById("signupBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account…';
+  errEl.textContent = "";
+
+  try {
+    const client = getBLClient();
+    const { data, error } = await client.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: "https://expensetrackerai-six.vercel.app/",
       },
-      { passive: true },
-    );
+    });
+    if (error) throw error;
+
+    if (data.user && !data.session) {
+      // Store pending credentials so we can sign in after confirmation
+      localStorage.setItem("bl_pending_signup", JSON.stringify({ email, name }));
+      // Email confirmation required
+      document.getElementById("authScreen").innerHTML = `
+        <div class="auth-card">
+          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
+          <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
+          <div style="text-align:center;padding:2rem 1.5rem">
+            <i class="fas fa-envelope-open-text" style="font-size:2.5rem;color:#3b82f6;margin-bottom:1rem;display:block"></i>
+            <p style="font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:.6rem">Check your email</p>
+            <p style="color:#94a3b8;font-size:.88rem;line-height:1.6">
+              We sent a confirmation link to <strong style="color:#e2e8f0">${email}</strong>.<br>
+              Open it on <strong style="color:#e2e8f0">this device</strong>, then come back and log in.
+            </p>
+            <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.75rem">
+              <button class="btn btn-primary" style="justify-content:center" onclick="switchToLoginAfterConfirm('${email}')">
+                <i class="fas fa-sign-in-alt"></i> Go to Login
+              </button>
+              <button class="btn btn-secondary" onclick="switchToLoginAfterConfirm('${email}')">
+                I've confirmed — let me log in
+              </button>
+            </div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    if (data.session) {
+      const userId = data.user.id;
+      _pendingCardSetup = { name, email, password, userId };
+
+      if (_migrationVault) {
+        // Migration path — re-encrypt old vault with new password
+        await _applyMigrationVault(password, userId);
+      } else {
+        hideAuthScreen();
+        _openCardSetupModal();
+      }
+    }
+  } catch (e) {
+    errEl.textContent = e.message || "Signup failed. Try again.";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
   }
+}
+
+async function switchToLoginAfterConfirm(email) {
+  // Rebuild the auth screen and switch to login tab with email pre-filled
+  location.reload();
+}
+
+// On page load — if we have a pending signup email, pre-fill login
+window.addEventListener("DOMContentLoaded", () => {
+  try {
+    const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
+    if (pending?.email) {
+      setTimeout(() => {
+        const loginEmail = document.getElementById("loginEmail");
+        if (loginEmail) {
+          loginEmail.value = pending.email;
+          switchAuthTab("login");
+          localStorage.removeItem("bl_pending_signup");
+        }
+      }, 500);
+    }
+  } catch {}
+});
+
+async function doSignIn() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+
+  if (!email || !password) {
+    errEl.textContent = "Enter your email and password";
+    return;
+  }
+
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in…';
+  errEl.textContent = "";
+
+  try {
+    const client = getBLClient();
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    await _unlockWithPassword(password, data.user.id, data.user.user_metadata?.name || "");
+
+    // Save credentials for biometric re-use
+    try {
+      if ("credentials" in navigator && window.PasswordCredential) {
+        const cred = new PasswordCredential({ id: email, password });
+        await navigator.credentials.store(cred);
+      }
+    } catch {}
+  } catch (e) {
+    errEl.textContent = e.message || "Sign in failed. Check your details.";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log In';
+  }
+}
+
+async function tryBiometricLogin() {
+  try {
+    if (!("credentials" in navigator) || !window.PasswordCredential)
+      throw new Error("Not supported");
+    const cred = await navigator.credentials.get({
+      password: true,
+      mediation: "required",
+    });
+    if (!cred) return;
+    document.getElementById("loginEmail").value = cred.id;
+    document.getElementById("loginPassword").value = cred.password;
+    await doSignIn();
+  } catch {
+    // Biometric dismissed/failed — password form is visible
+    notify("Use your password to sign in", "info");
+  }
+}
+
+async function _unlockWithPassword(password, userId, displayName) {
+  sessionPin = password;
+  localStorage.setItem(AUTH_MODE_KEY, "password");
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    const vault = tryDecrypt(raw, password);
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+      cards = vault.cards || [];
+      activeCardIdx = vault.activeCardIdx || 0;
+      syncConfig = cleanSyncConfig(vault.syncConfig);
+      if (activeCardIdx >= cards.length) activeCardIdx = 0;
+      if (cards.length > 0) loadActiveCard();
+      hideAuthScreen();
+      hideLockScreen();
+      _afterUnlock(password, userId);
+      return;
+    }
+  }
+
+  // No valid local vault — try fetching from cloud
+  const syncKeyHex = await deriveSyncKeyHex(password, userId);
+  syncConfig = {
+    ...defaultSyncConfig(),
+    enabled: true,
+    userId,
+    syncKeyHex,
+    deviceId: getDeviceId(),
+    status: "ok",
+  };
+
+  try {
+    const client = getBLClient();
+    const { data: remote } = await client
+      .from(SYNC_TABLE)
+      .select("ciphertext,updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (remote?.ciphertext) {
+      const remotePayload = tryDecrypt(remote.ciphertext, syncKeyHex);
+      if (remotePayload) {
+        applyVaultPayload(remotePayload);
+        hideAuthScreen();
+        hideLockScreen();
+        _afterUnlock(password, userId);
+        notify("Vault loaded from cloud sync", "success");
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn("Cloud fetch on login failed", e);
+  }
+
+  // Brand new user — show card setup
+  _pendingCardSetup = { name: displayName, email: "", password, userId };
+  hideAuthScreen();
+  _openCardSetupModal();
+}
+
+async function _afterUnlock(password, userId) {
+  if (!syncConfig.syncKeyHex) {
+    syncConfig.syncKeyHex = await deriveSyncKeyHex(password, userId);
+  }
+  syncConfig.enabled = true;
+  syncConfig.url = BL_SUPABASE_URL;
+  syncConfig.anonKey = BL_SUPABASE_ANON_KEY;
+  syncConfig.userId = syncConfig.userId || userId;
+  syncConfig.deviceId = syncConfig.deviceId || getDeviceId();
+
+  resetAutoLock();
+  renderCardSwitcher();
+  if (userData) {
+    updateMyCardWidget();
+    processRecurring();
+  }
+  populateCategorySelects();
+  updateAddAccountUI();
+  refreshAll();
+  populateSyncModal();
+  initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
+}
+
+/* ── Card Setup (after signup / fresh login) ── */
+
+function _openCardSetupModal() {
+  const cs = document.getElementById("cardSetupModal");
+  if (!cs) return;
+  cs.style.display = "flex";
+}
+
+async function completeCardSetup() {
+  const { name, password, userId } = _pendingCardSetup || {};
+  const nickname = document.getElementById("cs-nickname").value.trim();
+  const bank = document.getElementById("cs-bank").value.trim();
+  const card4 = document.getElementById("cs-card4").value.trim();
+  const cardType = document.getElementById("cs-cardtype").value;
+  const limit = parseFloat(document.getElementById("cs-limit").value) || 0;
+
+  if (!card4 || !/^\d{4}$/.test(card4)) {
+    notify("Enter the last 4 digits of your card (numbers only)", "error");
+    return;
+  }
+
+  const newCardData = {
+    userData: {
+      name: name || userData?.name || "",
+      nickname: nickname || bank || "My Card",
+      bank: bank || "",
+      cardNumber: card4,
+      cardType: cardType || "Debit",
+      limit,
+    },
+    transactions: [],
+    customCategories: [],
+    categoryBudgets: {},
+    recurringTemplates: [],
+  };
+
+  if (addingNewCard) {
+    // Adding an additional card to existing account
+    syncActiveToCards();
+    cards.push(newCardData);
+    activeCardIdx = cards.length - 1;
+    loadActiveCard();
+    addingNewCard = false;
+    document.getElementById("cardSetupModal").style.display = "none";
+    // Reset modal title back
+    document.getElementById("cardSetupModal").querySelector(".modal-title").innerHTML =
+      '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Set Up Your First Card';
+    saveToStorage();
+    renderCardSwitcher();
+    updateMyCardWidget();
+    populateCategorySelects();
+    updateAddAccountUI();
+    refreshAll();
+    notify("Card added successfully", "success");
+    return;
+  }
+
+  // First-time card setup after signup
+  sessionPin = password;
+  localStorage.setItem(AUTH_MODE_KEY, "password");
+
+  userData = newCardData.userData;
+  cards = [newCardData];
+  activeCardIdx = 0;
+  loadActiveCard();
+
+  const syncKeyHex = await deriveSyncKeyHex(password, userId);
+  syncConfig = {
+    ...defaultSyncConfig(),
+    enabled: true,
+    userId,
+    syncKeyHex,
+    deviceId: getDeviceId(),
+    status: "ok",
+  };
+
+  saveToStorage({ skipCloudPush: false });
+  document.getElementById("cardSetupModal").style.display = "none";
+
+  renderCardSwitcher();
+  updateMyCardWidget();
+  populateCategorySelects();
+  updateAddAccountUI();
+  refreshAll();
+  initSyncAfterUnlock({ forceSyncNow: true }).catch(() => {});
+
+  notify(`Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`, "success");
+
+  setTimeout(() => {
+    if ("credentials" in navigator && window.PasswordCredential) {
+      document.getElementById("biometricSetupModal").style.display = "flex";
+    }
+  }, 800);
+}
+
+async function registerBiometricNow() {
+  try {
+    const { email, password } = _pendingCardSetup || {};
+    if (email && password && window.PasswordCredential) {
+      const cred = new PasswordCredential({ id: email, password });
+      await navigator.credentials.store(cred);
+      notify("Biometric login enabled", "success");
+    }
+  } catch {}
+  document.getElementById("biometricSetupModal").style.display = "none";
+}
+
+/* ── Lock screen — password mode ── */
+
+async function tryLockScreenBiometric() {
+  try {
+    if (!("credentials" in navigator) || !window.PasswordCredential) return;
+    const cred = await navigator.credentials.get({ password: true, mediation: "required" });
+    if (!cred) return;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const vault = tryDecrypt(raw, cred.password);
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+      await _lockScreenSuccess(cred.password, vault);
+    } else {
+      notify("Biometric credential mismatch. Use your password.", "error");
+    }
+  } catch {
+    // Dismissed — leave password form visible
+  }
+}
+
+async function unlockWithLockPassword() {
+  const password = document.getElementById("lockPasswordInput").value;
+  if (!password) return;
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const vault = tryDecrypt(raw, password);
+  if (!vault || (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)) {
+    const errEl = document.getElementById("lockError");
+    document.getElementById("lockPasswordInput").value = "";
+    // shake
+    const dots = document.getElementById("pinDots");
+    dots?.classList.add("shake");
+    setTimeout(() => dots?.classList.remove("shake"), 700);
+    pinAttempts++;
+    const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
+    if (pinAttempts >= MAX_PIN_ATTEMPTS) {
+      pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
+      pinAttempts = 0;
+      errEl.textContent = "Too many attempts — locked for 30s";
+      const countdown = setInterval(() => {
+        const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
+        if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
+        else errEl.textContent = `Locked — try again in ${s}s`;
+      }, 500);
+    } else {
+      errEl.textContent = `Incorrect password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
+      setTimeout(() => { errEl.textContent = ""; }, 2000);
+    }
+    return;
+  }
+
+  pinAttempts = 0;
+  await _lockScreenSuccess(password, vault);
+}
+
+async function _lockScreenSuccess(password, vault) {
+  sessionPin = password;
+  cards = vault.cards || [];
+  activeCardIdx = vault.activeCardIdx || 0;
+  syncConfig = cleanSyncConfig(vault.syncConfig);
+  syncConfig.deviceId = syncConfig.deviceId || getDeviceId();
+  if (activeCardIdx >= cards.length) activeCardIdx = 0;
+  if (cards.length > 0) loadActiveCard();
+
+  // Get userId from live session
+  let userId = syncConfig.userId;
+  try {
+    const { data } = await getBLClient().auth.getSession();
+    if (data.session?.user?.id) userId = data.session.user.id;
+  } catch {}
+
+  hideLockScreen();
+  _afterUnlock(password, userId);
+}
+
+/* ── Migration: PIN → Password ── */
+
+async function startMigration() {
+  const pin = document.getElementById("migrationPin").value.trim();
+  const errEl = document.getElementById("migrationError");
+  if (!pin) { errEl.textContent = "Enter your current PIN"; return; }
+
+  const now = Date.now();
+  if (now < pinLockedUntil) {
+    errEl.textContent = `Too many attempts. Wait ${Math.ceil((pinLockedUntil - now) / 1000)}s`;
+    return;
+  }
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const vault = tryDecrypt(raw, pin);
+  if (!vault || vault.verify !== VERIFY_TOKEN) {
+    pinAttempts++;
+    if (pinAttempts >= MAX_PIN_ATTEMPTS) {
+      pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
+      pinAttempts = 0;
+    }
+    errEl.textContent = "Incorrect PIN";
+    return;
+  }
+
+  pinAttempts = 0;
+  _migrationVault = vault;
+  document.getElementById("migrationModal").style.display = "none";
+
+  // Pre-fill signup name from old vault
+  const existingName = vault.cards?.[0]?.userData?.name || "";
+  showAuthScreen("signup");
+  document.getElementById("signupName").value = existingName;
+  notify("PIN verified — create your account to continue", "info");
+}
+
+async function _applyMigrationVault(password, userId) {
+  const vault = _migrationVault;
+  _migrationVault = null;
+
+  sessionPin = password;
+  localStorage.setItem(AUTH_MODE_KEY, "password");
+
+  cards = vault.cards || [];
+  activeCardIdx = vault.activeCardIdx || 0;
+  if (cards.length > 0) loadActiveCard();
+
+  const syncKeyHex = await deriveSyncKeyHex(password, userId);
+  syncConfig = {
+    ...defaultSyncConfig(),
+    enabled: true,
+    userId,
+    syncKeyHex,
+    deviceId: getDeviceId(),
+    status: "ok",
+  };
+
+  saveToStorage({ skipCloudPush: false });
+  hideAuthScreen();
+
+  renderCardSwitcher();
+  if (userData) { updateMyCardWidget(); processRecurring(); }
+  populateCategorySelects();
+  updateAddAccountUI();
+  refreshAll();
+  initSyncAfterUnlock({ forceSyncNow: true }).catch(() => {});
+  notify("Account upgraded successfully!", "success");
+}
+
+/* ── Sign out ── */
+async function doSignOut() {
+  try {
+    stopCloudSync();
+    saveToStorage();
+    sessionPin = null;
+    cards = [];
+    activeCardIdx = 0;
+    userData = null;
+    transactions = [];
+    customCategories = [];
+    categoryBudgets = {};
+    recurringTemplates = [];
+    syncConfig = defaultSyncConfig();
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(AUTH_MODE_KEY);
+    const client = getBLClient();
+    await client.auth.signOut();
+    location.reload();
+  } catch (e) {
+    console.warn("Sign out error", e);
+    location.reload();
+  }
+}
+
+/* ── Backup: .bl file export/import + QR ── */
+
+function exportBLFile() {
+  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  const payload = getVaultPayload();
+  const encrypted = encrypt(payload, sessionPin);
+  const blob = new Blob(
+    [JSON.stringify({ bl: 1, data: encrypted })],
+    { type: "application/json" }
+  );
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `blueledger-backup-${new Date().toISOString().slice(0, 10)}.bl`;
+  a.click();
+  notify("Backup file downloaded", "success");
+}
+
+function importBLFileClick() {
+  document.getElementById("blFileInput").click();
+}
+
+async function handleBLFileImport(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    if (!obj.bl || !obj.data) throw new Error("Not a valid BlueLedger backup file");
+    const password = prompt("Enter the password used when this backup was created:");
+    if (!password) return;
+    const payload = tryDecrypt(obj.data, password);
+    if (!payload) { notify("Wrong password — cannot decrypt backup", "error"); return; }
+    if (!confirm("This will replace your current data. Continue?")) return;
+    applyVaultPayload(payload);
+    saveToStorage();
+    renderCardSwitcher();
+    if (userData) { updateMyCardWidget(); processRecurring(); }
+    populateCategorySelects();
+    updateAddAccountUI();
+    refreshAll();
+    notify("Backup restored successfully", "success");
+  } catch (e) {
+    notify(e.message || "Import failed", "error");
+  }
+  input.value = "";
+}
+
+async function exportQRCode() {
+  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  const payload = getVaultPayload();
+  const encrypted = encrypt(payload, sessionPin);
+  const jsonStr = JSON.stringify({ bl: 1, data: encrypted });
+
+  if (jsonStr.length > 2500) {
+    notify("Vault is too large for a QR code. Use the .bl backup file instead.", "warn");
+    return;
+  }
+
+  // Use QRServer API for QR generation
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(jsonStr)}`;
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <html><head><title>BlueLedger QR Backup</title></head>
+    <body style="background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;color:#e2e8f0;font-family:system-ui">
+      <p style="margin-bottom:1rem;font-size:.9rem;color:#94a3b8">Scan this QR code on your other device to restore your vault</p>
+      <img src="${qrUrl}" style="border-radius:12px;background:white;padding:12px" />
+      <p style="margin-top:1rem;font-size:.8rem;color:#64748b">You'll need your password to decrypt the vault after scanning</p>
+    </body></html>`);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -715,16 +1232,45 @@ async function initSyncAfterUnlock(options = {}) {
 function showLockScreen(subtitle) {
   const fab = document.querySelector(".add-buttons");
   if (fab) fab.style.display = "none";
-  pinBuffer = "";
-  updatePinDots();
-  document.getElementById("lockScreen").style.display = "flex";
-  document.getElementById("lockError").textContent = "";
-  if (subtitle) document.getElementById("lockSubtitle").textContent = subtitle;
-  else
+
+  const authMode = localStorage.getItem(AUTH_MODE_KEY);
+  const ls = document.getElementById("lockScreen");
+  ls.style.display = "flex";
+
+  if (authMode === "password") {
+    ls.classList.add("lock-screen--password");
+    // Hide PIN pad, show password form
+    const pinArea = document.getElementById("pinArea");
+    const pwdArea = document.getElementById("passwordArea");
+    if (pinArea) pinArea.style.display = "none";
+    if (pwdArea) pwdArea.style.display = "block";
+    const pwdInput = document.getElementById("lockPasswordInput");
+    if (pwdInput) { pwdInput.value = ""; setTimeout(() => pwdInput.focus(), 300); }
+    // Show biometric button if available
+    const bioBtn = document.getElementById("lockBiometricBtn");
+    if (bioBtn) {
+      const canBio = "credentials" in navigator && window.PasswordCredential;
+      bioBtn.style.display = canBio ? "flex" : "none";
+      if (canBio) setTimeout(tryLockScreenBiometric, 600);
+    }
     document.getElementById("lockSubtitle").textContent =
-      "Enter your PIN to continue";
-  document.getElementById("onboardingModal").style.display = "none";
+      subtitle || "Enter your password to continue";
+  } else {
+    ls.classList.remove("lock-screen--password");
+    pinBuffer = "";
+    updatePinDots();
+    const pinArea = document.getElementById("pinArea");
+    const pwdArea = document.getElementById("passwordArea");
+    if (pinArea) pinArea.style.display = "block";
+    if (pwdArea) pwdArea.style.display = "none";
+    document.getElementById("lockSubtitle").textContent =
+      subtitle || "Enter your PIN to continue";
+  }
+
+  document.getElementById("lockError").textContent = "";
+  document.getElementById("lockAttempts").textContent = "";
 }
+
 
 function hideLockScreen() {
   document.getElementById("lockScreen").style.display = "none";
@@ -886,7 +1432,6 @@ function lockApp() {
   sessionPin = null;
   pinBuffer = "";
   clearTimeout(autoLockTimer);
-  // Wipe all sensitive data from memory
   cards = [];
   activeCardIdx = 0;
   userData = null;
@@ -906,29 +1451,59 @@ function lockApp() {
 function openChangePinModal() {
   openModal("changePinModal");
 }
-function changePin() {
+async function changePin() {
   const oldPin = document.getElementById("cpOld").value.trim();
   const newPin = document.getElementById("cpNew").value.trim();
   const newPin2 = document.getElementById("cpNew2").value.trim();
+
+  const authMode = localStorage.getItem(AUTH_MODE_KEY);
+
   if (oldPin !== sessionPin) {
-    notify("Current PIN is incorrect", "error");
+    notify("Current password is incorrect", "error");
     return;
   }
-  if (!/^\d{4,6}$/.test(newPin)) {
-    notify("PIN must be 4–6 digits", "error");
-    return;
+
+  if (authMode === "password") {
+    if (newPin.length < 8) {
+      notify("New password must be at least 8 characters", "error");
+      return;
+    }
+  } else {
+    if (!/^\d{4,6}$/.test(newPin)) {
+      notify("PIN must be 4–6 digits", "error");
+      return;
+    }
   }
+
   if (newPin !== newPin2) {
-    notify("New PINs don't match", "error");
+    notify("New passwords don't match", "error");
     return;
   }
+
+  const oldPass = sessionPin;
   sessionPin = newPin;
+
+  // If password mode, update Supabase password + re-derive sync key
+  if (authMode === "password" && syncConfig?.userId) {
+    try {
+      const client = getBLClient();
+      const { error } = await client.auth.updateUser({ password: newPin });
+      if (error) throw error;
+      // Re-derive sync key with new password
+      syncConfig.syncKeyHex = await deriveSyncKeyHex(newPin, syncConfig.userId);
+    } catch (e) {
+      sessionPin = oldPass;
+      notify(e.message || "Password update failed", "error");
+      return;
+    }
+  }
+
   saveToStorage();
   closeModal("changePinModal");
   ["cpOld", "cpNew", "cpNew2"].forEach(
     (id) => (document.getElementById(id).value = ""),
   );
-  notify("PIN updated", "success");
+  notify(authMode === "password" ? "Password updated" : "PIN updated", "success");
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -992,39 +1567,22 @@ function addNewCard() {
     notify("Maximum 4 cards supported", "error");
     return;
   }
-
-  // No card set up yet — must complete first card setup before adding more
   if (cards.length === 0 || !userData) {
-    notify("Please complete your profile setup first!", "error");
-    setTimeout(() => {
-      const modal = document.getElementById("onboardingModal");
-      modal.querySelector(".ob-sub").textContent =
-        "Your personal finance dashboard — let's get you set up";
-      modal.querySelector(".btn-onboard").textContent = "Get Started";
-      const pinSection = modal.querySelector(".pin-section");
-      if (pinSection) pinSection.style.display = "";
-      addingNewCard = false;
-      ["ob-name", "ob-card", "ob-limit", "ob-pin", "ob-pin2"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = "";
-      });
-      openModal("onboardingModal");
-    }, 800);
+    notify("Complete your profile setup first", "error");
     return;
   }
-
+  // Reuse card setup modal for adding additional cards
   addingNewCard = true;
-  ["ob-name", "ob-card", "ob-limit", "ob-pin", "ob-pin2"].forEach((id) => {
+  ["cs-nickname", "cs-bank", "cs-card4", "cs-limit"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  const modal = document.getElementById("onboardingModal");
-  modal.querySelector(".ob-sub").textContent =
-    "Add a new card wallet to track separately";
-  modal.querySelector(".btn-onboard").textContent = "Add Card";
-  const pinSection = modal.querySelector(".pin-section");
-  if (pinSection) pinSection.style.display = "none";
-  openModal("onboardingModal");
+  const modal = document.getElementById("cardSetupModal");
+  if (modal) {
+    modal.querySelector(".modal-title").innerHTML =
+      '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Add New Card';
+    modal.style.display = "flex";
+  }
 }
 
 let deleteCardTargetIdx = null;
@@ -3032,18 +3590,9 @@ function closeModal(id) {
   document.getElementById(id).style.display = "none";
   document.body.style.overflow = "auto";
   syncFabVisibility();
-  if (id === "onboardingModal" && addingNewCard) {
+  // If closing card setup while adding a new card, reset the flag
+  if (id === "cardSetupModal" && addingNewCard) {
     addingNewCard = false;
-    const modal = document.getElementById("onboardingModal");
-    modal.querySelector(".ob-sub").textContent =
-      "Your personal finance dashboard — let's get you set up";
-    modal.querySelector(".btn-onboard").textContent = "Get Started";
-    const pinSection = modal.querySelector(".pin-section");
-    if (pinSection) pinSection.style.display = "";
-  }
-  // If no user yet, show splash screen instead of blank screen
-  if (id === "onboardingModal" && !userData) {
-    document.getElementById("splashScreen").style.display = "flex";
   }
 }
 
@@ -3101,94 +3650,14 @@ function notify(msg, type = "success") {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ONBOARDING
+   ONBOARDING — legacy stub (replaced by email auth)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function completeOnboarding() {
-  const name = document.getElementById("ob-name").value.trim();
-  const last4 = document
-    .getElementById("ob-card")
-    .value.replace(/\D/g, "")
-    .slice(-4);
-  const limit = parseFloat(document.getElementById("ob-limit").value);
-
-  if (!name) {
-    notify("Please enter your name", "error");
-    return;
-  }
-  if (last4.length !== 4) {
-    notify("Please enter the last 4 digits of your card", "error");
-    return;
-  }
-  if (!limit || limit <= 0) {
-    notify("Please enter a valid spending limit", "error");
-    return;
-  }
-
-  // PIN only required on first card setup (not when adding additional cards)
-  let pinToUse = sessionPin;
-  if (!addingNewCard) {
-    const pin = document.getElementById("ob-pin").value.trim();
-    const pin2 = document.getElementById("ob-pin2").value.trim();
-    if (!/^\d{4,6}$/.test(pin)) {
-      notify("PIN must be 4–6 digits", "error");
-      return;
-    }
-    if (pin !== pin2) {
-      notify("PINs don't match", "error");
-      return;
-    }
-    pinToUse = pin;
-  }
-
-  const nickname = document.getElementById("ob-nickname")?.value.trim() || "";
-  const cardDisplay = `•••• •••• •••• ${last4}`;
-  const newCardData = {
-    userData: { name, nickname, cardNumber: cardDisplay, spendingLimit: limit },
-    transactions: [],
-    customCategories: [],
-    categoryBudgets: {},
-    recurringTemplates: [],
-  };
-
-  if (addingNewCard) {
-    syncActiveToCards();
-    cards.push(newCardData);
-    activeCardIdx = cards.length - 1;
-  } else {
-    cards = [newCardData];
-    activeCardIdx = 0;
-  }
-
-  userData = newCardData.userData;
-  transactions = newCardData.transactions;
-  customCategories = newCardData.customCategories;
-  categoryBudgets = newCardData.categoryBudgets;
-  recurringTemplates = newCardData.recurringTemplates;
-
-  sessionPin = pinToUse;
-  addingNewCard = false;
-
-  const modal = document.getElementById("onboardingModal");
-  modal.querySelector(".ob-sub").textContent =
-    "Your personal finance dashboard — let's get you set up";
-  modal.querySelector(".btn-onboard").textContent = "Get Started";
-  const pinSection = modal.querySelector(".pin-section");
-  if (pinSection) pinSection.style.display = "";
-
+  // Old PIN onboarding replaced by email+password auth
+  // Redirect to auth screen if called
   closeModal("onboardingModal");
-  saveToStorage();
-  resetAutoLock();
-  renderCardSwitcher();
-  updateMyCardWidget();
-  populateCategorySelects();
-  updateAddAccountUI();
-  refreshAll();
-  syncFabVisibility();
-  notify(
-    "Welcome, " + name.split(" ")[0] + "! Encrypted and secured.",
-    "success",
-  );
+  showAuthScreen("signup");
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3663,20 +4132,67 @@ document.getElementById("headerDate").textContent =
   });
 loadTheme();
 
-// Register PWA service worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
-if (hasStoredData()) {
-  // Existing user — show lock screen, decrypt on PIN entry
+(async function initApp() {
+  const authMode = localStorage.getItem(AUTH_MODE_KEY);
+  const hasVault = hasStoredData();
+
+  // Hide all entry points first
   document.getElementById("onboardingModal").style.display = "none";
-  showLockScreen();
-} else {
-  // First launch — show onboarding
-  document.getElementById("onboardingModal").style.display = "block";
   document.getElementById("lockScreen").style.display = "none";
-}
+  document.getElementById("authScreen").style.display = "none";
+
+  // Handle Supabase magic-link redirect (email confirmation)
+  // Supabase auto-processes the hash when detectSessionInUrl:true
+  // We just need to check if a session exists after that processing
+  try {
+    const client = getBLClient();
+
+    // Listen for auth state (fires on magic link redirect)
+    client.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session && !sessionPin) {
+        const localVault = localStorage.getItem(STORAGE_KEY);
+        if (!localVault) {
+          // Email confirmed, fresh user — show card setup
+          document.getElementById("authScreen").style.display = "none";
+          _pendingCardSetup = {
+            name: session.user.user_metadata?.name || "",
+            email: session.user.email,
+            password: "", // will need re-entry — handled in card setup
+            userId: session.user.id,
+          };
+          _openCardSetupModal();
+        }
+      }
+    });
+
+    const { data: sessionData } = await client.auth.getSession();
+
+    if (sessionData?.session && hasVault) {
+      // Has both a Supabase session and a local vault — show lock screen
+      showLockScreen();
+    } else if (hasVault && authMode === "pin") {
+      // Old PIN vault — show migration
+      document.getElementById("migrationModal").style.display = "flex";
+    } else if (hasVault && authMode === "password") {
+      // Password vault but no active session — show auth login
+      showAuthScreen("login");
+    } else if (hasVault) {
+      // Unknown state — show lock screen (handles both modes)
+      showLockScreen();
+    } else {
+      // First launch — show auth screen signup
+      showAuthScreen("signup");
+    }
+  } catch (e) {
+    console.warn("initApp error", e);
+    if (hasVault) showLockScreen();
+    else showAuthScreen("signup");
+  }
+})();
 
 renderCardSwitcher();
 populateCategorySelects();
