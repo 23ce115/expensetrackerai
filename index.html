@@ -60,6 +60,12 @@
           <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="unlockWithLockPassword()">
             <i class="fas fa-unlock-alt"></i> Unlock
           </button>
+          <div style="text-align:center;margin-top:1rem">
+            <button onclick="doSignOut()"
+              style="background:none;border:none;color:#475569;font-size:.75rem;cursor:pointer;text-decoration:underline">
+              Sign out &amp; switch account
+            </button>
+          </div>
         </div>
 
         <!-- PIN mode (legacy / migration) -->
@@ -128,6 +134,16 @@
           <button class="btn btn-primary auth-submit" id="loginBtn" onclick="doSignIn()">
             <i class="fas fa-sign-in-alt"></i> Log In
           </button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;flex-wrap:wrap;gap:.5rem">
+            <button id="forgotPasswordBtn" onclick="forgotPassword()"
+              style="background:none;border:none;color:#64748b;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline">
+              Forgot Password?
+            </button>
+            <button onclick="resendConfirmationEmail(document.getElementById('loginEmail').value)"
+              style="background:none;border:none;color:#64748b;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline">
+              Resend confirmation email
+            </button>
+          </div>
         </div>
 
         <!-- Signup Panel -->
