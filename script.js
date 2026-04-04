@@ -332,20 +332,13 @@ function openSyncModal() {
 function populateSyncModal() {
   if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
     updateSyncStatus(
-      "ok",
-      "Connected",
-      "Encrypted cloud sync is active.",
+      "ok", "Connected", "Encrypted cloud sync is active.",
       `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`,
     );
   } else if (syncConfig?.enabled) {
     updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.", "");
   } else {
-    updateSyncStatus(
-      "local",
-      "Not connected",
-      "Log in to activate cloud sync.",
-      "Local-only vault",
-    );
+    updateSyncStatus("local", "Not connected", "Log in to activate cloud sync.", "Local-only vault");
   }
 }
 
@@ -356,13 +349,7 @@ function getBLClient() {
     supabaseClient = window.supabase.createClient(
       BL_SUPABASE_URL,
       BL_SUPABASE_ANON_KEY,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-        },
-      },
+      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
     );
   }
   return supabaseClient;
@@ -615,8 +602,8 @@ async function initSyncAfterUnlock(options = {}) {
    AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let _pendingCardSetup = null; // { name, email, password, userId }
-let _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
+let _pendingCardSetup = null;   // { name, email, password, userId }
+let _migrationVault = null;     // decrypted old PIN vault awaiting re-encryption
 
 function showAuthScreen(tab = "login") {
   document.getElementById("authScreen").style.display = "flex";
@@ -626,8 +613,7 @@ function showAuthScreen(tab = "login") {
 
   // Biometric only works reliably on mobile browsers with stored credentials
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const hasStoredCreds =
-    "credentials" in navigator && window.PasswordCredential;
+  const hasStoredCreds = "credentials" in navigator && window.PasswordCredential;
   const bioBtn = document.getElementById("authBiometricBtn");
   const bioDivider = document.getElementById("authBiometricDivider");
   if (bioBtn && bioDivider) {
@@ -646,12 +632,8 @@ function switchAuthTab(tab) {
     tab === "login" ? "block" : "none";
   document.getElementById("signupPanel").style.display =
     tab === "signup" ? "block" : "none";
-  document
-    .getElementById("tabLogin")
-    .classList.toggle("active", tab === "login");
-  document
-    .getElementById("tabSignup")
-    .classList.toggle("active", tab === "signup");
+  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
   document.getElementById("loginError").textContent = "";
   document.getElementById("signupError").textContent = "";
 }
@@ -695,10 +677,7 @@ async function doSignUp() {
 
     if (data.user && !data.session) {
       // Store pending credentials so we can sign in after confirmation
-      localStorage.setItem(
-        "bl_pending_signup",
-        JSON.stringify({ email, name }),
-      );
+      localStorage.setItem("bl_pending_signup", JSON.stringify({ email, name }));
       // Email confirmation required
       document.getElementById("authScreen").innerHTML = `
         <div class="auth-card">
@@ -729,7 +708,6 @@ async function doSignUp() {
       _pendingCardSetup = { name, email, password, userId };
 
       if (_migrationVault) {
-        // Migration path — re-encrypt old vault with new password
         await _applyMigrationVault(password, userId);
       } else {
         hideAuthScreen();
@@ -737,7 +715,17 @@ async function doSignUp() {
       }
     }
   } catch (e) {
-    errEl.textContent = e.message || "Signup failed. Try again.";
+    const msg = e.message || "";
+    if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already been registered") || msg.toLowerCase().includes("user already exists")) {
+      errEl.innerHTML = `An account with this email already exists. 
+        <a href="#" onclick="
+          document.getElementById('loginEmail').value='${email}';
+          switchAuthTab('login');
+          return false"
+          style="color:#3b82f6;text-decoration:underline">Log in instead</a>`;
+    } else {
+      errEl.textContent = msg || "Signup failed. Try again.";
+    }
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
@@ -768,19 +756,36 @@ async function doSignIn() {
 
   try {
     const client = getBLClient();
-    const { data, error } = await client.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
 
-    await _unlockWithPassword(
-      password,
-      data.user.id,
-      data.user.user_metadata?.name || "",
-    );
+    if (error) {
+      // Check if email is not confirmed
+      if (error.message?.toLowerCase().includes("email not confirmed")) {
+        errEl.innerHTML = `Your email isn't confirmed yet. 
+          <a href="#" onclick="resendConfirmationEmail('${email}');return false" 
+             style="color:#3b82f6;text-decoration:underline">Resend confirmation email</a>`;
+        return;
+      }
+      // Try to distinguish wrong email vs wrong password
+      // Attempt password reset — if user doesn't exist, Supabase returns an error
+      // We use this only for UX messaging, not security
+      const { error: resetErr } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://expensetrackerai-six.vercel.app/"
+      });
+      // Cancel: we don't actually want to send a reset email here
+      // Use the error code to detect if user exists
+      if (resetErr && (resetErr.message?.includes("User not found") || resetErr.status === 422)) {
+        errEl.textContent = "No account found with this email. Please sign up.";
+        document.getElementById("signupEmail").value = email;
+        setTimeout(() => switchAuthTab("signup"), 1500);
+      } else {
+        errEl.textContent = "Wrong password. Try again or use Forgot Password.";
+      }
+      return;
+    }
 
-    // Save credentials for biometric re-use
+    await _unlockWithPassword(password, data.user.id, data.user.user_metadata?.name || "");
+
     try {
       if ("credentials" in navigator && window.PasswordCredential) {
         const cred = new PasswordCredential({ id: email, password });
@@ -792,6 +797,45 @@ async function doSignIn() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log In';
+  }
+}
+
+async function forgotPassword() {
+  const email = document.getElementById("loginEmail").value.trim();
+  if (!email) {
+    document.getElementById("loginError").textContent = "Enter your email address first";
+    document.getElementById("loginEmail").focus();
+    return;
+  }
+  const btn = document.getElementById("forgotPasswordBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+  try {
+    const client = getBLClient();
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://expensetrackerai-six.vercel.app/",
+    });
+    if (error) throw error;
+    document.getElementById("loginError").style.color = "#10b981";
+    document.getElementById("loginError").textContent = `Password reset link sent to ${email}`;
+  } catch (e) {
+    document.getElementById("loginError").style.color = "#ef4444";
+    document.getElementById("loginError").textContent = e.message || "Could not send reset email";
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Forgot Password?"; }
+  }
+}
+
+async function resendConfirmationEmail(email) {
+  try {
+    const client = getBLClient();
+    const { error } = await client.auth.resend({
+      type: "signup",
+      email: email || document.getElementById("loginEmail").value.trim(),
+    });
+    if (error) throw error;
+    notify("Confirmation email resent — check your inbox", "success");
+  } catch (e) {
+    notify(e.message || "Could not resend email", "error");
   }
 }
 
@@ -820,10 +864,7 @@ async function _unlockWithPassword(password, userId, displayName) {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
     const vault = tryDecrypt(raw, password);
-    if (
-      vault &&
-      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
-    ) {
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
       cards = vault.cards || [];
       activeCardIdx = vault.activeCardIdx || 0;
       syncConfig = cleanSyncConfig(vault.syncConfig);
@@ -944,9 +985,7 @@ async function completeCardSetup() {
     addingNewCard = false;
     document.getElementById("cardSetupModal").style.display = "none";
     // Reset modal title back
-    document
-      .getElementById("cardSetupModal")
-      .querySelector(".modal-title").innerHTML =
+    document.getElementById("cardSetupModal").querySelector(".modal-title").innerHTML =
       '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Set Up Your First Card';
     saveToStorage();
     renderCardSwitcher();
@@ -987,10 +1026,7 @@ async function completeCardSetup() {
   refreshAll();
   initSyncAfterUnlock({ forceSyncNow: true }).catch(() => {});
 
-  notify(
-    `Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`,
-    "success",
-  );
+  notify(`Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`, "success");
 
   setTimeout(() => {
     if ("credentials" in navigator && window.PasswordCredential) {
@@ -1016,17 +1052,11 @@ async function registerBiometricNow() {
 async function tryLockScreenBiometric() {
   try {
     if (!("credentials" in navigator) || !window.PasswordCredential) return;
-    const cred = await navigator.credentials.get({
-      password: true,
-      mediation: "required",
-    });
+    const cred = await navigator.credentials.get({ password: true, mediation: "required" });
     if (!cred) return;
     const raw = localStorage.getItem(STORAGE_KEY);
     const vault = tryDecrypt(raw, cred.password);
-    if (
-      vault &&
-      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
-    ) {
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
       await _lockScreenSuccess(cred.password, vault);
     } else {
       notify("Biometric credential mismatch. Use your password.", "error");
@@ -1040,41 +1070,48 @@ async function unlockWithLockPassword() {
   const password = document.getElementById("lockPasswordInput").value;
   if (!password) return;
 
+  const now = Date.now();
+  if (now < pinLockedUntil) {
+    document.getElementById("lockError").textContent =
+      `Too many attempts. Wait ${Math.ceil((pinLockedUntil - now) / 1000)}s`;
+    return;
+  }
+
   const raw = localStorage.getItem(STORAGE_KEY);
   const vault = tryDecrypt(raw, password);
-  if (
-    !vault ||
-    (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)
-  ) {
-    const errEl = document.getElementById("lockError");
+  if (!vault || (vault.verify !== VERIFY_TOKEN && vault.verify !== VERIFY_TOKEN_V2)) {
     document.getElementById("lockPasswordInput").value = "";
-    // shake
     const dots = document.getElementById("pinDots");
     dots?.classList.add("shake");
     setTimeout(() => dots?.classList.remove("shake"), 700);
+
     pinAttempts++;
     const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
+    const errEl = document.getElementById("lockError");
+
     if (pinAttempts >= MAX_PIN_ATTEMPTS) {
       pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
       pinAttempts = 0;
       errEl.textContent = "Too many attempts — locked for 30s";
       const countdown = setInterval(() => {
         const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
-        if (s <= 0) {
-          clearInterval(countdown);
-          errEl.textContent = "";
-        } else errEl.textContent = `Locked — try again in ${s}s`;
+        if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
+        else errEl.textContent = `Locked — try again in ${s}s`;
       }, 500);
+    } else if (pinAttempts >= 2) {
+      // After 2 failures show escape hatch
+      errEl.innerHTML = `Wrong password (${remaining} left). 
+        <a href="#" onclick="doSignOut();return false" 
+           style="color:#f87171;text-decoration:underline">Sign out &amp; start fresh</a>`;
     } else {
-      errEl.textContent = `Incorrect password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
-      setTimeout(() => {
-        errEl.textContent = "";
-      }, 2000);
+      errEl.textContent = `Wrong password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
+      setTimeout(() => { errEl.textContent = ""; }, 2500);
     }
     return;
   }
 
   pinAttempts = 0;
+  pinLockedUntil = 0;
   await _lockScreenSuccess(password, vault);
 }
 
@@ -1103,10 +1140,7 @@ async function _lockScreenSuccess(password, vault) {
 async function startMigration() {
   const pin = document.getElementById("migrationPin").value.trim();
   const errEl = document.getElementById("migrationError");
-  if (!pin) {
-    errEl.textContent = "Enter your current PIN";
-    return;
-  }
+  if (!pin) { errEl.textContent = "Enter your current PIN"; return; }
 
   const now = Date.now();
   if (now < pinLockedUntil) {
@@ -1162,10 +1196,7 @@ async function _applyMigrationVault(password, userId) {
   hideAuthScreen();
 
   renderCardSwitcher();
-  if (userData) {
-    updateMyCardWidget();
-    processRecurring();
-  }
+  if (userData) { updateMyCardWidget(); processRecurring(); }
   populateCategorySelects();
   updateAddAccountUI();
   refreshAll();
@@ -1201,15 +1232,13 @@ async function doSignOut() {
 /* ── Backup: .bl file export/import + QR ── */
 
 function exportBLFile() {
-  if (!sessionPin) {
-    notify("Unlock the app first", "error");
-    return;
-  }
+  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
-  const blob = new Blob([JSON.stringify({ bl: 1, data: encrypted })], {
-    type: "application/json",
-  });
+  const blob = new Blob(
+    [JSON.stringify({ bl: 1, data: encrypted })],
+    { type: "application/json" }
+  );
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `blueledger-backup-${new Date().toISOString().slice(0, 10)}.bl`;
@@ -1227,25 +1256,16 @@ async function handleBLFileImport(input) {
   try {
     const text = await file.text();
     const obj = JSON.parse(text);
-    if (!obj.bl || !obj.data)
-      throw new Error("Not a valid BlueLedger backup file");
-    const password = prompt(
-      "Enter the password used when this backup was created:",
-    );
+    if (!obj.bl || !obj.data) throw new Error("Not a valid BlueLedger backup file");
+    const password = prompt("Enter the password used when this backup was created:");
     if (!password) return;
     const payload = tryDecrypt(obj.data, password);
-    if (!payload) {
-      notify("Wrong password — cannot decrypt backup", "error");
-      return;
-    }
+    if (!payload) { notify("Wrong password — cannot decrypt backup", "error"); return; }
     if (!confirm("This will replace your current data. Continue?")) return;
     applyVaultPayload(payload);
     saveToStorage();
     renderCardSwitcher();
-    if (userData) {
-      updateMyCardWidget();
-      processRecurring();
-    }
+    if (userData) { updateMyCardWidget(); processRecurring(); }
     populateCategorySelects();
     updateAddAccountUI();
     refreshAll();
@@ -1257,19 +1277,13 @@ async function handleBLFileImport(input) {
 }
 
 async function exportQRCode() {
-  if (!sessionPin) {
-    notify("Unlock the app first", "error");
-    return;
-  }
+  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
   const jsonStr = JSON.stringify({ bl: 1, data: encrypted });
 
   if (jsonStr.length > 2500) {
-    notify(
-      "Vault is too large for a QR code. Use the .bl backup file instead.",
-      "warn",
-    );
+    notify("Vault is too large for a QR code. Use the .bl backup file instead.", "warn");
     return;
   }
 
@@ -1305,16 +1319,12 @@ function showLockScreen(subtitle) {
     if (pinArea) pinArea.style.display = "none";
     if (pwdArea) pwdArea.style.display = "block";
     const pwdInput = document.getElementById("lockPasswordInput");
-    if (pwdInput) {
-      pwdInput.value = "";
-      setTimeout(() => pwdInput.focus(), 300);
-    }
+    if (pwdInput) { pwdInput.value = ""; setTimeout(() => pwdInput.focus(), 300); }
     // Show biometric button if available
     const bioBtn = document.getElementById("lockBiometricBtn");
     if (bioBtn) {
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const canBio =
-        isMobile && "credentials" in navigator && window.PasswordCredential;
+      const canBio = isMobile && "credentials" in navigator && window.PasswordCredential;
       bioBtn.style.display = canBio ? "flex" : "none";
       if (canBio) setTimeout(tryLockScreenBiometric, 600);
     }
@@ -1335,6 +1345,7 @@ function showLockScreen(subtitle) {
   document.getElementById("lockError").textContent = "";
   document.getElementById("lockAttempts").textContent = "";
 }
+
 
 function hideLockScreen() {
   document.getElementById("lockScreen").style.display = "none";
@@ -1567,10 +1578,7 @@ async function changePin() {
   ["cpOld", "cpNew", "cpNew2"].forEach(
     (id) => (document.getElementById(id).value = ""),
   );
-  notify(
-    authMode === "password" ? "Password updated" : "PIN updated",
-    "success",
-  );
+  notify(authMode === "password" ? "Password updated" : "PIN updated", "success");
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4214,26 +4222,49 @@ if ("serviceWorker" in navigator) {
   try {
     const client = getBLClient();
 
-    // Detect if this is a Supabase email confirmation redirect
-    // Supabase puts #access_token or #type=signup in the URL hash
+    // Detect Supabase email confirmation / password reset redirect
     const hash = window.location.hash;
-    const isConfirmationRedirect =
-      hash.includes("access_token") ||
-      hash.includes("type=signup") ||
-      hash.includes("type=recovery");
+    const isAuthRedirect = hash.includes("access_token") || hash.includes("type=signup") || hash.includes("type=recovery");
 
-    if (isConfirmationRedirect) {
-      // Let Supabase process the hash (detectSessionInUrl:true does this)
-      // Wait briefly for it to settle
+    if (isAuthRedirect) {
       await new Promise((r) => setTimeout(r, 800));
       const { data: fresh } = await client.auth.getSession();
-
-      // Clean the URL hash so it doesn't persist
       history.replaceState(null, "", window.location.pathname);
 
       if (fresh?.session) {
         const userEmail = fresh.session.user?.email || "";
-        // Show confirmed success screen
+        const isRecovery = hash.includes("type=recovery");
+
+        if (isRecovery) {
+          // Password reset — show reset password UI
+          document.getElementById("authScreen").style.display = "flex";
+          document.getElementById("authScreen").innerHTML = `
+            <div class="auth-card">
+              <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
+              <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
+              <div style="padding:1.5rem">
+                <p style="font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:1rem;text-align:center">
+                  <i class="fas fa-key" style="color:#f59e0b;margin-right:.4rem"></i>Set New Password
+                </p>
+                <div class="form-group">
+                  <label class="form-label">New Password <span style="color:#64748b;font-weight:400">(min 8 characters)</span></label>
+                  <input type="password" class="form-input" id="resetNewPassword" placeholder="New password" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-input" id="resetNewPassword2" placeholder="Repeat password"
+                    onkeydown="if(event.key==='Enter') doPasswordReset()" />
+                </div>
+                <div class="auth-error" id="resetError"></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doPasswordReset()">
+                  <i class="fas fa-check"></i> Set New Password
+                </button>
+              </div>
+            </div>`;
+          return;
+        }
+
+        // Email confirmed
         document.getElementById("authScreen").style.display = "flex";
         document.getElementById("authScreen").innerHTML = `
           <div class="auth-card">
@@ -4256,33 +4287,40 @@ if ("serviceWorker" in navigator) {
     }
 
     const { data: sessionData } = await client.auth.getSession();
+    const hasSession = !!sessionData?.session;
 
-    if (sessionData?.session && hasVault) {
-      showLockScreen();
-    } else if (hasVault && authMode === "pin") {
+    if (hasVault && authMode === "pin") {
+      // Legacy PIN vault — prompt migration
       document.getElementById("migrationModal").style.display = "flex";
-    } else if (hasVault && authMode === "password") {
-      showAuthScreen("login");
-    } else if (hasVault) {
+    } else if (hasVault && hasSession) {
+      // Has local vault + active session — show lock screen (normal returning user)
       showLockScreen();
-    } else {
+    } else if (hasVault && authMode === "password" && !hasSession) {
+      // Has vault but session expired — show login
+      showAuthScreen("login");
+    } else if (hasVault && !authMode) {
+      // Unknown legacy state — try lock screen, escape available if fails
+      showLockScreen();
+    } else if (!hasVault) {
+      // Fresh install or signed out — show signup
       showAuthScreen("signup");
+    } else {
+      showAuthScreen("login");
     }
 
-    // Pre-fill login email if returning after confirmation
+    // Pre-fill login if returning after email confirmation
     try {
-      const pending = JSON.parse(
-        localStorage.getItem("bl_pending_signup") || "null",
-      );
+      const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
       if (pending?.email) {
         setTimeout(() => {
-          const loginEmail = document.getElementById("loginEmail");
-          if (loginEmail) loginEmail.value = pending.email;
+          const el = document.getElementById("loginEmail");
+          if (el) el.value = pending.email;
           switchAuthTab("login");
           localStorage.removeItem("bl_pending_signup");
         }, 400);
       }
     } catch {}
+
   } catch (e) {
     console.warn("initApp error", e);
     if (hasStoredData()) showLockScreen();
@@ -4298,6 +4336,24 @@ function _goToLoginAfterConfirm(email) {
     if (el && email) el.value = email;
     document.getElementById("loginPassword")?.focus();
   }, 200);
+}
+
+async function doPasswordReset() {
+  const p1 = document.getElementById("resetNewPassword").value;
+  const p2 = document.getElementById("resetNewPassword2").value;
+  const errEl = document.getElementById("resetError");
+  if (p1.length < 8) { errEl.textContent = "Password must be at least 8 characters"; return; }
+  if (p1 !== p2) { errEl.textContent = "Passwords do not match"; return; }
+  try {
+    const client = getBLClient();
+    const { error } = await client.auth.updateUser({ password: p1 });
+    if (error) throw error;
+    document.getElementById("authScreen").innerHTML = "";
+    showAuthScreen("login");
+    notify("Password updated! Log in with your new password.", "success");
+  } catch (e) {
+    document.getElementById("resetError").textContent = e.message || "Failed to update password";
+  }
 }
 
 renderCardSwitcher();
