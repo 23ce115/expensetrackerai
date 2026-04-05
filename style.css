@@ -1373,8 +1373,8 @@ body::before {
   color: #64748b;
 }
 .form-input[type="date"] {
-  -webkit-appearance: none;
   appearance: none;
+  -webkit-appearance: none;
   min-height: 46px;
   padding-right: 2.6rem;
   position: relative;
@@ -4193,21 +4193,21 @@ body::before {
 .auth-btn-login {
   background: #3b82f6;
   color: #fff;
-  box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
 }
 .auth-btn-login:hover {
   background: #2563eb;
-  box-shadow: 0 6px 24px rgba(59,130,246,0.45);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.45);
 }
 
 .auth-btn-signup {
-  background: rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.07);
   color: #e2e8f0;
-  border: 1.5px solid rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 }
 .auth-btn-signup:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Auth modal popup */
@@ -4215,7 +4215,7 @@ body::before {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   z-index: 9500;
   animation: fadeIn 0.2s ease;
   align-items: flex-end;
@@ -4237,8 +4237,8 @@ body::before {
   padding: 1.5rem 1.5rem 2.5rem;
   width: 100%;
   max-width: 420px;
-  border: 1px solid rgba(255,255,255,0.1);
-  animation: slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 @media (min-width: 480px) {
@@ -4249,8 +4249,14 @@ body::before {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .auth-popup-header {
@@ -4267,8 +4273,8 @@ body::before {
 }
 
 .auth-popup-close {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   width: 28px;
   height: 28px;
@@ -4281,7 +4287,7 @@ body::before {
   transition: all 0.15s;
 }
 .auth-popup-close:hover {
-  background: rgba(239,68,68,0.15);
+  background: rgba(239, 68, 68, 0.15);
   color: #f87171;
 }
 
@@ -4301,7 +4307,7 @@ body::before {
   gap: 0.6rem;
   margin-bottom: 1rem;
   transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .auth-google-btn:hover {
   background: #f1f5f9;
@@ -4314,20 +4320,25 @@ body::before {
   margin: 0.75rem 0;
   position: relative;
 }
-.auth-or-divider::before, .auth-or-divider::after {
+.auth-or-divider::before,
+.auth-or-divider::after {
   content: "";
   position: absolute;
   top: 50%;
   width: 40%;
   height: 1px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
-.auth-or-divider::before { left: 0; }
-.auth-or-divider::after { right: 0; }
+.auth-or-divider::before {
+  left: 0;
+}
+.auth-or-divider::after {
+  right: 0;
+}
 
 /* Light mode auth popup */
 [data-theme="light"] .auth-popup-overlay {
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
 [data-theme="light"] .auth-popup {
   background: #ffffff;
@@ -4337,14 +4348,14 @@ body::before {
   color: #111318;
 }
 [data-theme="light"] .auth-popup-close {
-  background: rgba(0,0,0,0.05);
-  border-color: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
   color: #64748b;
 }
 [data-theme="light"] .auth-btn-signup {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.04);
   color: #334155;
-  border-color: rgba(0,0,0,0.15);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Biometric button - make it more prominent */
@@ -4371,8 +4382,12 @@ body::before {
   border-color: rgba(59, 130, 246, 0.5);
   transform: translateY(-1px);
 }
-.biometric-btn:active { transform: scale(0.97); }
-.biometric-btn i { font-size: 1.3rem; }
+.biometric-btn:active {
+  transform: scale(0.97);
+}
+.biometric-btn i {
+  font-size: 1.3rem;
+}
 
 .auth-logo {
   display: flex;
