@@ -1599,10 +1599,20 @@ async function registerBiometricNow() {
 
 async function tryLockScreenBiometric() {
   const btn = document.getElementById("lockBiometricBtn");
+  const labelEl = document.getElementById("lockBiometricLabel");
+  const iconEl = document.getElementById("lockBiometricIcon");
+  const errEl = document.getElementById("lockError");
+  const originalLabel = labelEl ? labelEl.textContent : "";
+  const originalIcon = iconEl ? iconEl.className : "";
+
   if (btn) {
     btn.disabled = true;
-    btn.style.opacity = "0.6";
+    btn.style.opacity = "0.7";
   }
+  if (labelEl) labelEl.textContent = "Verifying…";
+  if (iconEl) iconEl.className = "fas fa-spinner fa-spin";
+  if (errEl) errEl.textContent = "";
+
   try {
     // Android Chrome — PasswordCredential
     if (
@@ -1624,10 +1634,10 @@ async function tryLockScreenBiometric() {
         await _lockScreenSuccess(cred.password, vault);
         return;
       }
-      document.getElementById("lockError").textContent =
-        "Biometric credential mismatch. Use your password.";
+      if (errEl) errEl.textContent = "Biometric credential mismatch. Use your password.";
       return;
     }
+
     // iOS Safari / WebAuthn path — Face ID / Touch ID / Windows Hello
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
@@ -1643,12 +1653,37 @@ async function tryLockScreenBiometric() {
       // Local vault not found — try cloud unlock
       document.getElementById("lockPasswordInput").value = password;
       await unlockWithLockPassword();
+      return;
     }
+
+    // WebAuthn available on device but not yet registered — guide user to set it up
+    const canWebAuthn = !!window.PublicKeyCredential;
+    if (canWebAuthn) {
+      let platformAvail = false;
+      try {
+        platformAvail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      } catch {}
+      if (platformAvail) {
+        // Prompt: unlock with password first, then we'll offer biometric setup
+        if (errEl) {
+          const isWindows = /Windows/.test(navigator.userAgent);
+          const label = isWindows ? "Windows Hello" : "biometric login";
+          errEl.innerHTML = `<span style="color:#f59e0b"><i class="fas fa-info-circle"></i> ${label} isn't set up yet. Unlock with your password first, then go to <strong>Settings → Biometric Login</strong> to enable it.</span>`;
+        }
+        document.getElementById("lockPasswordInput")?.focus();
+        return;
+      }
+    }
+
+    // Fallback — no biometric available
+    if (errEl) errEl.textContent = "Biometric authentication is not available on this device.";
+    if (btn) btn.style.display = "none";
+
   } catch (e) {
-    if (e && e.name !== "NotAllowedError") {
-      // NotAllowedError = user cancelled — silent. Show error for real failures.
-      document.getElementById("lockError").textContent =
-        "Biometric failed. Enter your password.";
+    if (e && e.name === "NotAllowedError") {
+      // User cancelled — restore silently
+    } else {
+      if (errEl) errEl.textContent = "Biometric failed. Please enter your password.";
     }
     console.warn("Lock screen biometric failed", e);
   } finally {
@@ -1656,6 +1691,8 @@ async function tryLockScreenBiometric() {
       btn.disabled = false;
       btn.style.opacity = "1";
     }
+    if (labelEl && labelEl.textContent === "Verifying…") labelEl.textContent = originalLabel;
+    if (iconEl && iconEl.className === "fas fa-spinner fa-spin") iconEl.className = originalIcon;
   }
 }
 
