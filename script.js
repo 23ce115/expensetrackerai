@@ -624,16 +624,31 @@ function showAuthScreen(tab = "login") {
   document.getElementById("lockScreen").style.display = "none";
   switchAuthTab(tab);
 
-  // Biometric only on mobile AND only after credentials have been saved once
+  // Show biometric button: on mobile, if credentials API works OR if WebAuthn platform auth is available
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const hasStoredCreds = localStorage.getItem("bl_has_stored_creds") === "1";
-  const canBio = isMobile && hasStoredCreds && "credentials" in navigator && window.PasswordCredential;
-  const bioBtn = document.getElementById("authBiometricBtn");
-  const bioDivider = document.getElementById("authBiometricDivider");
-  if (bioBtn && bioDivider) {
-    bioBtn.style.display = canBio ? "flex" : "none";
-    bioDivider.style.display = canBio ? "block" : "none";
+  if (isMobile) {
+    _checkBiometricAvailable().then(canBio => {
+      const bioBtn = document.getElementById("authBiometricBtn");
+      const bioDivider = document.getElementById("authBiometricDivider");
+      if (bioBtn && bioDivider) {
+        bioBtn.style.display = canBio ? "flex" : "none";
+        bioDivider.style.display = canBio ? "block" : "none";
+      }
+    });
   }
+}
+
+async function _checkBiometricAvailable() {
+  // Check if device has stored credentials (PasswordCredential — Android Chrome)
+  if (localStorage.getItem("bl_has_stored_creds") === "1" &&
+      "credentials" in navigator && window.PasswordCredential) return true;
+  // Check WebAuthn platform authenticator (iOS Safari Face ID)
+  if (window.PublicKeyCredential) {
+    try {
+      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch { return false; }
+  }
+  return false;
 }
 
 function hideAuthScreen() {
@@ -1412,6 +1427,10 @@ async function exportQRCode() {
 function showLockScreen(subtitle) {
   const fab = document.querySelector(".add-buttons");
   if (fab) fab.style.display = "none";
+
+  // Always reset attempt counter when showing lock screen
+  pinAttempts = 0;
+  pinLockedUntil = 0;
 
   const authMode = localStorage.getItem(AUTH_MODE_KEY);
   const ls = document.getElementById("lockScreen");
@@ -3481,6 +3500,7 @@ function switchCardForAdd(idx) {
 function openBnSettings() {
   document.getElementById("bnSettingsPanel").classList.add("open");
   document.getElementById("bnSettingsOverlay").classList.add("open");
+  openBnSettingsWithSync();
 }
 
 function openBnReport() {
@@ -4002,6 +4022,103 @@ function toggleSettingsMenu() {
 
 function closeSettingsMenu() {
   document.getElementById("settingsMenu").classList.remove("open");
+}
+
+function toggleBnGlassSlider() {
+  const panel = document.getElementById("bnGlassPanel");
+  const chevron = document.getElementById("bnGlassChevron");
+  if (!panel) return;
+  const isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+  if (!isOpen) {
+    const saved = localStorage.getItem("bl_glass_opacity") || "50";
+    const slider = document.getElementById("bnGlassSlider");
+    if (slider) slider.value = saved;
+  }
+}
+
+function openTxnFullPage() {
+  const page = document.getElementById("txnFullPage");
+  if (!page) return;
+  const body = document.getElementById("txnPageBody");
+  const subtitle = document.getElementById("txnPageSubtitle");
+
+  syncActiveToCards();
+  let allTxns = [];
+  cards.forEach((card, ci) => {
+    const cardName = card.userData?.nickname?.trim() || card.userData?.name?.trim() || `Card ${ci + 1}`;
+    const last4 = (card.userData?.cardNumber || "").replace(/\D/g, "").slice(-4);
+    const accountLabel = last4 ? `${cardName} ••••${last4}` : cardName;
+    (card.transactions || []).forEach(t => allTxns.push({ ...t, _account: accountLabel }));
+  });
+
+  if (!allTxns.length) {
+    body.innerHTML = '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>';
+    subtitle.textContent = "No data";
+    page.classList.remove("txn-page-closing");
+    requestAnimationFrame(() => page.classList.add("txn-page-open"));
+    return;
+  }
+
+  allTxns.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const groups = {};
+  allTxns.forEach(t => {
+    const d = new Date(t.date);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    const label = d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    if (!groups[key]) groups[key] = { label, txns: [] };
+    groups[key].txns.push(t);
+  });
+
+  const monthCount = Object.keys(groups).length;
+  subtitle.textContent = `${allTxns.length} transactions · ${monthCount} month${monthCount !== 1 ? "s" : ""}`;
+
+  body.innerHTML = Object.entries(groups).map(([, g]) => {
+    const rows = g.txns.map(t => {
+      const isInc = t.type === "income";
+      const amt = Math.abs(t.amount);
+      const dateStr = new Date(t.date).toLocaleDateString("en-IN", { day:"numeric", month:"short" });
+      const desc = (t.description?.trim() || t.category || "").substring(0, 35);
+      return `<div class="txn-full-row">
+        <div class="txn-full-date">${dateStr}</div>
+        <div><div class="txn-full-desc">${desc}</div><div class="txn-full-cat">${t.category}</div></div>
+        <div class="txn-full-account">${t._account}</div>
+        <div class="txn-full-amt ${isInc?"pos":"neg"}">${isInc?"+":"-"}₹${amt.toLocaleString("en-IN")}</div>
+      </div>`;
+    }).join("");
+    return `<div class="txn-month-group"><div class="txn-month-label">${g.label}</div>${rows}</div>`;
+  }).join("");
+
+  page.classList.remove("txn-page-closing");
+  requestAnimationFrame(() => page.classList.add("txn-page-open"));
+}
+
+function closeTxnFullPage() {
+  const page = document.getElementById("txnFullPage");
+  if (!page) return;
+  page.classList.add("txn-page-closing");
+  page.classList.remove("txn-page-open");
+  setTimeout(() => page.classList.remove("txn-page-closing"), 400);
+}
+
+function openBnSettingsWithSync() {
+  const dot = document.getElementById("bnSyncDot");
+  const label = document.getElementById("bnSyncLabel");
+  if (dot && label) {
+    if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
+      const mins = Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000);
+      dot.style.background = "#10b981"; label.style.color = "#10b981";
+      label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
+    } else if (syncConfig?.enabled) {
+      dot.style.background = "#f59e0b"; label.style.color = "#f59e0b";
+      label.textContent = "Sync connecting…";
+    }
+  }
+  const saved = localStorage.getItem("bl_glass_opacity") || "50";
+  const sl = document.getElementById("bnGlassSlider");
+  if (sl) sl.value = saved;
 }
 
 function toggleGlassSlider() {
