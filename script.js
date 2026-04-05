@@ -638,20 +638,115 @@ function showAuthScreen(tab = "login") {
   document.getElementById("authScreen").style.display = "flex";
   document.getElementById("onboardingModal").style.display = "none";
   document.getElementById("lockScreen").style.display = "none";
-  switchAuthTab(tab);
 
-  // Show biometric button on any device that supports it
+  // Show biometric button in login popup if available
   _checkBiometricAvailable().then((canBio) => {
     const bioBtn = document.getElementById("authBiometricBtn");
     const bioDivider = document.getElementById("authBiometricDivider");
     if (bioBtn && bioDivider) {
       bioBtn.style.display = canBio ? "flex" : "none";
       bioDivider.style.display = canBio ? "block" : "none";
+      // Label Face ID specifically on iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      if ((isIOS || isMac) && localStorage.getItem("bl_has_webauthn") === "1") {
+        const iconEl = document.getElementById("authBioIcon");
+        const labelEl = document.getElementById("authBioLabel");
+        if (iconEl) iconEl.className = "fas fa-face-smile";
+        if (labelEl) labelEl.textContent = "Use Face ID";
+      }
     }
+  });
+
+  if (tab === "login") openAuthPopup("login");
+}
+
+function openAuthPopup(type) {
+  const overlay = document.getElementById(type === "login" ? "loginPopupOverlay" : "signupPopupOverlay");
+  if (overlay) overlay.classList.add("open");
+  // Clear errors
+  const errId = type === "login" ? "loginError" : "signupError";
+  const errEl = document.getElementById(errId);
+  if (errEl) errEl.textContent = "";
+}
+
+function closeAuthPopup(type) {
+  const overlay = document.getElementById(type === "login" ? "loginPopupOverlay" : "signupPopupOverlay");
+  if (overlay) overlay.classList.remove("open");
+}
+
+/* openBiometricSetup — called from Settings */
+async function openBiometricSetup() {
+  const canBio = await _checkBiometricAvailable();
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const hasWebAuthn = localStorage.getItem("bl_has_webauthn") === "1";
+
+  const titleEl = document.getElementById("bioModalTitle");
+  const descEl = document.getElementById("bioModalDesc");
+  const iconEl = document.getElementById("bioModalIcon");
+  const btnEl = document.getElementById("bioModalEnableBtn");
+
+  if (hasWebAuthn) {
+    // Already set up — offer to remove
+    if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#10b981;margin-right:.5rem"></i>Biometric Login Active';
+    if (descEl) descEl.innerHTML = 'Face ID / fingerprint login is <strong style="color:#10b981">enabled</strong>.<br>You can disable it below.';
+    if (iconEl) iconEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981"></i>';
+    if (btnEl) {
+      btnEl.textContent = "Disable Biometrics";
+      btnEl.onclick = () => {
+        localStorage.removeItem("bl_has_webauthn");
+        localStorage.removeItem("bl_webauthn_cred_id");
+        localStorage.removeItem("bl_webauthn_pwd_vault");
+        document.getElementById("biometricSetupModal").style.display = "none";
+        notify("Biometric login disabled", "info");
+        _refreshBiometricSettingsRow();
+      };
+    }
+  } else {
+    const useFaceID = (isIOS || isMac) && window.PublicKeyCredential;
+    if (titleEl) titleEl.innerHTML = `<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>${useFaceID ? "Enable Face ID" : "Enable Biometric Login"}`;
+    if (descEl) descEl.innerHTML = useFaceID
+      ? 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.'
+      : 'Use <strong style="color:#e2e8f0">fingerprint or device PIN</strong> to unlock BlueLedger instantly.';
+    if (iconEl) iconEl.innerHTML = `<i class="fas ${useFaceID ? 'fa-face-smile' : 'fa-fingerprint'}" style="color:#3b82f6"></i>`;
+    if (btnEl) {
+      btnEl.innerHTML = `<i class="fas ${useFaceID ? 'fa-face-smile' : 'fa-fingerprint'}"></i> ${useFaceID ? "Enable Face ID" : "Enable"}`;
+      btnEl.onclick = registerBiometricNow;
+    }
+  }
+  document.getElementById("biometricSetupModal").style.display = "flex";
+}
+
+function _refreshBiometricSettingsRow() {
+  const hasWebAuthn = localStorage.getItem("bl_has_webauthn") === "1";
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const useFaceID = (isIOS || isMac);
+  const label = hasWebAuthn
+    ? (useFaceID ? "Manage Face ID" : "Manage Biometrics")
+    : (useFaceID ? "Set Up Face ID" : "Set Up Fingerprint");
+
+  ["bnBiometricRow", "settingsBiometricRow"].forEach(id => {
+    const row = document.getElementById(id);
+    if (row) row.style.display = "flex";
+  });
+  ["bnBiometricLabel", "settingsBiometricLabel"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
   });
 }
 
-async function _checkBiometricAvailable() {
+// Show/hide biometric row in settings on load
+_checkBiometricAvailable().then(canBio => {
+  if (canBio || window.PublicKeyCredential) _refreshBiometricSettingsRow();
+});
+
+function switchAuthTab(tab) {
+  // Legacy compat — now just opens popups
+  if (tab === "login") openAuthPopup("login");
+  else openAuthPopup("signup");
+}
   // Android Chrome — PasswordCredential stored
   if (
     localStorage.getItem("bl_has_stored_creds") === "1" &&
@@ -758,22 +853,14 @@ function _webAuthnStorePassword(password) {
 
 function hideAuthScreen() {
   document.getElementById("authScreen").style.display = "none";
+  // Close any open popups
+  ["loginPopupOverlay","signupPopupOverlay"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("open");
+  });
 }
 
-function switchAuthTab(tab) {
-  document.getElementById("loginPanel").style.display =
-    tab === "login" ? "block" : "none";
-  document.getElementById("signupPanel").style.display =
-    tab === "signup" ? "block" : "none";
-  document
-    .getElementById("tabLogin")
-    .classList.toggle("active", tab === "login");
-  document
-    .getElementById("tabSignup")
-    .classList.toggle("active", tab === "signup");
-  document.getElementById("loginError").textContent = "";
-  document.getElementById("signupError").textContent = "";
-}
+// Legacy switchAuthTab stub — kept for compatibility (real implementation above)
 
 async function doSignUp() {
   const name = document.getElementById("signupName").value.trim();
@@ -1012,6 +1099,8 @@ async function resendConfirmationEmail(email) {
 }
 
 async function tryBiometricLogin() {
+  const bioBtn = document.getElementById("authBiometricBtn");
+  if (bioBtn) { bioBtn.disabled = true; bioBtn.style.opacity = "0.7"; }
   try {
     // Android Chrome — PasswordCredential
     if (
@@ -1030,23 +1119,27 @@ async function tryBiometricLogin() {
         return;
       }
     }
-    // iOS / WebAuthn path
+    // iOS / WebAuthn path (Face ID / Touch ID / Windows Hello)
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
-      // Fill the password field and sign in normally
       const emailEl = document.getElementById("loginEmail");
       if (!emailEl.value) {
-        // Try to retrieve last-used email
         emailEl.value = localStorage.getItem("bl_last_email") || "";
       }
       document.getElementById("loginPassword").value = password;
       await doSignIn();
       return;
     }
-    notify("Use your password to sign in", "info");
+    // Device supports biometrics but not registered yet — guide user to set up
+    notify("Set up Face ID / Fingerprint in Settings first", "info");
   } catch (e) {
-    // Biometric dismissed/failed — leave password form visible
+    if (e && e.name !== "NotAllowedError") {
+      // NotAllowedError = user cancelled — silent. Other errors show message.
+      notify("Biometric authentication failed. Use your password.", "error");
+    }
     console.warn("Biometric login failed", e);
+  } finally {
+    if (bioBtn) { bioBtn.disabled = false; bioBtn.style.opacity = "1"; }
   }
 }
 
@@ -1269,8 +1362,13 @@ async function completeCardSetup() {
 }
 
 async function registerBiometricNow() {
+  const btnEl = document.getElementById("bioModalEnableBtn");
+  if (btnEl) { btnEl.disabled = true; btnEl.style.opacity = "0.6"; }
   try {
-    const { email, password } = _pendingCardSetup || {};
+    // Get credentials — either from pending card setup or stored session
+    const setupData = _pendingCardSetup || {};
+    const email = setupData.email || localStorage.getItem("bl_last_email") || "blueledger-user";
+    const password = setupData.password || sessionPin; // sessionPin holds current session password
 
     // Android Chrome — PasswordCredential
     if (
@@ -1282,25 +1380,38 @@ async function registerBiometricNow() {
       const cred = new PasswordCredential({ id: email, password });
       await navigator.credentials.store(cred);
       localStorage.setItem("bl_has_stored_creds", "1");
-      notify("Biometric login enabled", "success");
+      notify("Biometric login enabled ✓", "success");
     }
     // iOS / WebAuthn — register platform authenticator (Face ID / Touch ID)
     else if (window.PublicKeyCredential) {
-      await _webAuthnRegister(email || "blueledger-user");
+      await _webAuthnRegister(email);
       if (password) _webAuthnStorePassword(password);
-      if (email) localStorage.setItem("bl_last_email", email);
-      notify("Face ID / biometric login enabled", "success");
+      if (email && email !== "blueledger-user") localStorage.setItem("bl_last_email", email);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      notify((isIOS || isMac) ? "Face ID enabled ✓" : "Biometric login enabled ✓", "success");
+    } else {
+      notify("Biometric authentication not supported on this device", "error");
     }
+    _refreshBiometricSettingsRow();
   } catch (e) {
     console.warn("Biometric registration failed", e);
-    notify("Could not enable biometric login", "error");
+    if (e && e.name === "NotAllowedError") {
+      notify("Biometric setup cancelled", "info");
+    } else {
+      notify("Could not enable biometric login. Try again.", "error");
+    }
+  } finally {
+    if (btnEl) { btnEl.disabled = false; btnEl.style.opacity = "1"; }
+    document.getElementById("biometricSetupModal").style.display = "none";
   }
-  document.getElementById("biometricSetupModal").style.display = "none";
 }
 
 /* ── Lock screen — password mode ── */
 
 async function tryLockScreenBiometric() {
+  const btn = document.getElementById("lockBiometricBtn");
+  if (btn) { btn.disabled = true; btn.style.opacity = "0.6"; }
   try {
     // Android Chrome — PasswordCredential
     if (
@@ -1322,10 +1433,10 @@ async function tryLockScreenBiometric() {
         await _lockScreenSuccess(cred.password, vault);
         return;
       }
-      notify("Biometric credential mismatch. Use your password.", "error");
+      document.getElementById("lockError").textContent = "Biometric credential mismatch. Use your password.";
       return;
     }
-    // iOS Safari / WebAuthn path
+    // iOS Safari / WebAuthn path — Face ID / Touch ID / Windows Hello
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -1342,8 +1453,13 @@ async function tryLockScreenBiometric() {
       await unlockWithLockPassword();
     }
   } catch (e) {
-    // Dismissed or failed — leave password form visible
+    if (e && e.name !== "NotAllowedError") {
+      // NotAllowedError = user cancelled — silent. Show error for real failures.
+      document.getElementById("lockError").textContent = "Biometric failed. Enter your password.";
+    }
     console.warn("Lock screen biometric failed", e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = "1"; }
   }
 }
 
