@@ -153,7 +153,7 @@ async function _callAI(messages, systemPrompt, maxTokens = 300) {
   });
   if (!res.ok) throw new Error(`AI API error ${res.status}`);
   const data = await res.json();
-  return data.content?.map(b => b.text || "").join("") || "";
+  return data.content?.map((b) => b.text || "").join("") || "";
 }
 
 /* ──────────────────────────────────────────────
@@ -173,9 +173,10 @@ function aiAutoCategory(type, value) {
 }
 
 async function _runAiCat(type, desc) {
-  const cats = type === "income"
-    ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
-    : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+  const cats =
+    type === "income"
+      ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+      : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
   const badgeEl = document.getElementById(`${type}AiBadge`);
   const selectEl = document.getElementById(`${type}Category`);
   if (!badgeEl || !selectEl) return;
@@ -189,14 +190,15 @@ async function _runAiCat(type, desc) {
 Given a transaction description, return ONLY the single best matching category name from the list.
 Do not explain. Do not add punctuation. Return only the category name exactly as given.
 Categories: ${cats.join(", ")}`;
-    const result = await _callAI(
-      [{ role: "user", content: desc }],
-      system,
-      20
-    );
+    const result = await _callAI([{ role: "user", content: desc }], system, 20);
     const suggested = result.trim();
-    const match = cats.find(c => c.toLowerCase() === suggested.toLowerCase()) || cats.find(c => suggested.toLowerCase().includes(c.toLowerCase()));
-    if (!match) { badgeEl.style.display = "none"; return; }
+    const match =
+      cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
+      cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+    if (!match) {
+      badgeEl.style.display = "none";
+      return;
+    }
 
     // Only auto-select if no category chosen yet
     const current = selectEl.value;
@@ -213,7 +215,7 @@ Categories: ${cats.join(", ")}`;
       ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
       <button class="ai-cat-dismiss" onclick="document.getElementById('${type}AiBadge').style.display='none'" title="Dismiss"><i class="fas fa-times"></i></button>
     `;
-  } catch(e) {
+  } catch (e) {
     badgeEl.style.display = "none";
     console.warn("AI categorization failed", e);
   }
@@ -223,7 +225,8 @@ function aiApplyCategory(type, category) {
   const selectEl = document.getElementById(`${type}Category`);
   const badgeEl = document.getElementById(`${type}AiBadge`);
   if (selectEl) selectEl.value = category;
-  if (badgeEl) badgeEl.innerHTML = `
+  if (badgeEl)
+    badgeEl.innerHTML = `
     <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
     <span>AI suggests: <strong style="color:#e2e8f0">${category}</strong></span>
     <span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>
@@ -243,25 +246,34 @@ function openAskBl() {
 }
 function closeAskBl() {
   document.getElementById("askBlPanel").classList.remove("ask-bl-panel--open");
-  document.getElementById("askBlOverlay").classList.remove("ask-bl-overlay--open");
+  document
+    .getElementById("askBlOverlay")
+    .classList.remove("ask-bl-overlay--open");
 }
 
 function _buildFinanceSummary() {
   // Build a compact but rich summary of the user's data to pass to the AI
   const allTxns = transactions.slice(0, 300); // cap to avoid token overflow
   const now = new Date();
-  const thisMonth = allTxns.filter(t => {
+  const thisMonth = allTxns.filter((t) => {
     const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return (
+      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    );
   });
 
-  const fmt = (n) => `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
-  const totalIncome = allTxns.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-  const totalExpense = allTxns.filter(t => t.type === "expense").reduce((s, t) => s + Math.abs(t.amount), 0);
+  const fmt = (n) =>
+    `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  const totalIncome = allTxns
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + t.amount, 0);
+  const totalExpense = allTxns
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
 
   // Per-category breakdown
   const catMap = {};
-  allTxns.forEach(t => {
+  allTxns.forEach((t) => {
     if (t.type !== "expense") return;
     catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount);
   });
@@ -271,12 +283,20 @@ function _buildFinanceSummary() {
     .join("\n");
 
   // Last 30 transactions (compact)
-  const recent = allTxns.slice(0, 30).map(t =>
-    `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmt(t.amount)}`
-  ).join("\n");
+  const recent = allTxns
+    .slice(0, 30)
+    .map(
+      (t) =>
+        `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmt(t.amount)}`,
+    )
+    .join("\n");
 
-  const monthIncome = thisMonth.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-  const monthExpense = thisMonth.filter(t => t.type === "expense").reduce((s, t) => s + Math.abs(t.amount), 0);
+  const monthIncome = thisMonth
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + t.amount, 0);
+  const monthExpense = thisMonth
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
 
   return `User financial data (BlueLedger app):
 Currency: Indian Rupees (₹)
@@ -306,7 +326,10 @@ async function askBlSend(prefill) {
 
   // Typing indicator
   const typingId = "askbl-typing-" + Date.now();
-  _appendAskBlMsg("assistant", `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`);
+  _appendAskBlMsg(
+    "assistant",
+    `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`,
+  );
 
   _askBlBusy = true;
   document.getElementById("askBlSendBtn").disabled = true;
@@ -331,10 +354,13 @@ ${_buildFinanceSummary()}`;
     if (_askBlHistory.length > 20) _askBlHistory = _askBlHistory.slice(-20);
 
     _appendAskBlMsg("assistant", _markdownToHtml(reply));
-  } catch(e) {
+  } catch (e) {
     const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
     if (typingEl) typingEl.remove();
-    _appendAskBlMsg("assistant", "Sorry, I couldn't connect to the AI right now. Please try again.");
+    _appendAskBlMsg(
+      "assistant",
+      "Sorry, I couldn't connect to the AI right now. Please try again.",
+    );
     console.warn("Ask BlueLedger failed", e);
   } finally {
     _askBlBusy = false;
@@ -352,20 +378,515 @@ function _appendAskBlMsg(role, html) {
 
   const div = document.createElement("div");
   div.className = `ask-bl-msg ask-bl-msg--${role}`;
-  div.innerHTML = role === "assistant"
-    ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
-    : `<div class="ask-bl-bubble">${html}</div>`;
+  div.innerHTML =
+    role === "assistant"
+      ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
+      : `<div class="ask-bl-bubble">${html}</div>`;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
 
 function _markdownToHtml(text) {
   return text
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, "<code>$1</code>")
     .replace(/\n/g, "<br>");
+}
+
+/* ──────────────────────────────────────────────
+   FEATURE 3 & 4: AI SPENDING INSIGHTS + PREDICTIVE BUDGETING
+   Button in the Insights card header triggers this.
+   Sends full transaction history → Claude gives:
+   - Personalised anomaly explanations
+   - Spending tips
+   - AI month-end prediction with seasonal reasoning
+────────────────────────────────────────────── */
+let _aiInsightsBusy = false;
+
+async function runAiInsights() {
+  if (_aiInsightsBusy) return;
+  _aiInsightsBusy = true;
+
+  const btn = document.getElementById("aiInsightsBtn");
+  const panel = document.getElementById("aiInsightsPanel");
+  if (!panel) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analysing…';
+  }
+  panel.style.display = "block";
+  panel.innerHTML = `
+    <div class="ai-insights-loading">
+      <i class="fas fa-brain" style="color:#a78bfa;font-size:1.4rem"></i>
+      <div>
+        <div style="font-weight:700;color:#e2e8f0;font-size:.88rem">AI is analysing your spending…</div>
+        <div style="color:#64748b;font-size:.78rem;margin-top:.2rem">Looking for patterns, anomalies &amp; opportunities</div>
+      </div>
+    </div>`;
+
+  try {
+    const now = new Date();
+    const thisMonth = transactions.filter((t) => {
+      const d = new Date(t.date + "T00:00:00");
+      return (
+        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      );
+    });
+    const lastMonth = transactions.filter((t) => {
+      const d = new Date(t.date + "T00:00:00");
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return (
+        d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth()
+      );
+    });
+
+    // Build a detailed summary for the AI
+    const fmtAmt = (n) =>
+      `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+    const catTotals = {};
+    transactions
+      .slice(0, 200)
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        catTotals[t.category] =
+          (catTotals[t.category] || 0) + Math.abs(t.amount);
+      });
+    const thisMonthCats = {};
+    thisMonth
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        thisMonthCats[t.category] =
+          (thisMonthCats[t.category] || 0) + Math.abs(t.amount);
+      });
+    const lastMonthCats = {};
+    lastMonth
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        lastMonthCats[t.category] =
+          (lastMonthCats[t.category] || 0) + Math.abs(t.amount);
+      });
+
+    const thisMonthIncome = thisMonth
+      .filter((t) => t.type === "income")
+      .reduce((s, t) => s + t.amount, 0);
+    const thisMonthExpense = thisMonth
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+    const lastMonthExpense = lastMonth
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+    const dayOfMonth = now.getDate();
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+    const daysLeft = daysInMonth - dayOfMonth;
+    const spendingLimit = userData?.spendingLimit || 0;
+
+    const catCompare = Object.keys({ ...thisMonthCats, ...lastMonthCats })
+      .map((cat) => {
+        const cur = thisMonthCats[cat] || 0;
+        const prev = lastMonthCats[cat] || 0;
+        const diff = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+        return `  ${cat}: this month ${fmtAmt(cur)}${prev > 0 ? `, last month ${fmtAmt(prev)}${diff !== null ? ` (${diff > 0 ? "+" : ""}${diff}%)` : ""}` : ""}`;
+      })
+      .join("\n");
+
+    const recentTxns = transactions
+      .slice(0, 20)
+      .map(
+        (t) =>
+          `  ${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmtAmt(t.amount)}`,
+      )
+      .join("\n");
+
+    const dataContext = `Financial snapshot:
+Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })} (day ${dayOfMonth} of ${daysInMonth}, ${daysLeft} days left)
+This month income: ${fmtAmt(thisMonthIncome)} | expenses: ${fmtAmt(thisMonthExpense)}
+Last month expenses: ${fmtAmt(lastMonthExpense)}
+${spendingLimit > 0 ? `Monthly spending limit: ${fmtAmt(spendingLimit)} (${Math.round((thisMonthExpense / spendingLimit) * 100)}% used)` : "No spending limit set"}
+Total transactions: ${transactions.length}
+
+Category comparison (this month vs last month):
+${catCompare || "  Not enough data"}
+
+Recent 20 transactions:
+${recentTxns || "  None yet"}`;
+
+    const system = `You are BlueLedger AI, an expert personal finance advisor for an Indian user.
+Analyse the spending data and provide a concise, actionable, warm financial advice report.
+
+Structure your response EXACTLY as valid JSON (no markdown fences) with this shape:
+{
+  "summary": "One sentence overall assessment",
+  "prediction": {
+    "amount": 12500,
+    "reasoning": "Brief reason for the prediction"
+  },
+  "tips": [
+    { "icon": "fa-fire", "color": "#ef4444", "title": "Short title", "body": "Specific actionable advice" },
+    { "icon": "fa-piggy-bank", "color": "#10b981", "title": "Short title", "body": "Specific actionable advice" }
+  ],
+  "alerts": [
+    { "title": "Anomaly title", "body": "Explanation of why this is unusual and what to do" }
+  ]
+}
+
+Rules:
+- prediction.amount is an integer in rupees representing your AI-estimated month-end total expense
+- Generate 2-4 tips, each specific to this user's actual data (not generic advice)
+- Generate 0-3 alerts only for genuinely unusual patterns
+- Use ₹ for amounts, Indian number formatting (lakhs/crores if applicable)
+- Be warm, specific, non-judgmental. Reference real categories and amounts from the data.
+- Return ONLY the JSON object, nothing else.`;
+
+    const raw = await _callAI(
+      [{ role: "user", content: dataContext }],
+      system,
+      800,
+    );
+
+    let parsed;
+    try {
+      const clean = raw.replace(/```json|```/g, "").trim();
+      parsed = JSON.parse(clean);
+    } catch {
+      throw new Error("Could not parse AI response");
+    }
+
+    // Render the AI advice panel
+    const alertsHtml = (parsed.alerts || [])
+      .map(
+        (a) => `
+      <div class="ai-alert-item">
+        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;flex-shrink:0;margin-top:.15rem"></i>
+        <div><div class="ai-alert-title">${_safeText(a.title)}</div><div class="ai-alert-body">${_safeText(a.body)}</div></div>
+      </div>`,
+      )
+      .join("");
+
+    const tipsHtml = (parsed.tips || [])
+      .map(
+        (t) => `
+      <div class="ai-tip-card">
+        <div class="ai-tip-icon" style="background:${t.color}22;color:${t.color}"><i class="fas ${t.icon}"></i></div>
+        <div><div class="ai-tip-title">${_safeText(t.title)}</div><div class="ai-tip-body">${_safeText(t.body)}</div></div>
+      </div>`,
+      )
+      .join("");
+
+    const predAmt = parsed.prediction?.amount;
+    const predOver = spendingLimit > 0 && predAmt > spendingLimit;
+    const predColor = predOver
+      ? "#ef4444"
+      : predAmt > thisMonthExpense * 1.2
+        ? "#f59e0b"
+        : "#10b981";
+    const predHtml = predAmt
+      ? `
+      <div class="ai-prediction-row">
+        <div class="ai-prediction-label"><i class="fas fa-chart-line" style="color:${predColor}"></i> AI Month-end Prediction</div>
+        <div class="ai-prediction-amount" style="color:${predColor}">${fmtAmt(predAmt)}</div>
+        <div class="ai-prediction-reason">${_safeText(parsed.prediction.reasoning)}</div>
+      </div>`
+      : "";
+
+    panel.innerHTML = `
+      <div class="ai-insights-result">
+        <div class="ai-insights-summary">
+          <i class="fas fa-robot" style="color:#a78bfa;flex-shrink:0"></i>
+          <span>${_safeText(parsed.summary)}</span>
+        </div>
+        ${predHtml}
+        ${alertsHtml ? `<div class="ai-alerts-section">${alertsHtml}</div>` : ""}
+        <div class="ai-tips-grid">${tipsHtml}</div>
+        <div class="ai-insights-footer">
+          <button class="ai-refresh-btn" onclick="runAiInsights()"><i class="fas fa-rotate-right"></i> Refresh</button>
+          <button class="ai-dismiss-btn" onclick="document.getElementById('aiInsightsPanel').style.display='none'"><i class="fas fa-times"></i> Dismiss</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    panel.innerHTML = `<div class="ai-insights-error"><i class="fas fa-circle-exclamation" style="color:#ef4444"></i> Could not load AI insights. Check your connection and try again.</div>`;
+    console.warn("AI insights failed", e);
+  } finally {
+    _aiInsightsBusy = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI Advice';
+    }
+  }
+}
+
+function _safeText(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ──────────────────────────────────────────────
+   FEATURE 5: VOICE LOGGING
+   Mic button in Income/Expense modal footers.
+   Uses Web Speech API → transcribes → Claude
+   parses amount, description, category → pre-fills form.
+────────────────────────────────────────────── */
+let _voiceRecognition = null;
+let _voiceBusy = false;
+
+function startVoiceLog(type) {
+  if (_voiceBusy) {
+    _stopVoice(type);
+    return;
+  }
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    notify(
+      "Voice input is not supported in this browser. Try Chrome or Edge.",
+      "error",
+    );
+    return;
+  }
+
+  const btn = document.getElementById(`${type}VoiceBtn`);
+  _voiceBusy = true;
+  if (btn) {
+    btn.classList.add("voice-btn--listening");
+    btn.innerHTML = '<i class="fas fa-stop"></i>';
+    btn.title = "Stop recording";
+  }
+
+  _voiceRecognition = new SpeechRecognition();
+  _voiceRecognition.lang = "en-IN";
+  _voiceRecognition.interimResults = false;
+  _voiceRecognition.maxAlternatives = 1;
+
+  _voiceRecognition.onresult = async (e) => {
+    const transcript = e.results[0][0].transcript;
+    _stopVoice(type);
+    await _parseVoiceTranscript(type, transcript);
+  };
+
+  _voiceRecognition.onerror = (e) => {
+    _stopVoice(type);
+    if (e.error !== "aborted")
+      notify("Voice capture failed. Please try again.", "error");
+  };
+
+  _voiceRecognition.onend = () => _stopVoice(type);
+  _voiceRecognition.start();
+  notify("Listening… speak now", "info");
+}
+
+function _stopVoice(type) {
+  _voiceBusy = false;
+  try {
+    _voiceRecognition?.stop();
+  } catch {}
+  _voiceRecognition = null;
+  const btn = document.getElementById(`${type}VoiceBtn`);
+  if (btn) {
+    btn.classList.remove("voice-btn--listening");
+    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+    btn.title = "Log by voice";
+  }
+}
+
+async function _parseVoiceTranscript(type, transcript) {
+  notify(`Heard: "${transcript}" — parsing…`, "info");
+  const cats =
+    type === "income"
+      ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+      : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+
+  const system = `You are a financial transaction parser for an Indian personal finance app.
+The user spoke a voice command to log a transaction. Extract the details and return ONLY valid JSON:
+{
+  "amount": 250,
+  "description": "lunch at canteen",
+  "category": "Food",
+  "date": "today"
+}
+Rules:
+- amount is a number in rupees (no symbol). If unclear, use null.
+- description is a short cleaned-up description string.
+- category must be exactly one of: ${cats.join(", ")}
+- date: return "today" always (date auto-fills from form).
+- Return ONLY the JSON, no explanation.`;
+
+  try {
+    const raw = await _callAI(
+      [{ role: "user", content: transcript }],
+      system,
+      120,
+    );
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+
+    // Pre-fill the form
+    if (parsed.amount) {
+      const amtEl = document.getElementById(`${type}Amount`);
+      if (amtEl) amtEl.value = parsed.amount;
+    }
+    if (parsed.description) {
+      const descEl = document.getElementById(`${type}Desc`);
+      if (descEl) {
+        descEl.value = parsed.description;
+        aiAutoCategory(type, parsed.description);
+      }
+    }
+    if (parsed.category) {
+      const catEl = document.getElementById(`${type}Category`);
+      if (catEl) {
+        const match = cats.find(
+          (c) => c.toLowerCase() === parsed.category.toLowerCase(),
+        );
+        if (match) catEl.value = match;
+      }
+    }
+    notify("Voice entry filled in — please review and confirm ✓", "success");
+  } catch (e) {
+    notify("Couldn't parse voice input. Please fill in manually.", "error");
+    console.warn("Voice parse failed", e);
+  }
+}
+
+/* ──────────────────────────────────────────────
+   FEATURE 6: RECEIPT SCANNING
+   Camera/upload icon shown in income & expense modals.
+   User uploads a receipt photo → base64 → Claude vision
+   → extracts amount, date, description, category → pre-fills form.
+────────────────────────────────────────────── */
+function openReceiptScanner(type) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment"; // prefer rear camera on mobile
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) _processReceiptImage(type, file);
+  };
+  input.click();
+}
+
+async function _processReceiptImage(type, file) {
+  const btn = document.getElementById(`${type}ReceiptBtn`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  }
+  notify("Scanning receipt…", "info");
+
+  try {
+    // Convert to base64
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result.split(",")[1]);
+      reader.onerror = () => rej(new Error("File read failed"));
+      reader.readAsDataURL(file);
+    });
+
+    const mediaType = file.type || "image/jpeg";
+    const cats =
+      type === "income"
+        ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+        : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+
+    const system = `You are a receipt scanner for an Indian personal finance app.
+Extract transaction data from this receipt image and return ONLY valid JSON:
+{
+  "amount": 450,
+  "description": "Coffee and snacks",
+  "category": "Food",
+  "date": "2025-04-03",
+  "notes": "Any relevant extra detail"
+}
+Rules:
+- amount is total paid in rupees as a number (no symbol). If unclear, use null.
+- description: concise merchant + item summary.
+- category must be exactly one from: ${cats.join(", ")}
+- date: ISO format YYYY-MM-DD if visible, otherwise null.
+- notes: any useful extra detail (items, GST, etc.) or empty string.
+- Return ONLY the JSON, no explanation or markdown.`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: 300,
+        system,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: mediaType, data: base64 },
+              },
+              {
+                type: "text",
+                text: "Extract the transaction details from this receipt.",
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) throw new Error(`API error ${response.status}`);
+    const data = await response.json();
+    const raw = data.content?.map((b) => b.text || "").join("") || "";
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+
+    // Pre-fill form
+    if (parsed.amount) {
+      const amtEl = document.getElementById(`${type}Amount`);
+      if (amtEl) amtEl.value = parsed.amount;
+    }
+    if (parsed.description) {
+      const descEl = document.getElementById(`${type}Desc`);
+      if (descEl) {
+        descEl.value = parsed.description;
+        aiAutoCategory(type, parsed.description);
+      }
+    }
+    if (parsed.category) {
+      const catEl = document.getElementById(`${type}Category`);
+      if (catEl) {
+        const match = cats.find(
+          (c) => c.toLowerCase() === parsed.category.toLowerCase(),
+        );
+        if (match) catEl.value = match;
+      }
+    }
+    if (parsed.date) {
+      const dateEl = document.getElementById(`${type}Date`);
+      if (dateEl && parsed.date) dateEl.value = parsed.date;
+    }
+    if (parsed.notes) {
+      const notesEl = document.getElementById(`${type}Notes`);
+      if (notesEl) notesEl.value = parsed.notes;
+    }
+    notify("Receipt scanned — please review and confirm ✓", "success");
+  } catch (e) {
+    notify("Receipt scan failed. Please fill in manually.", "error");
+    console.warn("Receipt scan failed", e);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-camera"></i>';
+    }
+  }
 }
 
 function defaultSyncConfig() {
@@ -519,7 +1040,9 @@ async function deriveGoogleVaultKey(userId) {
   let salt = localStorage.getItem(saltKey);
   if (!salt) {
     const arr = crypto.getRandomValues(new Uint8Array(32));
-    salt = Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
+    salt = Array.from(arr)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     localStorage.setItem(saltKey, salt);
   }
   const words = CryptoJS.PBKDF2(deviceId + userId, salt, {
@@ -533,7 +1056,8 @@ async function doGoogleSignIn() {
   const btn = document.getElementById("googleSignInBtn");
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Redirecting…';
+    btn.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Redirecting…';
   }
   try {
     const client = getBLClient();
@@ -546,18 +1070,30 @@ async function doGoogleSignIn() {
     });
     if (error) {
       notify(error.message || "Google sign-in failed", "error");
-      if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google'; }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML =
+          '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google';
+      }
     }
     // If no error, browser will redirect — nothing more to do here
   } catch (e) {
     notify(e.message || "Google sign-in failed", "error");
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google'; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML =
+        '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google';
+    }
   }
 }
 
 async function _unlockGoogleUser(session) {
   const userId = session.user.id;
-  const displayName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "User";
+  const displayName =
+    session.user.user_metadata?.full_name ||
+    session.user.user_metadata?.name ||
+    session.user.email?.split("@")[0] ||
+    "User";
   const email = session.user.email || "";
 
   const vaultKey = await deriveGoogleVaultKey(userId);
@@ -570,7 +1106,10 @@ async function _unlockGoogleUser(session) {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
     const vault = tryDecrypt(raw, vaultKey);
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+    if (
+      vault &&
+      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+    ) {
       cards = vault.cards || [];
       activeCardIdx = vault.activeCardIdx || 0;
       syncConfig = cleanSyncConfig(vault.syncConfig);
@@ -585,10 +1124,21 @@ async function _unlockGoogleUser(session) {
 
   // Try cloud vault
   const syncKeyHex = await deriveSyncKeyHex(vaultKey, userId);
-  syncConfig = { ...defaultSyncConfig(), enabled: true, userId, syncKeyHex, deviceId: getDeviceId(), status: "ok" };
+  syncConfig = {
+    ...defaultSyncConfig(),
+    enabled: true,
+    userId,
+    syncKeyHex,
+    deviceId: getDeviceId(),
+    status: "ok",
+  };
   try {
     const client = getBLClient();
-    const { data: remote } = await client.from(SYNC_TABLE).select("ciphertext,updated_at").eq("user_id", userId).maybeSingle();
+    const { data: remote } = await client
+      .from(SYNC_TABLE)
+      .select("ciphertext,updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
     if (remote?.ciphertext) {
       const remotePayload = tryDecrypt(remote.ciphertext, syncKeyHex);
       if (remotePayload) {
@@ -600,7 +1150,9 @@ async function _unlockGoogleUser(session) {
         return;
       }
     }
-  } catch (e) { console.warn("Cloud fetch on Google login failed", e); }
+  } catch (e) {
+    console.warn("Cloud fetch on Google login failed", e);
+  }
 
   // New Google user — card setup
   _pendingCardSetup = { name: displayName, email, password: vaultKey, userId };
@@ -985,7 +1537,8 @@ function showAuthScreen(tab = "login") {
       const iconEl = document.getElementById("authBioIcon");
       const labelEl = document.getElementById("authBioLabel");
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      const isMac =
+        /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
       const isWindows = /Windows/.test(navigator.userAgent);
       if (isIOS || isMac) {
         if (iconEl) iconEl.className = "fas fa-face-smile";
@@ -1058,37 +1611,47 @@ async function openBiometricSetup() {
     }
   } else {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    const isMac =
+      /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
     const isWindows = /Windows/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
 
     let bioTitle, bioDesc, bioIconClass, bioBtnText;
     if (isIOS || isMac) {
       bioTitle = "Enable Face ID";
-      bioDesc = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
+      bioDesc =
+        'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
       bioIconClass = "fas fa-face-smile";
       bioBtnText = '<i class="fas fa-face-smile"></i> Enable';
     } else if (isWindows) {
       bioTitle = "Enable Windows Hello";
-      bioDesc = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
+      bioDesc =
+        'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
       bioIconClass = "fab fa-windows";
       bioBtnText = '<i class="fab fa-windows"></i> Enable';
     } else if (isAndroid) {
       bioTitle = "Enable Fingerprint Login";
-      bioDesc = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
+      bioDesc =
+        'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
       bioIconClass = "fas fa-fingerprint";
       bioBtnText = '<i class="fas fa-fingerprint"></i> Enable';
     } else {
       bioTitle = "Enable Biometric Login";
-      bioDesc = 'Use your device\'s <strong style="color:#e2e8f0">biometric sensor</strong> to unlock BlueLedger instantly.';
+      bioDesc =
+        'Use your device\'s <strong style="color:#e2e8f0">biometric sensor</strong> to unlock BlueLedger instantly.';
       bioIconClass = "fas fa-fingerprint";
       bioBtnText = '<i class="fas fa-fingerprint"></i> Enable';
     }
 
-    if (titleEl) titleEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;margin-right:.5rem"></i>${bioTitle}`;
+    if (titleEl)
+      titleEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;margin-right:.5rem"></i>${bioTitle}`;
     if (descEl) descEl.innerHTML = bioDesc;
-    if (iconEl) iconEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;font-size:3rem"></i>`;
-    if (btnEl) { btnEl.innerHTML = bioBtnText; btnEl.onclick = registerBiometricNow; }
+    if (iconEl)
+      iconEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;font-size:3rem"></i>`;
+    if (btnEl) {
+      btnEl.innerHTML = bioBtnText;
+      btnEl.onclick = registerBiometricNow;
+    }
   }
   document.getElementById("biometricSetupModal").style.display = "flex";
 }
@@ -1096,7 +1659,8 @@ async function openBiometricSetup() {
 /* ── Detect platform biometric label ── */
 function _getBiometricLabel(hasWebAuthn) {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const isMac =
+    /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
   const isWindows = /Windows/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
 
@@ -1113,7 +1677,8 @@ function _getBiometricLabel(hasWebAuthn) {
 
 function _getBiometricIcon(hasWebAuthn) {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const isMac =
+    /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
   const isWindows = /Windows/.test(navigator.userAgent);
   if (isIOS || isMac) return hasWebAuthn ? "fa-face-smile" : "fa-face-smile";
   if (isWindows) return "fa-windows";
@@ -1740,7 +2305,8 @@ async function completeCardSetup() {
     }
     if (canPasswordCred || canWebAuthn) {
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isMac = /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+      const isMac =
+        /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
       const isWindows = /Windows/.test(navigator.userAgent);
       const isAndroid = /Android/.test(navigator.userAgent);
       const titleEl = document.getElementById("bioModalTitle");
@@ -1749,25 +2315,51 @@ async function completeCardSetup() {
       const btnEl = document.getElementById("bioModalEnableBtn");
 
       if (isIOS || (isMac && canWebAuthn && !canPasswordCred)) {
-        if (titleEl) titleEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
-        if (iconEl) iconEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
-        if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
+        if (titleEl)
+          titleEl.innerHTML =
+            '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
+        if (iconEl)
+          iconEl.innerHTML =
+            '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl)
+          descEl.innerHTML =
+            'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
         if (btnEl) btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable';
       } else if (isWindows && canWebAuthn) {
-        if (titleEl) titleEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;margin-right:.5rem"></i>Enable Windows Hello';
-        if (iconEl) iconEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;font-size:3rem"></i>';
-        if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
+        if (titleEl)
+          titleEl.innerHTML =
+            '<i class="fab fa-windows" style="color:#3b82f6;margin-right:.5rem"></i>Enable Windows Hello';
+        if (iconEl)
+          iconEl.innerHTML =
+            '<i class="fab fa-windows" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl)
+          descEl.innerHTML =
+            'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
         if (btnEl) btnEl.innerHTML = '<i class="fab fa-windows"></i> Enable';
       } else if (isAndroid || canPasswordCred) {
-        if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Fingerprint Login';
-        if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
-        if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
-        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
+        if (titleEl)
+          titleEl.innerHTML =
+            '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Fingerprint Login';
+        if (iconEl)
+          iconEl.innerHTML =
+            '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl)
+          descEl.innerHTML =
+            'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
+        if (btnEl)
+          btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
       } else {
-        if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login';
-        if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
-        if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">device biometrics</strong> to unlock BlueLedger instantly.';
-        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
+        if (titleEl)
+          titleEl.innerHTML =
+            '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login';
+        if (iconEl)
+          iconEl.innerHTML =
+            '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl)
+          descEl.innerHTML =
+            'Use your <strong style="color:#e2e8f0">device biometrics</strong> to unlock BlueLedger instantly.';
+        if (btnEl)
+          btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
       }
       document.getElementById("biometricSetupModal").style.display = "flex";
     }
@@ -1790,8 +2382,10 @@ async function registerBiometricNow() {
 
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const canPasswordCred = "credentials" in navigator && !!window.PasswordCredential;
+    const isMac =
+      /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    const canPasswordCred =
+      "credentials" in navigator && !!window.PasswordCredential;
     const canWebAuthn = !!window.PublicKeyCredential;
 
     // Only use PasswordCredential on Android (it shows the fingerprint prompt there).
@@ -1808,9 +2402,11 @@ async function registerBiometricNow() {
         localStorage.setItem("bl_last_email", email);
       const isWindows = /Windows/.test(navigator.userAgent);
       notify(
-        isIOS || isMac ? "Face ID enabled ✓"
-        : isWindows ? "Windows Hello enabled ✓"
-        : "Biometric login enabled ✓",
+        isIOS || isMac
+          ? "Face ID enabled ✓"
+          : isWindows
+            ? "Windows Hello enabled ✓"
+            : "Biometric login enabled ✓",
         "success",
       );
     } else {
@@ -2310,7 +2906,8 @@ function showLockScreen(subtitle) {
       // Label the button appropriately per platform
       if (canBio) {
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isMac = /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+        const isMac =
+          /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
         const isWindows = /Windows/.test(navigator.userAgent);
         const labelEl = document.getElementById("lockBiometricLabel");
         const iconEl = document.getElementById("lockBiometricIcon");
@@ -4928,7 +5525,10 @@ function toggleSettingsMenu() {
     // Sync slider value
     const saved = localStorage.getItem("bl_glass_opacity") || "50";
     const slider = document.getElementById("glassSlider");
-    if (slider) { slider.value = saved; slider.style.setProperty("--val", saved + "%"); }
+    if (slider) {
+      slider.value = saved;
+      slider.style.setProperty("--val", saved + "%");
+    }
 
     // Update sync status row
     const dot = document.getElementById("settingsSyncDot");
