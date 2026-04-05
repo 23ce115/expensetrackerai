@@ -1183,7 +1183,9 @@
               class="form-input"
               id="incomeDesc"
               placeholder="e.g. Monthly salary"
+              oninput="aiAutoCategory('income', this.value)"
             />
+            <div id="incomeAiBadge" class="ai-cat-badge" style="display:none"></div>
           </div>
           <div class="form-group">
             <label class="form-label">Notes (optional)</label>
@@ -1285,7 +1287,9 @@
               class="form-input"
               id="expenseDesc"
               placeholder="e.g. Grocery run"
+              oninput="aiAutoCategory('expense', this.value)"
             />
+            <div id="expenseAiBadge" class="ai-cat-badge" style="display:none"></div>
           </div>
           <div class="form-group">
             <label class="form-label">Notes (optional)</label>
@@ -2250,6 +2254,44 @@
         </div>
       </div>
     </div>
+
+    <!-- ═══════════════ ASK BLUELEDGER PANEL ═══════════════ -->
+    <div id="askBlOverlay" class="ask-bl-overlay" onclick="if(event.target===this)closeAskBl()"></div>
+    <div id="askBlPanel" class="ask-bl-panel">
+      <div class="ask-bl-header">
+        <div class="ask-bl-title">
+          <i class="fas fa-sparkles" style="color:#a78bfa;margin-right:.5rem"></i>
+          Ask BlueLedger
+        </div>
+        <button class="ask-bl-close" onclick="closeAskBl()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="ask-bl-messages" id="askBlMessages">
+        <div class="ask-bl-welcome">
+          <div class="ask-bl-welcome-icon"><i class="fas fa-robot"></i></div>
+          <div class="ask-bl-welcome-text">Hi! Ask me anything about your finances.</div>
+          <div class="ask-bl-chips">
+            <button class="ask-bl-chip" onclick="askBlSend('How much did I spend this month?')">This month's spending</button>
+            <button class="ask-bl-chip" onclick="askBlSend('What is my biggest expense category?')">Biggest category</button>
+            <button class="ask-bl-chip" onclick="askBlSend('How much did I spend on food this month?')">Food spending</button>
+            <button class="ask-bl-chip" onclick="askBlSend('Show my income vs expenses summary')">Income vs Expenses</button>
+          </div>
+        </div>
+      </div>
+      <div class="ask-bl-input-row">
+        <input type="text" class="ask-bl-input" id="askBlInput"
+          placeholder="e.g. How much on coffee since January?"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); askBlSend(); }" />
+        <button class="ask-bl-send" id="askBlSendBtn" onclick="askBlSend()">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ask BlueLedger FAB -->
+    <button class="ask-bl-fab" id="askBlFab" onclick="openAskBl()" title="Ask BlueLedger AI">
+      <i class="fas fa-comment-dots"></i>
+      <span class="ask-bl-fab-label">Ask AI</span>
+    </button>
 
     <script src="script.js" defer></script>
   </body>
