@@ -1605,9 +1605,11 @@ function attemptUnlock() {
   });
 }
 
-// Keyboard support on lock screen
+// Keyboard support on lock screen (PIN mode only — skip entirely in password mode)
 document.addEventListener("keydown", (e) => {
   if (document.getElementById("lockScreen").style.display === "none") return;
+  // In password mode the real input field handles everything — don't intercept digits
+  if (localStorage.getItem(AUTH_MODE_KEY) === "password") return;
   if (e.key >= "0" && e.key <= "9") pinPress(e.key);
   else if (e.key === "Backspace") pinBackspace();
   else if (e.key === "Enter") attemptUnlock();
