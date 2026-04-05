@@ -309,7 +309,6 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
   const badge = document.getElementById("syncStatusBadge");
   const body = document.getElementById("syncStatusText");
   const meta = document.getElementById("syncStatusMeta");
-  const indicator = document.getElementById("syncLiveIndicator");
   if (badge) {
     badge.textContent = badgeText;
     badge.className = "sync-status-badge";
@@ -323,14 +322,25 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
       (syncConfig?.lastSyncedAt
         ? `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`
         : "Local-only vault");
-  // Show/hide header live dot
-  if (indicator) {
-    indicator.style.display = kind === "ok" ? "flex" : "none";
-    const synced = indicator.querySelector("span:last-child");
-    if (synced && syncConfig?.lastSyncedAt) {
-      const d = new Date(syncConfig.lastSyncedAt);
-      const mins = Math.round((Date.now() - d) / 60000);
-      synced.textContent = mins < 1 ? "Synced just now" : mins < 60 ? `Synced ${mins}m ago` : "Synced";
+  // Update settings menu sync row if open
+  const dot = document.getElementById("settingsSyncDot");
+  const label = document.getElementById("settingsSyncLabel");
+  if (dot && label) {
+    if (kind === "ok") {
+      dot.style.background = "#10b981";
+      label.style.color = "#10b981";
+      const mins = syncConfig?.lastSyncedAt
+        ? Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000)
+        : 0;
+      label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
+    } else if (kind === "warn") {
+      dot.style.background = "#f59e0b";
+      label.style.color = "#f59e0b";
+      label.textContent = "Sync needs attention";
+    } else {
+      dot.style.background = "#475569";
+      label.style.color = "#64748b";
+      label.textContent = "Sync not active";
     }
   }
 }
@@ -3949,17 +3959,115 @@ function loadTheme() {
 
 function toggleSettingsMenu() {
   const menu = document.getElementById("settingsMenu");
+  const isOpen = menu.classList.contains("open");
   menu.classList.toggle("open");
-  // Sync glass slider with current saved value
-  if (menu.classList.contains("open")) {
+
+  if (!isOpen) {
+    // Sync slider value
+    const saved = localStorage.getItem("bl_glass_opacity") || "50";
+    const slider = document.getElementById("glassSlider");
+    if (slider) slider.value = saved;
+
+    // Update sync status row
+    const dot = document.getElementById("settingsSyncDot");
+    const label = document.getElementById("settingsSyncLabel");
+    if (dot && label) {
+      if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
+        const mins = Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000);
+        dot.style.background = "#10b981";
+        label.style.color = "#10b981";
+        label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
+      } else if (syncConfig?.enabled) {
+        dot.style.background = "#f59e0b";
+        label.style.color = "#f59e0b";
+        label.textContent = "Sync connecting…";
+      } else {
+        dot.style.background = "#475569";
+        label.style.color = "#64748b";
+        label.textContent = "Sync not active";
+      }
+    }
+
+    // Reset sub-panels to closed
+    const glassPanel = document.getElementById("glassSliderPanel");
+    const txnPanel = document.getElementById("settingsTxnPanel");
+    const glassChevron = document.getElementById("glassChevron");
+    const txnChevron = document.getElementById("txnChevron");
+    if (glassPanel) glassPanel.style.display = "none";
+    if (txnPanel) txnPanel.style.display = "none";
+    if (glassChevron) glassChevron.style.transform = "";
+    if (txnChevron) txnChevron.style.transform = "";
+  }
+}
+
+function closeSettingsMenu() {
+  document.getElementById("settingsMenu").classList.remove("open");
+}
+
+function toggleGlassSlider() {
+  const panel = document.getElementById("glassSliderPanel");
+  const chevron = document.getElementById("glassChevron");
+  const txnPanel = document.getElementById("settingsTxnPanel");
+  const txnChevron = document.getElementById("txnChevron");
+  if (txnPanel && txnPanel.style.display !== "none") {
+    txnPanel.style.display = "none";
+    if (txnChevron) txnChevron.style.transform = "";
+  }
+  if (!panel) return;
+  const isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+  if (!isOpen) {
     const saved = localStorage.getItem("bl_glass_opacity") || "50";
     const slider = document.getElementById("glassSlider");
     if (slider) slider.value = saved;
   }
 }
 
-function closeSettingsMenu() {
-  document.getElementById("settingsMenu").classList.remove("open");
+function toggleSettingsTransactions() {
+  const panel = document.getElementById("settingsTxnPanel");
+  const chevron = document.getElementById("txnChevron");
+  const glassPanel = document.getElementById("glassSliderPanel");
+  const glassChevron = document.getElementById("glassChevron");
+  if (glassPanel && glassPanel.style.display !== "none") {
+    glassPanel.style.display = "none";
+    if (glassChevron) glassChevron.style.transform = "";
+  }
+  if (!panel) return;
+  const isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+  if (!isOpen) renderSettingsTransactions();
+}
+
+function renderSettingsTransactions() {
+  const list = document.getElementById("settingsTxnList");
+  if (!list) return;
+  const now = new Date();
+  const thisMonth = (transactions || []).filter(t => {
+    const d = new Date(t.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+
+  if (!thisMonth.length) {
+    list.innerHTML = '<div class="settings-txn-empty">No transactions this month</div>';
+    return;
+  }
+  list.innerHTML = thisMonth.map(t => {
+    const isIncome = t.type === "income";
+    const amt = Math.abs(t.amount);
+    const amtClass = isIncome ? "txn-amt-pos" : "txn-amt-neg";
+    const sign = isIncome ? "+" : "-";
+    const desc = (t.description?.trim() || t.category || "").substring(0, 22);
+    const dateStr = new Date(t.date).toLocaleDateString("en-IN", { day:"numeric", month:"short" });
+    return `<div class="settings-txn-item">
+      <div style="display:flex;flex-direction:column;gap:.1rem">
+        <span style="color:#e2e8f0">${desc}</span>
+        <span class="txn-cat">${t.category} · ${dateStr}</span>
+      </div>
+      <span class="${amtClass}">${sign}₹${amt.toLocaleString("en-IN")}</span>
+    </div>`;
+  }).join("");
 }
 
 // Onboarding tooltips
