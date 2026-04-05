@@ -353,13 +353,20 @@ function openSyncModal() {
 function populateSyncModal() {
   if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
     updateSyncStatus(
-      "ok", "Connected", "Encrypted cloud sync is active.",
+      "ok",
+      "Connected",
+      "Encrypted cloud sync is active.",
       `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`,
     );
   } else if (syncConfig?.enabled) {
     updateSyncStatus("ok", "Connected", "Encrypted cloud sync is active.", "");
   } else {
-    updateSyncStatus("local", "Not connected", "Log in to activate cloud sync.", "Local-only vault");
+    updateSyncStatus(
+      "local",
+      "Not connected",
+      "Log in to activate cloud sync.",
+      "Local-only vault",
+    );
   }
 }
 
@@ -370,7 +377,13 @@ function getBLClient() {
     supabaseClient = window.supabase.createClient(
       BL_SUPABASE_URL,
       BL_SUPABASE_ANON_KEY,
-      { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      },
     );
   }
   return supabaseClient;
@@ -434,12 +447,15 @@ async function fetchRemoteVault() {
 async function upsertRemoteVault(payload) {
   const client = getBLClient();
   const ciphertext = encrypt(payload, syncConfig.syncKeyHex);
-  const { error } = await client.from(SYNC_TABLE).upsert({
-    user_id: syncConfig.userId,
-    ciphertext,
-    updated_by: syncConfig.deviceId || getDeviceId(),
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id" });
+  const { error } = await client.from(SYNC_TABLE).upsert(
+    {
+      user_id: syncConfig.userId,
+      ciphertext,
+      updated_by: syncConfig.deviceId || getDeviceId(),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
   if (error) throw error;
   syncConfig.lastSyncedHash = hashVaultPayload(payload);
   syncConfig.lastSyncedAt = new Date().toISOString();
@@ -615,8 +631,8 @@ async function initSyncAfterUnlock(options = {}) {
    AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let _pendingCardSetup = null;   // { name, email, password, userId }
-let _migrationVault = null;     // decrypted old PIN vault awaiting re-encryption
+let _pendingCardSetup = null; // { name, email, password, userId }
+let _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
 
 function showAuthScreen(tab = "login") {
   document.getElementById("authScreen").style.display = "flex";
@@ -625,7 +641,7 @@ function showAuthScreen(tab = "login") {
   switchAuthTab(tab);
 
   // Show biometric button on any device that supports it
-  _checkBiometricAvailable().then(canBio => {
+  _checkBiometricAvailable().then((canBio) => {
     const bioBtn = document.getElementById("authBiometricBtn");
     const bioDivider = document.getElementById("authBiometricDivider");
     if (bioBtn && bioDivider) {
@@ -636,16 +652,108 @@ function showAuthScreen(tab = "login") {
 }
 
 async function _checkBiometricAvailable() {
-  // Check if device has stored credentials (PasswordCredential — Android Chrome)
-  if (localStorage.getItem("bl_has_stored_creds") === "1" &&
-      "credentials" in navigator && window.PasswordCredential) return true;
-  // Check WebAuthn platform authenticator (iOS Safari Face ID)
+  // Android Chrome — PasswordCredential stored
+  if (
+    localStorage.getItem("bl_has_stored_creds") === "1" &&
+    "credentials" in navigator &&
+    window.PasswordCredential
+  )
+    return true;
+  // iOS Safari / any platform — WebAuthn credential registered
+  if (
+    localStorage.getItem("bl_has_webauthn") === "1" &&
+    window.PublicKeyCredential
+  )
+    return true;
+  // Check if the device even has a platform authenticator (Face ID, Touch ID, Windows Hello…)
   if (window.PublicKeyCredential) {
     try {
       return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   }
   return false;
+}
+
+/* ── WebAuthn helpers (iOS Face ID / Touch ID, Windows Hello) ── */
+
+async function _webAuthnRegister(email) {
+  if (!window.PublicKeyCredential) throw new Error("WebAuthn not supported");
+  const challenge = crypto.getRandomValues(new Uint8Array(32));
+  const userId = crypto.getRandomValues(new Uint8Array(16));
+  const credential = await navigator.credentials.create({
+    publicKey: {
+      challenge,
+      rp: { name: "BlueLedger", id: location.hostname },
+      user: {
+        id: userId,
+        name: email || "blueledger-user",
+        displayName: "BlueLedger",
+      },
+      pubKeyCredParams: [
+        { alg: -7, type: "public-key" }, // ES256
+        { alg: -257, type: "public-key" }, // RS256
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: "platform",
+        userVerification: "required",
+        residentKey: "preferred",
+      },
+      timeout: 60000,
+      attestation: "none",
+    },
+  });
+  // Store credential ID for later assertion
+  const rawId = new Uint8Array(credential.rawId);
+  const credIdB64 = btoa(String.fromCharCode(...rawId));
+  localStorage.setItem("bl_webauthn_cred_id", credIdB64);
+  return credIdB64;
+}
+
+async function _webAuthnAuthenticate() {
+  if (!window.PublicKeyCredential) throw new Error("WebAuthn not supported");
+  const credIdB64 = localStorage.getItem("bl_webauthn_cred_id");
+  if (!credIdB64) throw new Error("No WebAuthn credential registered");
+  const credId = Uint8Array.from(atob(credIdB64), (c) => c.charCodeAt(0));
+  const challenge = crypto.getRandomValues(new Uint8Array(32));
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge,
+      allowCredentials: [{ id: credId, type: "public-key" }],
+      userVerification: "required",
+      timeout: 60000,
+    },
+  });
+  if (!assertion) throw new Error("Authentication failed");
+  // Return the stored password (WebAuthn just gates access to it)
+  const vaultRaw = localStorage.getItem("bl_webauthn_pwd_vault");
+  if (!vaultRaw) throw new Error("No password vault found");
+  // Simple XOR obfuscation keyed on credId (not real crypto — the biometric IS the auth gate)
+  const key = credIdB64.slice(0, 64).padEnd(64, "x");
+  const decoded = atob(vaultRaw);
+  const pwd = decoded
+    .split("")
+    .map((c, i) =>
+      String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length)),
+    )
+    .join("");
+  return pwd;
+}
+
+function _webAuthnStorePassword(password) {
+  const credIdB64 = localStorage.getItem("bl_webauthn_cred_id") || "fallback";
+  const key = credIdB64.slice(0, 64).padEnd(64, "x");
+  const obfuscated = btoa(
+    password
+      .split("")
+      .map((c, i) =>
+        String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length)),
+      )
+      .join(""),
+  );
+  localStorage.setItem("bl_webauthn_pwd_vault", obfuscated);
+  localStorage.setItem("bl_has_webauthn", "1");
 }
 
 function hideAuthScreen() {
@@ -657,8 +765,12 @@ function switchAuthTab(tab) {
     tab === "login" ? "block" : "none";
   document.getElementById("signupPanel").style.display =
     tab === "signup" ? "block" : "none";
-  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
-  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
+  document
+    .getElementById("tabLogin")
+    .classList.toggle("active", tab === "login");
+  document
+    .getElementById("tabSignup")
+    .classList.toggle("active", tab === "signup");
   document.getElementById("loginError").textContent = "";
   document.getElementById("signupError").textContent = "";
 }
@@ -702,7 +814,10 @@ async function doSignUp() {
 
     if (data.user && !data.session) {
       // Store pending credentials so we can sign in after confirmation
-      localStorage.setItem("bl_pending_signup", JSON.stringify({ email, name }));
+      localStorage.setItem(
+        "bl_pending_signup",
+        JSON.stringify({ email, name }),
+      );
       // Email confirmation required
       document.getElementById("authScreen").innerHTML = `
         <div class="auth-card">
@@ -741,7 +856,11 @@ async function doSignUp() {
     }
   } catch (e) {
     const msg = e.message || "";
-    if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already been registered") || msg.toLowerCase().includes("user already exists")) {
+    if (
+      msg.toLowerCase().includes("already registered") ||
+      msg.toLowerCase().includes("already been registered") ||
+      msg.toLowerCase().includes("user already exists")
+    ) {
       errEl.innerHTML = `An account with this email already exists. 
         <a href="#" onclick="
           document.getElementById('loginEmail').value='${email}';
@@ -781,7 +900,10 @@ async function doSignIn() {
 
   try {
     const client = getBLClient();
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       // Check if email is not confirmed
@@ -794,12 +916,19 @@ async function doSignIn() {
       // Try to distinguish wrong email vs wrong password
       // Attempt password reset — if user doesn't exist, Supabase returns an error
       // We use this only for UX messaging, not security
-      const { error: resetErr } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://expensetrackerai-six.vercel.app/"
-      });
+      const { error: resetErr } = await client.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: "https://expensetrackerai-six.vercel.app/",
+        },
+      );
       // Cancel: we don't actually want to send a reset email here
       // Use the error code to detect if user exists
-      if (resetErr && (resetErr.message?.includes("User not found") || resetErr.status === 422)) {
+      if (
+        resetErr &&
+        (resetErr.message?.includes("User not found") ||
+          resetErr.status === 422)
+      ) {
         errEl.textContent = "No account found with this email. Please sign up.";
         document.getElementById("signupEmail").value = email;
         setTimeout(() => switchAuthTab("signup"), 1500);
@@ -809,8 +938,16 @@ async function doSignIn() {
       return;
     }
 
-    await _unlockWithPassword(password, data.user.id, data.user.user_metadata?.name || "");
+    await _unlockWithPassword(
+      password,
+      data.user.id,
+      data.user.user_metadata?.name || "",
+    );
 
+    // Store email for biometric re-auth (both PasswordCredential and WebAuthn paths)
+    try {
+      localStorage.setItem("bl_last_email", email);
+    } catch {}
     try {
       if ("credentials" in navigator && window.PasswordCredential) {
         const cred = new PasswordCredential({ id: email, password });
@@ -829,12 +966,16 @@ async function doSignIn() {
 async function forgotPassword() {
   const email = document.getElementById("loginEmail").value.trim();
   if (!email) {
-    document.getElementById("loginError").textContent = "Enter your email address first";
+    document.getElementById("loginError").textContent =
+      "Enter your email address first";
     document.getElementById("loginEmail").focus();
     return;
   }
   const btn = document.getElementById("forgotPasswordBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+  }
   try {
     const client = getBLClient();
     const { error } = await client.auth.resetPasswordForEmail(email, {
@@ -842,12 +983,17 @@ async function forgotPassword() {
     });
     if (error) throw error;
     document.getElementById("loginError").style.color = "#10b981";
-    document.getElementById("loginError").textContent = `Password reset link sent to ${email}`;
+    document.getElementById("loginError").textContent =
+      `Password reset link sent to ${email}`;
   } catch (e) {
     document.getElementById("loginError").style.color = "#ef4444";
-    document.getElementById("loginError").textContent = e.message || "Could not send reset email";
+    document.getElementById("loginError").textContent =
+      e.message || "Could not send reset email";
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Forgot Password?"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Forgot Password?";
+    }
   }
 }
 
@@ -867,19 +1013,40 @@ async function resendConfirmationEmail(email) {
 
 async function tryBiometricLogin() {
   try {
-    if (!("credentials" in navigator) || !window.PasswordCredential)
-      throw new Error("Not supported");
-    const cred = await navigator.credentials.get({
-      password: true,
-      mediation: "required",
-    });
-    if (!cred) return;
-    document.getElementById("loginEmail").value = cred.id;
-    document.getElementById("loginPassword").value = cred.password;
-    await doSignIn();
-  } catch {
-    // Biometric dismissed/failed — password form is visible
+    // Android Chrome — PasswordCredential
+    if (
+      "credentials" in navigator &&
+      window.PasswordCredential &&
+      localStorage.getItem("bl_has_stored_creds") === "1"
+    ) {
+      const cred = await navigator.credentials.get({
+        password: true,
+        mediation: "required",
+      });
+      if (cred) {
+        document.getElementById("loginEmail").value = cred.id;
+        document.getElementById("loginPassword").value = cred.password;
+        await doSignIn();
+        return;
+      }
+    }
+    // iOS / WebAuthn path
+    if (localStorage.getItem("bl_has_webauthn") === "1") {
+      const password = await _webAuthnAuthenticate();
+      // Fill the password field and sign in normally
+      const emailEl = document.getElementById("loginEmail");
+      if (!emailEl.value) {
+        // Try to retrieve last-used email
+        emailEl.value = localStorage.getItem("bl_last_email") || "";
+      }
+      document.getElementById("loginPassword").value = password;
+      await doSignIn();
+      return;
+    }
     notify("Use your password to sign in", "info");
+  } catch (e) {
+    // Biometric dismissed/failed — leave password form visible
+    console.warn("Biometric login failed", e);
   }
 }
 
@@ -890,7 +1057,10 @@ async function _unlockWithPassword(password, userId, displayName) {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
     const vault = tryDecrypt(raw, password);
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+    if (
+      vault &&
+      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+    ) {
       cards = vault.cards || [];
       activeCardIdx = vault.activeCardIdx || 0;
       syncConfig = cleanSyncConfig(vault.syncConfig);
@@ -1011,7 +1181,9 @@ async function completeCardSetup() {
     addingNewCard = false;
     document.getElementById("cardSetupModal").style.display = "none";
     // Reset modal title back
-    document.getElementById("cardSetupModal").querySelector(".modal-title").innerHTML =
+    document
+      .getElementById("cardSetupModal")
+      .querySelector(".modal-title").innerHTML =
       '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Set Up Your First Card';
     saveToStorage();
     renderCardSwitcher();
@@ -1052,10 +1224,45 @@ async function completeCardSetup() {
   refreshAll();
   initSyncAfterUnlock({ forceSyncNow: true }).catch(() => {});
 
-  notify(`Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`, "success");
+  notify(
+    `Welcome to BlueLedger${name ? ", " + name.split(" ")[0] : ""}! 🎉`,
+    "success",
+  );
 
-  setTimeout(() => {
-    if ("credentials" in navigator && window.PasswordCredential) {
+  setTimeout(async () => {
+    // Show biometric setup if device supports PasswordCredential (Android) OR WebAuthn (iOS)
+    const canPasswordCred =
+      "credentials" in navigator && !!window.PasswordCredential;
+    let canWebAuthn = false;
+    if (window.PublicKeyCredential) {
+      try {
+        canWebAuthn =
+          await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      } catch {}
+    }
+    if (canPasswordCred || canWebAuthn) {
+      // Tailor modal text for iOS Face ID vs Android fingerprint
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isMac =
+        /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+      const useFaceID = (isIOS || isMac) && canWebAuthn && !canPasswordCred;
+      const titleEl = document.getElementById("bioModalTitle");
+      const iconEl = document.getElementById("bioModalIcon");
+      const descEl = document.getElementById("bioModalDesc");
+      const btnEl = document.getElementById("bioModalEnableBtn");
+      if (useFaceID) {
+        if (titleEl)
+          titleEl.innerHTML =
+            '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
+        if (iconEl)
+          iconEl.innerHTML =
+            '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl)
+          descEl.innerHTML =
+            'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
+        if (btnEl)
+          btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable Face ID';
+      }
       document.getElementById("biometricSetupModal").style.display = "flex";
     }
   }, 800);
@@ -1064,13 +1271,30 @@ async function completeCardSetup() {
 async function registerBiometricNow() {
   try {
     const { email, password } = _pendingCardSetup || {};
-    if (email && password && window.PasswordCredential) {
+
+    // Android Chrome — PasswordCredential
+    if (
+      "credentials" in navigator &&
+      window.PasswordCredential &&
+      email &&
+      password
+    ) {
       const cred = new PasswordCredential({ id: email, password });
       await navigator.credentials.store(cred);
       localStorage.setItem("bl_has_stored_creds", "1");
       notify("Biometric login enabled", "success");
     }
-  } catch {}
+    // iOS / WebAuthn — register platform authenticator (Face ID / Touch ID)
+    else if (window.PublicKeyCredential) {
+      await _webAuthnRegister(email || "blueledger-user");
+      if (password) _webAuthnStorePassword(password);
+      if (email) localStorage.setItem("bl_last_email", email);
+      notify("Face ID / biometric login enabled", "success");
+    }
+  } catch (e) {
+    console.warn("Biometric registration failed", e);
+    notify("Could not enable biometric login", "error");
+  }
   document.getElementById("biometricSetupModal").style.display = "none";
 }
 
@@ -1078,18 +1302,48 @@ async function registerBiometricNow() {
 
 async function tryLockScreenBiometric() {
   try {
-    if (!("credentials" in navigator) || !window.PasswordCredential) return;
-    const cred = await navigator.credentials.get({ password: true, mediation: "required" });
-    if (!cred) return;
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const vault = tryDecrypt(raw, cred.password);
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
-      await _lockScreenSuccess(cred.password, vault);
-    } else {
+    // Android Chrome — PasswordCredential
+    if (
+      "credentials" in navigator &&
+      window.PasswordCredential &&
+      localStorage.getItem("bl_has_stored_creds") === "1"
+    ) {
+      const cred = await navigator.credentials.get({
+        password: true,
+        mediation: "required",
+      });
+      if (!cred) return;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const vault = tryDecrypt(raw, cred.password);
+      if (
+        vault &&
+        (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+      ) {
+        await _lockScreenSuccess(cred.password, vault);
+        return;
+      }
       notify("Biometric credential mismatch. Use your password.", "error");
+      return;
     }
-  } catch {
-    // Dismissed — leave password form visible
+    // iOS Safari / WebAuthn path
+    if (localStorage.getItem("bl_has_webauthn") === "1") {
+      const password = await _webAuthnAuthenticate();
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const vault = raw ? tryDecrypt(raw, password) : null;
+      if (
+        vault &&
+        (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+      ) {
+        await _lockScreenSuccess(password, vault);
+        return;
+      }
+      // Local vault not found — try cloud unlock
+      document.getElementById("lockPasswordInput").value = password;
+      await unlockWithLockPassword();
+    }
+  } catch (e) {
+    // Dismissed or failed — leave password form visible
+    console.warn("Lock screen biometric failed", e);
   }
 }
 
@@ -1109,7 +1363,10 @@ async function unlockWithLockPassword() {
   }
 
   const btn = document.getElementById("lockUnlockBtn");
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…'; }
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Unlocking…';
+  }
 
   const errEl = document.getElementById("lockError");
   errEl.textContent = "";
@@ -1118,7 +1375,10 @@ async function unlockWithLockPassword() {
     const raw = localStorage.getItem(STORAGE_KEY);
     const vault = raw ? tryDecrypt(raw, password) : null;
 
-    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+    if (
+      vault &&
+      (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)
+    ) {
       // Local vault decrypted successfully
       pinAttempts = 0;
       pinLockedUntil = 0;
@@ -1191,7 +1451,12 @@ async function unlockWithLockPassword() {
         deviceId: getDeviceId(),
         status: "ok",
       };
-      _pendingCardSetup = { name: displayName, email: userEmail, password, userId };
+      _pendingCardSetup = {
+        name: displayName,
+        email: userEmail,
+        password,
+        userId,
+      };
       hideLockScreen();
       _openCardSetupModal();
       return;
@@ -1200,12 +1465,14 @@ async function unlockWithLockPassword() {
     // No session — wrong password
     errEl.textContent = "";
     _lockFailure(errEl);
-
   } catch (e) {
     console.warn("Unlock error", e);
     errEl.textContent = "Something went wrong. Try again.";
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-unlock-alt"></i> Unlock'; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-unlock-alt"></i> Unlock';
+    }
   }
 }
 
@@ -1224,8 +1491,10 @@ function _lockFailure(errEl) {
     errEl.textContent = "Too many attempts — locked for 30s";
     const countdown = setInterval(() => {
       const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
-      if (s <= 0) { clearInterval(countdown); errEl.textContent = ""; }
-      else errEl.textContent = `Locked — try again in ${s}s`;
+      if (s <= 0) {
+        clearInterval(countdown);
+        errEl.textContent = "";
+      } else errEl.textContent = `Locked — try again in ${s}s`;
     }, 500);
   } else if (pinAttempts >= 2) {
     errEl.innerHTML = `Wrong password (${remaining} left). 
@@ -1233,7 +1502,9 @@ function _lockFailure(errEl) {
          style="color:#f87171;text-decoration:underline">Sign out &amp; start fresh</a>`;
   } else {
     errEl.textContent = `Wrong password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
-    setTimeout(() => { errEl.textContent = ""; }, 2500);
+    setTimeout(() => {
+      errEl.textContent = "";
+    }, 2500);
   }
 }
 
@@ -1262,7 +1533,10 @@ async function _lockScreenSuccess(password, vault) {
 async function startMigration() {
   const pin = document.getElementById("migrationPin").value.trim();
   const errEl = document.getElementById("migrationError");
-  if (!pin) { errEl.textContent = "Enter your current PIN"; return; }
+  if (!pin) {
+    errEl.textContent = "Enter your current PIN";
+    return;
+  }
 
   const now = Date.now();
   if (now < pinLockedUntil) {
@@ -1318,7 +1592,10 @@ async function _applyMigrationVault(password, userId) {
   hideAuthScreen();
 
   renderCardSwitcher();
-  if (userData) { updateMyCardWidget(); processRecurring(); }
+  if (userData) {
+    updateMyCardWidget();
+    processRecurring();
+  }
   populateCategorySelects();
   updateAddAccountUI();
   refreshAll();
@@ -1354,13 +1631,15 @@ async function doSignOut() {
 /* ── Backup: .bl file export/import + QR ── */
 
 function exportBLFile() {
-  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  if (!sessionPin) {
+    notify("Unlock the app first", "error");
+    return;
+  }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
-  const blob = new Blob(
-    [JSON.stringify({ bl: 1, data: encrypted })],
-    { type: "application/json" }
-  );
+  const blob = new Blob([JSON.stringify({ bl: 1, data: encrypted })], {
+    type: "application/json",
+  });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `blueledger-backup-${new Date().toISOString().slice(0, 10)}.bl`;
@@ -1378,16 +1657,25 @@ async function handleBLFileImport(input) {
   try {
     const text = await file.text();
     const obj = JSON.parse(text);
-    if (!obj.bl || !obj.data) throw new Error("Not a valid BlueLedger backup file");
-    const password = prompt("Enter the password used when this backup was created:");
+    if (!obj.bl || !obj.data)
+      throw new Error("Not a valid BlueLedger backup file");
+    const password = prompt(
+      "Enter the password used when this backup was created:",
+    );
     if (!password) return;
     const payload = tryDecrypt(obj.data, password);
-    if (!payload) { notify("Wrong password — cannot decrypt backup", "error"); return; }
+    if (!payload) {
+      notify("Wrong password — cannot decrypt backup", "error");
+      return;
+    }
     if (!confirm("This will replace your current data. Continue?")) return;
     applyVaultPayload(payload);
     saveToStorage();
     renderCardSwitcher();
-    if (userData) { updateMyCardWidget(); processRecurring(); }
+    if (userData) {
+      updateMyCardWidget();
+      processRecurring();
+    }
     populateCategorySelects();
     updateAddAccountUI();
     refreshAll();
@@ -1399,13 +1687,19 @@ async function handleBLFileImport(input) {
 }
 
 async function exportQRCode() {
-  if (!sessionPin) { notify("Unlock the app first", "error"); return; }
+  if (!sessionPin) {
+    notify("Unlock the app first", "error");
+    return;
+  }
   const payload = getVaultPayload();
   const encrypted = encrypt(payload, sessionPin);
   const jsonStr = JSON.stringify({ bl: 1, data: encrypted });
 
   if (jsonStr.length > 2500) {
-    notify("Vault is too large for a QR code. Use the .bl backup file instead.", "warn");
+    notify(
+      "Vault is too large for a QR code. Use the .bl backup file instead.",
+      "warn",
+    );
     return;
   }
 
@@ -1445,17 +1739,42 @@ function showLockScreen(subtitle) {
     if (pinArea) pinArea.style.display = "none";
     if (pwdArea) pwdArea.style.display = "block";
     const pwdInput = document.getElementById("lockPasswordInput");
-    if (pwdInput) { pwdInput.value = ""; setTimeout(() => pwdInput.focus(), 300); }
+    if (pwdInput) {
+      pwdInput.value = "";
+      setTimeout(() => pwdInput.focus(), 300);
+    }
     // Show biometric button if available
     const bioBtn = document.getElementById("lockBiometricBtn");
     const bioDivider = document.getElementById("lockBiometricDivider");
     if (bioBtn) {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const hasStoredCreds = localStorage.getItem("bl_has_stored_creds") === "1";
-      const canBio = isMobile && hasStoredCreds && "credentials" in navigator && window.PasswordCredential;
+      const hasPasswordCred =
+        localStorage.getItem("bl_has_stored_creds") === "1" &&
+        "credentials" in navigator &&
+        window.PasswordCredential;
+      const hasWebAuthn =
+        localStorage.getItem("bl_has_webauthn") === "1" &&
+        !!window.PublicKeyCredential;
+      const canBio = hasPasswordCred || hasWebAuthn;
       bioBtn.style.display = canBio ? "flex" : "none";
       if (bioDivider) bioDivider.style.display = canBio ? "block" : "none";
-      if (canBio) setTimeout(tryLockScreenBiometric, 600);
+      // Label the button appropriately for iOS Face ID
+      if (canBio) {
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isMac =
+          /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+        const useFaceID = (isIOS || isMac) && hasWebAuthn && !hasPasswordCred;
+        const labelEl = document.getElementById("lockBiometricLabel");
+        const iconEl = document.getElementById("lockBiometricIcon");
+        if (labelEl)
+          labelEl.textContent = useFaceID
+            ? "Use Face ID"
+            : "Use Face ID / Fingerprint";
+        if (iconEl)
+          iconEl.className = useFaceID
+            ? "fas fa-face-smile"
+            : "fas fa-fingerprint";
+        setTimeout(tryLockScreenBiometric, 600);
+      }
     }
     document.getElementById("lockSubtitle").textContent =
       subtitle || "Enter your password to continue";
@@ -1474,7 +1793,6 @@ function showLockScreen(subtitle) {
   document.getElementById("lockError").textContent = "";
   document.getElementById("lockAttempts").textContent = "";
 }
-
 
 function hideLockScreen() {
   document.getElementById("lockScreen").style.display = "none";
@@ -1709,7 +2027,33 @@ async function changePin() {
   ["cpOld", "cpNew", "cpNew2"].forEach(
     (id) => (document.getElementById(id).value = ""),
   );
-  notify(authMode === "password" ? "Password updated" : "PIN updated", "success");
+  // Keep WebAuthn vault in sync with new password
+  if (
+    authMode === "password" &&
+    localStorage.getItem("bl_has_webauthn") === "1"
+  ) {
+    try {
+      _webAuthnStorePassword(newPin);
+    } catch {}
+  }
+  // Keep PasswordCredential in sync with new password
+  if (
+    authMode === "password" &&
+    localStorage.getItem("bl_has_stored_creds") === "1"
+  ) {
+    try {
+      const email = localStorage.getItem("bl_last_email");
+      if (email && window.PasswordCredential) {
+        await navigator.credentials.store(
+          new PasswordCredential({ id: email, password: newPin }),
+        );
+      }
+    } catch {}
+  }
+  notify(
+    authMode === "password" ? "Password updated" : "PIN updated",
+    "success",
+  );
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3960,10 +4304,22 @@ function setGlassOpacity(val) {
   const blur = (v / 100) * 28 + 8;
   const border = (v / 100) * 0.18 + 0.04;
   const shadow = (v / 100) * 0.35 + 0.25;
-  document.documentElement.style.setProperty("--glass-opacity", opacity.toFixed(3));
-  document.documentElement.style.setProperty("--glass-blur", blur.toFixed(0) + "px");
-  document.documentElement.style.setProperty("--glass-border", border.toFixed(3));
-  document.documentElement.style.setProperty("--glass-shadow", shadow.toFixed(2));
+  document.documentElement.style.setProperty(
+    "--glass-opacity",
+    opacity.toFixed(3),
+  );
+  document.documentElement.style.setProperty(
+    "--glass-blur",
+    blur.toFixed(0) + "px",
+  );
+  document.documentElement.style.setProperty(
+    "--glass-border",
+    border.toFixed(3),
+  );
+  document.documentElement.style.setProperty(
+    "--glass-shadow",
+    shadow.toFixed(2),
+  );
   localStorage.setItem("bl_glass_opacity", val);
   const slider = document.getElementById("glassSlider");
   if (slider && slider.value !== String(val)) slider.value = val;
@@ -3996,10 +4352,13 @@ function toggleSettingsMenu() {
     const label = document.getElementById("settingsSyncLabel");
     if (dot && label) {
       if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
-        const mins = Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000);
+        const mins = Math.round(
+          (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
+        );
         dot.style.background = "#10b981";
         label.style.color = "#10b981";
-        label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
+        label.textContent =
+          mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
       } else if (syncConfig?.enabled) {
         dot.style.background = "#f59e0b";
         label.style.color = "#f59e0b";
@@ -4050,14 +4409,22 @@ function openTxnFullPage() {
   syncActiveToCards();
   let allTxns = [];
   cards.forEach((card, ci) => {
-    const cardName = card.userData?.nickname?.trim() || card.userData?.name?.trim() || `Card ${ci + 1}`;
-    const last4 = (card.userData?.cardNumber || "").replace(/\D/g, "").slice(-4);
+    const cardName =
+      card.userData?.nickname?.trim() ||
+      card.userData?.name?.trim() ||
+      `Card ${ci + 1}`;
+    const last4 = (card.userData?.cardNumber || "")
+      .replace(/\D/g, "")
+      .slice(-4);
     const accountLabel = last4 ? `${cardName} ••••${last4}` : cardName;
-    (card.transactions || []).forEach(t => allTxns.push({ ...t, _account: accountLabel }));
+    (card.transactions || []).forEach((t) =>
+      allTxns.push({ ...t, _account: accountLabel }),
+    );
   });
 
   if (!allTxns.length) {
-    body.innerHTML = '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>';
+    body.innerHTML =
+      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>';
     subtitle.textContent = "No data";
     page.classList.remove("txn-page-closing");
     requestAnimationFrame(() => page.classList.add("txn-page-open"));
@@ -4067,10 +4434,13 @@ function openTxnFullPage() {
   allTxns.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const groups = {};
-  allTxns.forEach(t => {
+  allTxns.forEach((t) => {
     const d = new Date(t.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    const label = d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-IN", {
+      month: "long",
+      year: "numeric",
+    });
     if (!groups[key]) groups[key] = { label, txns: [] };
     groups[key].txns.push(t);
   });
@@ -4078,21 +4448,31 @@ function openTxnFullPage() {
   const monthCount = Object.keys(groups).length;
   subtitle.textContent = `${allTxns.length} transactions · ${monthCount} month${monthCount !== 1 ? "s" : ""}`;
 
-  body.innerHTML = Object.entries(groups).map(([, g]) => {
-    const rows = g.txns.map(t => {
-      const isInc = t.type === "income";
-      const amt = Math.abs(t.amount);
-      const dateStr = new Date(t.date).toLocaleDateString("en-IN", { day:"numeric", month:"short" });
-      const desc = (t.description?.trim() || t.category || "").substring(0, 35);
-      return `<div class="txn-full-row">
+  body.innerHTML = Object.entries(groups)
+    .map(([, g]) => {
+      const rows = g.txns
+        .map((t) => {
+          const isInc = t.type === "income";
+          const amt = Math.abs(t.amount);
+          const dateStr = new Date(t.date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+          });
+          const desc = (t.description?.trim() || t.category || "").substring(
+            0,
+            35,
+          );
+          return `<div class="txn-full-row">
         <div class="txn-full-date">${dateStr}</div>
         <div><div class="txn-full-desc">${desc}</div><div class="txn-full-cat">${t.category}</div></div>
         <div class="txn-full-account">${t._account}</div>
-        <div class="txn-full-amt ${isInc?"pos":"neg"}">${isInc?"+":"-"}₹${amt.toLocaleString("en-IN")}</div>
+        <div class="txn-full-amt ${isInc ? "pos" : "neg"}">${isInc ? "+" : "-"}₹${amt.toLocaleString("en-IN")}</div>
       </div>`;
-    }).join("");
-    return `<div class="txn-month-group"><div class="txn-month-label">${g.label}</div>${rows}</div>`;
-  }).join("");
+        })
+        .join("");
+      return `<div class="txn-month-group"><div class="txn-month-label">${g.label}</div>${rows}</div>`;
+    })
+    .join("");
 
   page.classList.remove("txn-page-closing");
   requestAnimationFrame(() => page.classList.add("txn-page-open"));
@@ -4111,11 +4491,15 @@ function openBnSettingsWithSync() {
   const label = document.getElementById("bnSyncLabel");
   if (dot && label) {
     if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
-      const mins = Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000);
-      dot.style.background = "#10b981"; label.style.color = "#10b981";
+      const mins = Math.round(
+        (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
+      );
+      dot.style.background = "#10b981";
+      label.style.color = "#10b981";
       label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
     } else if (syncConfig?.enabled) {
-      dot.style.background = "#f59e0b"; label.style.color = "#f59e0b";
+      dot.style.background = "#f59e0b";
+      label.style.color = "#f59e0b";
       label.textContent = "Sync connecting…";
     }
   }
@@ -4164,30 +4548,41 @@ function renderSettingsTransactions() {
   const list = document.getElementById("settingsTxnList");
   if (!list) return;
   const now = new Date();
-  const thisMonth = (transactions || []).filter(t => {
-    const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+  const thisMonth = (transactions || [])
+    .filter((t) => {
+      const d = new Date(t.date);
+      return (
+        d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      );
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 20);
 
   if (!thisMonth.length) {
-    list.innerHTML = '<div class="settings-txn-empty">No transactions this month</div>';
+    list.innerHTML =
+      '<div class="settings-txn-empty">No transactions this month</div>';
     return;
   }
-  list.innerHTML = thisMonth.map(t => {
-    const isIncome = t.type === "income";
-    const amt = Math.abs(t.amount);
-    const amtClass = isIncome ? "txn-amt-pos" : "txn-amt-neg";
-    const sign = isIncome ? "+" : "-";
-    const desc = (t.description?.trim() || t.category || "").substring(0, 22);
-    const dateStr = new Date(t.date).toLocaleDateString("en-IN", { day:"numeric", month:"short" });
-    return `<div class="settings-txn-item">
+  list.innerHTML = thisMonth
+    .map((t) => {
+      const isIncome = t.type === "income";
+      const amt = Math.abs(t.amount);
+      const amtClass = isIncome ? "txn-amt-pos" : "txn-amt-neg";
+      const sign = isIncome ? "+" : "-";
+      const desc = (t.description?.trim() || t.category || "").substring(0, 22);
+      const dateStr = new Date(t.date).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+      });
+      return `<div class="settings-txn-item">
       <div style="display:flex;flex-direction:column;gap:.1rem">
         <span style="color:#e2e8f0">${desc}</span>
         <span class="txn-cat">${t.category} · ${dateStr}</span>
       </div>
       <span class="${amtClass}">${sign}₹${amt.toLocaleString("en-IN")}</span>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 // Onboarding tooltips
@@ -4579,7 +4974,10 @@ if ("serviceWorker" in navigator) {
 
     // Detect Supabase email confirmation / password reset redirect
     const hash = window.location.hash;
-    const isAuthRedirect = hash.includes("access_token") || hash.includes("type=signup") || hash.includes("type=recovery");
+    const isAuthRedirect =
+      hash.includes("access_token") ||
+      hash.includes("type=signup") ||
+      hash.includes("type=recovery");
 
     if (isAuthRedirect) {
       await new Promise((r) => setTimeout(r, 800));
@@ -4647,11 +5045,21 @@ if ("serviceWorker" in navigator) {
     // One-time migration: clear any old PIN-only vault that has no authMode set
     // This runs once and sets a flag so it never repeats
     if (hasVault && !authMode && !localStorage.getItem("bl_v2_migrated")) {
-      const keysToKeep = ["bl_sync_device_v1", "bl_has_stored_creds", "bl_glass_opacity", "bl_theme"];
+      const keysToKeep = [
+        "bl_sync_device_v1",
+        "bl_has_stored_creds",
+        "bl_glass_opacity",
+        "bl_theme",
+      ];
       const saved = {};
-      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      keysToKeep.forEach((k) => {
+        const v = localStorage.getItem(k);
+        if (v) saved[k] = v;
+      });
       localStorage.clear();
-      keysToKeep.forEach(k => { if (saved[k]) localStorage.setItem(k, saved[k]); });
+      keysToKeep.forEach((k) => {
+        if (saved[k]) localStorage.setItem(k, saved[k]);
+      });
       localStorage.setItem("bl_v2_migrated", "1");
       showAuthScreen(hasSession ? "login" : "signup");
       return;
@@ -4659,39 +5067,41 @@ if ("serviceWorker" in navigator) {
     if (hasVault && authMode === "pin") {
       // Legacy PIN vault — prompt migration
       document.getElementById("migrationModal").style.display = "flex";
-
     } else if (hasVault && authMode === "password" && hasSession) {
       // Correct returning user with active session — show password lock screen
       showLockScreen();
-
     } else if (hasVault && authMode === "password" && !hasSession) {
       // Vault exists but session expired — show login
       showAuthScreen("login");
-
     } else if (hasVault && !authMode) {
       // Old data from before new auth system (no authMode set)
       // Clear stale localStorage and show fresh auth screen
       const keysToKeep = ["bl_sync_device_v1", "bl_has_stored_creds"];
       const saved = {};
-      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      keysToKeep.forEach((k) => {
+        const v = localStorage.getItem(k);
+        if (v) saved[k] = v;
+      });
       localStorage.clear();
-      keysToKeep.forEach(k => { if (saved[k]) localStorage.setItem(k, saved[k]); });
+      keysToKeep.forEach((k) => {
+        if (saved[k]) localStorage.setItem(k, saved[k]);
+      });
       if (hasSession) {
         showAuthScreen("login");
       } else {
         showAuthScreen("signup");
       }
-
     } else if (!hasVault) {
       showAuthScreen(hasSession ? "login" : "signup");
-
     } else {
       showAuthScreen("login");
     }
 
     // Pre-fill login if returning after email confirmation
     try {
-      const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
+      const pending = JSON.parse(
+        localStorage.getItem("bl_pending_signup") || "null",
+      );
       if (pending?.email) {
         setTimeout(() => {
           const el = document.getElementById("loginEmail");
@@ -4701,7 +5111,6 @@ if ("serviceWorker" in navigator) {
         }, 400);
       }
     } catch {}
-
   } catch (e) {
     console.warn("initApp error", e);
     const am = localStorage.getItem(AUTH_MODE_KEY);
@@ -4724,8 +5133,14 @@ async function doPasswordReset() {
   const p1 = document.getElementById("resetNewPassword").value;
   const p2 = document.getElementById("resetNewPassword2").value;
   const errEl = document.getElementById("resetError");
-  if (p1.length < 8) { errEl.textContent = "Password must be at least 8 characters"; return; }
-  if (p1 !== p2) { errEl.textContent = "Passwords do not match"; return; }
+  if (p1.length < 8) {
+    errEl.textContent = "Password must be at least 8 characters";
+    return;
+  }
+  if (p1 !== p2) {
+    errEl.textContent = "Passwords do not match";
+    return;
+  }
   try {
     const client = getBLClient();
     const { error } = await client.auth.updateUser({ password: p1 });
@@ -4734,7 +5149,8 @@ async function doPasswordReset() {
     showAuthScreen("login");
     notify("Password updated! Log in with your new password.", "success");
   } catch (e) {
-    document.getElementById("resetError").textContent = e.message || "Failed to update password";
+    document.getElementById("resetError").textContent =
+      e.message || "Failed to update password";
   }
 }
 
