@@ -441,6 +441,12 @@
             </div>
             <!-- Transaction dropdown panel -->
             <div id="settingsTxnPanel" style="display:none;max-height:260px;overflow-y:auto;padding:.25rem .5rem .5rem">
+              <div style="padding:.3rem .5rem .4rem;display:flex;justify-content:flex-end">
+                <span onclick="closeSettingsMenu();openTxnFullPage()"
+                  style="font-size:.72rem;color:#3b82f6;cursor:pointer;text-decoration:underline">
+                  View all months <i class="fas fa-arrow-up-right-from-square" style="font-size:.6rem"></i>
+                </span>
+              </div>
               <div id="settingsTxnList" style="display:flex;flex-direction:column;gap:.4rem"></div>
             </div>
 
@@ -978,118 +984,82 @@
     ></div>
     <div class="bn-settings-panel" id="bnSettingsPanel">
       <div class="bn-sheet-handle"></div>
-      <div class="bn-sheet-title">Settings</div>
+      <!-- Header with close button -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div class="bn-sheet-title" style="margin:0">Settings</div>
+        <button onclick="closeBnSettings()"
+          style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;font-size:.8rem">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Sync status row -->
+      <div onclick="closeBnSettings();openSyncModal()"
+        style="display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:.75rem;cursor:pointer">
+        <span class="sync-live-dot" id="bnSyncDot" style="background:#475569;flex-shrink:0"></span>
+        <span id="bnSyncLabel" style="font-size:.8rem;color:#64748b;flex:1">Sync not active</span>
+        <i class="fas fa-chevron-right" style="font-size:.65rem;color:#475569"></i>
+      </div>
+
       <div class="bn-settings-section">View Period</div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          setPeriod('daily');
-        "
-      >
-        <i class="fas fa-sun" style="color: #f59e0b"></i> Daily view
+      <div class="bn-settings-row" onclick="closeBnSettings();setPeriod('daily')">
+        <i class="fas fa-sun" style="color:#f59e0b"></i> Daily view
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          setPeriod('weekly');
-        "
-      >
-        <i class="fas fa-calendar-week" style="color: #3b82f6"></i> Weekly view
+      <div class="bn-settings-row" onclick="closeBnSettings();setPeriod('weekly')">
+        <i class="fas fa-calendar-week" style="color:#3b82f6"></i> Weekly view
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          setPeriod('monthly');
-        "
-      >
-        <i class="fas fa-calendar-alt" style="color: #10b981"></i> Monthly view
+      <div class="bn-settings-row" onclick="closeBnSettings();setPeriod('monthly')">
+        <i class="fas fa-calendar-alt" style="color:#10b981"></i> Monthly view
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          openMonthPicker();
-        "
-      >
-        <i class="fas fa-calendar-check" style="color: #a78bfa"></i> Pick Month
+      <div class="bn-settings-row" onclick="closeBnSettings();openMonthPicker()">
+        <i class="fas fa-calendar-check" style="color:#a78bfa"></i> Pick Month
       </div>
-      <div class="bn-settings-section">Account</div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          lockApp();
-        "
-      >
-        <i class="fas fa-lock"></i> Lock App
-      </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          toggleTheme();
-        "
-      >
+
+      <div class="bn-settings-section">Display</div>
+      <div class="bn-settings-row" onclick="closeBnSettings();toggleTheme()">
         <i class="fas fa-moon" id="themeIconMobile"></i>
         <span id="themeModeLabelMobile">Dark mode</span>
       </div>
+      <!-- Glass transparency toggle -->
+      <div class="bn-settings-row" onclick="toggleBnGlassSlider()" style="justify-content:space-between">
+        <span><i class="fas fa-droplet" style="margin-right:.5rem"></i>Glass Transparency</span>
+        <i class="fas fa-chevron-down" id="bnGlassChevron" style="font-size:.65rem;transition:transform .2s"></i>
+      </div>
+      <div id="bnGlassPanel" style="display:none;padding:.25rem .5rem .6rem">
+        <div class="glass-slider-wrap">
+          <i class="fas fa-circle" style="font-size:.5rem;color:#64748b"></i>
+          <input type="range" min="0" max="100" value="50" id="bnGlassSlider"
+            oninput="setGlassOpacity(this.value);document.getElementById('glassSlider').value=this.value" style="flex:1" />
+          <i class="fas fa-circle" style="font-size:.9rem;color:#e2e8f0"></i>
+        </div>
+      </div>
+      <!-- Recent transactions -->
+      <div class="bn-settings-row" onclick="closeBnSettings();openTxnFullPage()">
+        <i class="fas fa-list-ul" style="color:#60a5fa"></i> Recent Transactions
+        <i class="fas fa-arrow-up-right-from-square" style="font-size:.65rem;margin-left:auto;color:#475569"></i>
+      </div>
 
+      <div class="bn-settings-section">Account</div>
+      <div class="bn-settings-row" onclick="closeBnSettings();lockApp()">
+        <i class="fas fa-lock"></i> Lock App
+      </div>
       <div class="bn-settings-section">Data</div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          openChangePinModal();
-        "
-      >
+      <div class="bn-settings-row" onclick="closeBnSettings();openChangePinModal()">
         <i class="fas fa-key"></i> Change Password
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          openSyncModal();
-        "
-      >
+      <div class="bn-settings-row" onclick="closeBnSettings();openSyncModal()">
         <i class="fas fa-cloud"></i> Cloud Sync &amp; Backup
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          exportCSV();
-        "
-      >
+      <div class="bn-settings-row" onclick="closeBnSettings();exportCSV()">
         <i class="fas fa-download"></i> Export CSV
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          openImportModal();
-        "
-      >
+      <div class="bn-settings-row" onclick="closeBnSettings();openImportModal()">
         <i class="fas fa-upload"></i> Import CSV
       </div>
-      <div
-        class="bn-settings-row"
-        onclick="
-          closeBnSettings();
-          openPrivacyModal();
-        "
-      >
+      <div class="bn-settings-row" onclick="closeBnSettings();openPrivacyModal()">
         <i class="fas fa-shield-alt"></i> Privacy Policy
       </div>
-      <div
-        class="bn-settings-row bn-settings-danger"
-        onclick="
-          closeBnSettings();
-          openResetModal();
-        "
-      >
+      <div class="bn-settings-row bn-settings-danger" onclick="closeBnSettings();openResetModal()">
         <i class="fas fa-trash-alt"></i> Reset App
       </div>
     </div>
@@ -2277,6 +2247,25 @@
           <button class="btn btn-primary" onclick="closeModal('privacyModal')">
             Got it
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ FULL TRANSACTIONS PAGE ═══════════════ -->
+    <div id="txnFullPage">
+      <div class="txn-page-header">
+        <div>
+          <div class="txn-page-title"><i class="fas fa-list-ul" style="color:#3b82f6;margin-right:.5rem"></i>All Transactions</div>
+          <div style="font-size:.75rem;color:#64748b;margin-top:.15rem" id="txnPageSubtitle">Loading…</div>
+        </div>
+        <button class="txn-page-close" onclick="closeTxnFullPage()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="txn-page-body" id="txnPageBody">
+        <div style="text-align:center;padding:3rem;color:#475569">
+          <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:.75rem;display:block"></i>
+          Loading transactions…
         </div>
       </div>
     </div>
