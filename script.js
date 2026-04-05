@@ -767,28 +767,31 @@ function switchAuthTab(tab) {
   if (tab === "login") openAuthPopup("login");
   else openAuthPopup("signup");
 }
-// Android Chrome — PasswordCredential stored
-if (
-  localStorage.getItem("bl_has_stored_creds") === "1" &&
-  "credentials" in navigator &&
-  window.PasswordCredential
-)
-  return true;
-// iOS Safari / any platform — WebAuthn credential registered
-if (
-  localStorage.getItem("bl_has_webauthn") === "1" &&
-  window.PublicKeyCredential
-)
-  return true;
-// Check if the device even has a platform authenticator (Face ID, Touch ID, Windows Hello…)
-if (window.PublicKeyCredential) {
-  try {
-    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-  } catch {
-    return false;
+
+async function _checkBiometricAvailable() {
+  // Android Chrome — PasswordCredential stored
+  if (
+    localStorage.getItem("bl_has_stored_creds") === "1" &&
+    "credentials" in navigator &&
+    window.PasswordCredential
+  )
+    return true;
+  // iOS Safari / any platform — WebAuthn credential registered
+  if (
+    localStorage.getItem("bl_has_webauthn") === "1" &&
+    window.PublicKeyCredential
+  )
+    return true;
+  // Check if the device even has a platform authenticator (Face ID, Touch ID, Windows Hello…)
+  if (window.PublicKeyCredential) {
+    try {
+      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch {
+      return false;
+    }
   }
+  return false;
 }
-return false;
 
 /* ── WebAuthn helpers (iOS Face ID / Touch ID, Windows Hello) ── */
 
