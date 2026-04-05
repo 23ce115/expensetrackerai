@@ -103,79 +103,112 @@
     <div id="authScreen" class="auth-screen" style="display: none">
       <div class="auth-card">
         <div class="auth-logo">
-          <img src="icon-192.png" alt="BlueLedger" />
+          <img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" />
         </div>
-        <div class="auth-brand">Blue<span>Ledger</span></div>
-        <div class="auth-tagline">Your private finance companion</div>
+        <div class="auth-brand" style="margin-top:.75rem">Blue<span>Ledger</span></div>
+        <div class="auth-tagline" style="font-size:.85rem;margin-bottom:0">Your private finance companion</div>
 
-        <div class="auth-tabs">
-          <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Log In</button>
-          <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
-        </div>
-
-        <!-- Login Panel -->
-        <div id="loginPanel">
-          <button class="biometric-btn" id="authBiometricBtn" style="display:none" onclick="tryBiometricLogin()">
-            <i class="fas fa-fingerprint"></i>
-            <span>Use Face ID / Fingerprint</span>
-          </button>
-          <div class="auth-divider" id="authBiometricDivider" style="display:none">or enter password</div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"
-              onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="loginPassword" placeholder="Your password"
-              onkeydown="if(event.key==='Enter') doSignIn()" />
-          </div>
-          <div class="auth-error" id="loginError"></div>
-          <button class="btn btn-primary auth-submit" id="loginBtn" onclick="doSignIn()">
+        <!-- Two big action buttons -->
+        <div class="auth-action-btns">
+          <button class="auth-action-btn auth-btn-login" onclick="openAuthPopup('login')">
             <i class="fas fa-sign-in-alt"></i> Log In
           </button>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;flex-wrap:wrap;gap:.5rem">
-            <button id="forgotPasswordBtn" onclick="forgotPassword()"
-              style="background:none;border:none;color:#64748b;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline">
-              Forgot Password?
-            </button>
-            <button onclick="resendConfirmationEmail(document.getElementById('loginEmail').value)"
-              style="background:none;border:none;color:#64748b;font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline">
-              Resend confirmation email
-            </button>
-          </div>
-        </div>
-
-        <!-- Signup Panel -->
-        <div id="signupPanel" style="display:none">
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-input" id="signupName" placeholder="Your name"
-              onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com"
-              onkeydown="if(event.key==='Enter') document.getElementById('signupPassword').focus()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password <span style="color:#64748b;font-weight:400">(min 8 characters)</span></label>
-            <input type="password" class="form-input" id="signupPassword" placeholder="Choose a strong password"
-              onkeydown="if(event.key==='Enter') document.getElementById('signupPassword2').focus()" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Confirm Password</label>
-            <input type="password" class="form-input" id="signupPassword2" placeholder="Repeat password"
-              onkeydown="if(event.key==='Enter') doSignUp()" />
-          </div>
-          <div class="auth-error" id="signupError"></div>
-          <div class="auth-privacy-note">
-            <i class="fas fa-shield-alt"></i> Your data is AES-encrypted on device. We never see your transactions.
-          </div>
-          <button class="btn btn-primary auth-submit" id="signupBtn" onclick="doSignUp()">
+          <button class="auth-action-btn auth-btn-signup" onclick="openAuthPopup('signup')">
             <i class="fas fa-user-plus"></i> Create Account
           </button>
         </div>
+
+        <div style="margin-top:1.5rem;font-size:.72rem;color:#475569;text-align:center">
+          <i class="fas fa-shield-alt" style="color:#10b981;margin-right:.3rem"></i>
+          AES-256 encrypted · Zero tracking · Your data stays yours
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ LOGIN POPUP ═══════════════ -->
+    <div id="loginPopupOverlay" class="auth-popup-overlay" onclick="if(event.target===this)closeAuthPopup('login')">
+      <div class="auth-popup">
+        <div class="auth-popup-header">
+          <div class="auth-popup-title"><i class="fas fa-sign-in-alt" style="color:#3b82f6;margin-right:.5rem"></i>Log In</div>
+          <button class="auth-popup-close" onclick="closeAuthPopup('login')"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Biometric button -->
+        <button class="biometric-btn" id="authBiometricBtn" style="display:none" onclick="tryBiometricLogin()">
+          <i class="fas fa-fingerprint" id="authBioIcon"></i>
+          <span id="authBioLabel">Use Face ID / Fingerprint</span>
+        </button>
+        <div class="auth-or-divider" id="authBiometricDivider" style="display:none">or enter password</div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"
+            onkeydown="if(event.key==='Enter') document.getElementById('loginPassword').focus()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="Your password"
+            onkeydown="if(event.key==='Enter') doSignIn()" />
+        </div>
+        <div class="auth-error" id="loginError"></div>
+        <button class="btn btn-primary auth-submit" id="loginBtn" onclick="doSignIn()" style="font-size:1rem;padding:.85rem;border-radius:12px">
+          <i class="fas fa-arrow-right-to-bracket"></i> Log In
+        </button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.9rem;flex-wrap:wrap;gap:.5rem">
+          <button id="forgotPasswordBtn" onclick="forgotPassword()"
+            style="background:none;border:none;color:#64748b;font-size:.8rem;cursor:pointer;padding:0;text-decoration:underline">
+            Forgot Password?
+          </button>
+          <button onclick="resendConfirmationEmail(document.getElementById('loginEmail').value)"
+            style="background:none;border:none;color:#64748b;font-size:.8rem;cursor:pointer;padding:0;text-decoration:underline">
+            Resend confirmation email
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SIGNUP POPUP ═══════════════ -->
+    <div id="signupPopupOverlay" class="auth-popup-overlay" onclick="if(event.target===this)closeAuthPopup('signup')">
+      <div class="auth-popup">
+        <div class="auth-popup-header">
+          <div class="auth-popup-title"><i class="fas fa-user-plus" style="color:#10b981;margin-right:.5rem"></i>Create Account</div>
+          <button class="auth-popup-close" onclick="closeAuthPopup('signup')"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Google sign-up option -->
+        <button class="auth-google-btn" onclick="notify('Google sign-in coming soon!','info')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <div class="auth-or-divider">or sign up with email</div>
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="signupName" placeholder="Your name"
+            onkeydown="if(event.key==='Enter') document.getElementById('signupEmail').focus()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com"
+            onkeydown="if(event.key==='Enter') document.getElementById('signupPassword').focus()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span style="color:#64748b;font-weight:400;font-size:.78rem">(min 8 chars)</span></label>
+          <input type="password" class="form-input" id="signupPassword" placeholder="Choose a strong password"
+            onkeydown="if(event.key==='Enter') document.getElementById('signupPassword2').focus()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" class="form-input" id="signupPassword2" placeholder="Repeat password"
+            onkeydown="if(event.key==='Enter') doSignUp()" />
+        </div>
+        <div class="auth-error" id="signupError"></div>
+        <div style="font-size:.73rem;color:#64748b;text-align:center;margin-bottom:.75rem">
+          <i class="fas fa-shield-alt" style="color:#10b981"></i> AES-encrypted on device. We never see your transactions.
+        </div>
+        <button class="btn btn-primary auth-submit" id="signupBtn" onclick="doSignUp()" style="font-size:1rem;padding:.85rem;border-radius:12px">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
       </div>
     </div>
 
@@ -417,6 +450,10 @@
 
             <div class="settings-menu-item" onclick="closeSettingsMenu();lockApp()">
               <i class="fas fa-lock"></i> Lock App
+            </div>
+            <div class="settings-menu-item" id="settingsBiometricRow" onclick="closeSettingsMenu();openBiometricSetup()" style="display:none">
+              <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
+              <span id="settingsBiometricLabel">Set Up Face ID / Fingerprint</span>
             </div>
             <div class="settings-menu-item" onclick="closeSettingsMenu();toggleTheme()">
               <i class="fas fa-moon" id="themeIcon"></i> Dark / Light Mode
@@ -1027,6 +1064,10 @@
       <div class="bn-settings-section">Account</div>
       <div class="bn-settings-row" onclick="closeBnSettings();lockApp()">
         <i class="fas fa-lock"></i> Lock App
+      </div>
+      <div class="bn-settings-row" id="bnBiometricRow" onclick="closeBnSettings();openBiometricSetup()" style="display:none">
+        <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
+        <span id="bnBiometricLabel">Set Up Face ID / Fingerprint</span>
       </div>
       <div class="bn-settings-section">Data</div>
       <div class="bn-settings-row" onclick="closeBnSettings();openChangePinModal()">
