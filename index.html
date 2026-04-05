@@ -340,46 +340,7 @@
         >
       </div>
       <div class="header-controls">
-        <!-- DESKTOP ONLY: period + date + lock + theme + income + expense -->
-        <div class="period-dropdown desktop-only">
-          <button
-            class="period-btn"
-            id="periodBtn"
-            onclick="togglePeriodMenu()"
-          >
-            <i class="fas fa-calendar-week"></i>
-            <span id="periodLabel">Monthly</span>
-            <i class="fas fa-chevron-down" style="font-size: 0.65rem"></i>
-          </button>
-          <div class="period-menu" id="periodMenu">
-            <div class="period-menu-item" onclick="setPeriod('daily')">
-              <i class="fas fa-sun" style="color: #f59e0b; width: 16px"></i
-              >Daily
-            </div>
-            <div class="period-menu-item" onclick="setPeriod('weekly')">
-              <i
-                class="fas fa-calendar-week"
-                style="color: #3b82f6; width: 16px"
-              ></i
-              >Weekly
-            </div>
-            <div class="period-menu-item active" onclick="setPeriod('monthly')">
-              <i
-                class="fas fa-calendar-alt"
-                style="color: #10b981; width: 16px"
-              ></i
-              >Monthly
-            </div>
-            <div class="period-menu-divider"></div>
-            <div class="period-menu-item" onclick="openMonthPicker()">
-              <i
-                class="fas fa-calendar-check"
-                style="color: #a78bfa; width: 16px"
-              ></i
-              >Pick Month
-            </div>
-          </div>
-        </div>
+        <!-- DESKTOP ONLY: date + lock + theme + income + expense -->
         <div class="date-pill desktop-only">
           <i
             class="fas fa-calendar"
