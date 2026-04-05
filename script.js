@@ -130,6 +130,244 @@ const TXN_PREVIEW_LIMITS = {
   picked: 8,
 };
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AI FEATURES — AUTO-CATEGORIZATION & ASK BLUELEDGER
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+const AI_MODEL = "claude-sonnet-4-20250514";
+let _aiCatTimers = {};
+let _askBlHistory = [];
+let _askBlBusy = false;
+
+/* ── Shared Anthropic API call ── */
+async function _callAI(messages, systemPrompt, maxTokens = 300) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages,
+    }),
+  });
+  if (!res.ok) throw new Error(`AI API error ${res.status}`);
+  const data = await res.json();
+  return data.content?.map(b => b.text || "").join("") || "";
+}
+
+/* ──────────────────────────────────────────────
+   FEATURE 1: AI AUTO-CATEGORIZATION
+   Called oninput on income/expense description fields.
+   Debounced 600ms. Updates the category <select>
+   and shows a small dismissible badge.
+────────────────────────────────────────────── */
+function aiAutoCategory(type, value) {
+  clearTimeout(_aiCatTimers[type]);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (!value || value.trim().length < 3) {
+    if (badgeEl) badgeEl.style.display = "none";
+    return;
+  }
+  _aiCatTimers[type] = setTimeout(() => _runAiCat(type, value.trim()), 600);
+}
+
+async function _runAiCat(type, desc) {
+  const cats = type === "income"
+    ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+    : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+
+  // Show loading state
+  badgeEl.style.display = "flex";
+  badgeEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#a78bfa"></i><span style="color:#94a3b8">Suggesting…</span>`;
+
+  try {
+    const system = `You are a financial transaction categorizer for an Indian personal finance app.
+Given a transaction description, return ONLY the single best matching category name from the list.
+Do not explain. Do not add punctuation. Return only the category name exactly as given.
+Categories: ${cats.join(", ")}`;
+    const result = await _callAI(
+      [{ role: "user", content: desc }],
+      system,
+      20
+    );
+    const suggested = result.trim();
+    const match = cats.find(c => c.toLowerCase() === suggested.toLowerCase()) || cats.find(c => suggested.toLowerCase().includes(c.toLowerCase()));
+    if (!match) { badgeEl.style.display = "none"; return; }
+
+    // Only auto-select if no category chosen yet
+    const current = selectEl.value;
+    if (!current || current === "") {
+      selectEl.value = match;
+    }
+
+    // Show badge — clickable to apply
+    const isApplied = selectEl.value === match;
+    badgeEl.style.display = "flex";
+    badgeEl.innerHTML = `
+      <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
+      <span>AI suggests: <strong style="color:#e2e8f0">${match}</strong></span>
+      ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
+      <button class="ai-cat-dismiss" onclick="document.getElementById('${type}AiBadge').style.display='none'" title="Dismiss"><i class="fas fa-times"></i></button>
+    `;
+  } catch(e) {
+    badgeEl.style.display = "none";
+    console.warn("AI categorization failed", e);
+  }
+}
+
+function aiApplyCategory(type, category) {
+  const selectEl = document.getElementById(`${type}Category`);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (selectEl) selectEl.value = category;
+  if (badgeEl) badgeEl.innerHTML = `
+    <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
+    <span>AI suggests: <strong style="color:#e2e8f0">${category}</strong></span>
+    <span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>
+    <button class="ai-cat-dismiss" onclick="document.getElementById('${type}AiBadge').style.display='none'" title="Dismiss"><i class="fas fa-times"></i></button>
+  `;
+}
+
+/* ──────────────────────────────────────────────
+   FEATURE 2: ASK BLUELEDGER — NL Query
+   Opens a slide-up panel. Passes transaction
+   summary to Claude and answers in plain English.
+────────────────────────────────────────────── */
+function openAskBl() {
+  document.getElementById("askBlPanel").classList.add("ask-bl-panel--open");
+  document.getElementById("askBlOverlay").classList.add("ask-bl-overlay--open");
+  setTimeout(() => document.getElementById("askBlInput")?.focus(), 300);
+}
+function closeAskBl() {
+  document.getElementById("askBlPanel").classList.remove("ask-bl-panel--open");
+  document.getElementById("askBlOverlay").classList.remove("ask-bl-overlay--open");
+}
+
+function _buildFinanceSummary() {
+  // Build a compact but rich summary of the user's data to pass to the AI
+  const allTxns = transactions.slice(0, 300); // cap to avoid token overflow
+  const now = new Date();
+  const thisMonth = allTxns.filter(t => {
+    const d = new Date(t.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+
+  const fmt = (n) => `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  const totalIncome = allTxns.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const totalExpense = allTxns.filter(t => t.type === "expense").reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  // Per-category breakdown
+  const catMap = {};
+  allTxns.forEach(t => {
+    if (t.type !== "expense") return;
+    catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount);
+  });
+  const catLines = Object.entries(catMap)
+    .sort((a, b) => b[1] - a[1])
+    .map(([c, v]) => `  ${c}: ${fmt(v)}`)
+    .join("\n");
+
+  // Last 30 transactions (compact)
+  const recent = allTxns.slice(0, 30).map(t =>
+    `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmt(t.amount)}`
+  ).join("\n");
+
+  const monthIncome = thisMonth.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const monthExpense = thisMonth.filter(t => t.type === "expense").reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  return `User financial data (BlueLedger app):
+Currency: Indian Rupees (₹)
+Total transactions available: ${allTxns.length}
+Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })}
+This month income: ${fmt(monthIncome)} | This month expenses: ${fmt(monthExpense)}
+All-time income: ${fmt(totalIncome)} | All-time expenses: ${fmt(totalExpense)}
+
+Spending by category (all time):
+${catLines || "  No expense data yet"}
+
+Recent transactions (up to 30):
+Date | Type | Category | Description | Amount
+${recent || "  No transactions yet"}`;
+}
+
+async function askBlSend(prefill) {
+  if (_askBlBusy) return;
+  const inputEl = document.getElementById("askBlInput");
+  const question = (prefill || inputEl?.value || "").trim();
+  if (!question) return;
+  if (inputEl) inputEl.value = "";
+
+  // Append user message
+  _appendAskBlMsg("user", question);
+  _askBlHistory.push({ role: "user", content: question });
+
+  // Typing indicator
+  const typingId = "askbl-typing-" + Date.now();
+  _appendAskBlMsg("assistant", `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`);
+
+  _askBlBusy = true;
+  document.getElementById("askBlSendBtn").disabled = true;
+
+  try {
+    const system = `You are BlueLedger AI, a friendly and concise personal finance assistant built into the BlueLedger app.
+The user's financial data is provided below. Answer their question directly using the data.
+Be concise, warm, and use ₹ for amounts. Use emojis sparingly. 
+If the data is insufficient to answer, say so honestly.
+Never make up transactions. Format numbers in Indian style (lakhs/crores if large).
+
+${_buildFinanceSummary()}`;
+
+    const reply = await _callAI(_askBlHistory, system, 400);
+
+    // Replace typing indicator
+    const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
+    if (typingEl) typingEl.remove();
+
+    _askBlHistory.push({ role: "assistant", content: reply });
+    // Keep history manageable (last 10 turns)
+    if (_askBlHistory.length > 20) _askBlHistory = _askBlHistory.slice(-20);
+
+    _appendAskBlMsg("assistant", _markdownToHtml(reply));
+  } catch(e) {
+    const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
+    if (typingEl) typingEl.remove();
+    _appendAskBlMsg("assistant", "Sorry, I couldn't connect to the AI right now. Please try again.");
+    console.warn("Ask BlueLedger failed", e);
+  } finally {
+    _askBlBusy = false;
+    const btn = document.getElementById("askBlSendBtn");
+    if (btn) btn.disabled = false;
+  }
+}
+
+function _appendAskBlMsg(role, html) {
+  const container = document.getElementById("askBlMessages");
+  if (!container) return;
+  // Hide welcome screen on first message
+  const welcome = container.querySelector(".ask-bl-welcome");
+  if (welcome) welcome.style.display = "none";
+
+  const div = document.createElement("div");
+  div.className = `ask-bl-msg ask-bl-msg--${role}`;
+  div.innerHTML = role === "assistant"
+    ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
+    : `<div class="ask-bl-bubble">${html}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function _markdownToHtml(text) {
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\n/g, "<br>");
+}
+
 function defaultSyncConfig() {
   return {
     enabled: false,
@@ -1599,20 +1837,10 @@ async function registerBiometricNow() {
 
 async function tryLockScreenBiometric() {
   const btn = document.getElementById("lockBiometricBtn");
-  const labelEl = document.getElementById("lockBiometricLabel");
-  const iconEl = document.getElementById("lockBiometricIcon");
-  const errEl = document.getElementById("lockError");
-  const originalLabel = labelEl ? labelEl.textContent : "";
-  const originalIcon = iconEl ? iconEl.className : "";
-
   if (btn) {
     btn.disabled = true;
-    btn.style.opacity = "0.7";
+    btn.style.opacity = "0.6";
   }
-  if (labelEl) labelEl.textContent = "Verifying…";
-  if (iconEl) iconEl.className = "fas fa-spinner fa-spin";
-  if (errEl) errEl.textContent = "";
-
   try {
     // Android Chrome — PasswordCredential
     if (
@@ -1634,10 +1862,10 @@ async function tryLockScreenBiometric() {
         await _lockScreenSuccess(cred.password, vault);
         return;
       }
-      if (errEl) errEl.textContent = "Biometric credential mismatch. Use your password.";
+      document.getElementById("lockError").textContent =
+        "Biometric credential mismatch. Use your password.";
       return;
     }
-
     // iOS Safari / WebAuthn path — Face ID / Touch ID / Windows Hello
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
@@ -1653,37 +1881,12 @@ async function tryLockScreenBiometric() {
       // Local vault not found — try cloud unlock
       document.getElementById("lockPasswordInput").value = password;
       await unlockWithLockPassword();
-      return;
     }
-
-    // WebAuthn available on device but not yet registered — guide user to set it up
-    const canWebAuthn = !!window.PublicKeyCredential;
-    if (canWebAuthn) {
-      let platformAvail = false;
-      try {
-        platformAvail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      } catch {}
-      if (platformAvail) {
-        // Prompt: unlock with password first, then we'll offer biometric setup
-        if (errEl) {
-          const isWindows = /Windows/.test(navigator.userAgent);
-          const label = isWindows ? "Windows Hello" : "biometric login";
-          errEl.innerHTML = `<span style="color:#f59e0b"><i class="fas fa-info-circle"></i> ${label} isn't set up yet. Unlock with your password first, then go to <strong>Settings → Biometric Login</strong> to enable it.</span>`;
-        }
-        document.getElementById("lockPasswordInput")?.focus();
-        return;
-      }
-    }
-
-    // Fallback — no biometric available
-    if (errEl) errEl.textContent = "Biometric authentication is not available on this device.";
-    if (btn) btn.style.display = "none";
-
   } catch (e) {
-    if (e && e.name === "NotAllowedError") {
-      // User cancelled — restore silently
-    } else {
-      if (errEl) errEl.textContent = "Biometric failed. Please enter your password.";
+    if (e && e.name !== "NotAllowedError") {
+      // NotAllowedError = user cancelled — silent. Show error for real failures.
+      document.getElementById("lockError").textContent =
+        "Biometric failed. Enter your password.";
     }
     console.warn("Lock screen biometric failed", e);
   } finally {
@@ -1691,8 +1894,6 @@ async function tryLockScreenBiometric() {
       btn.disabled = false;
       btn.style.opacity = "1";
     }
-    if (labelEl && labelEl.textContent === "Verifying…") labelEl.textContent = originalLabel;
-    if (iconEl && iconEl.className === "fas fa-spinner fa-spin") iconEl.className = originalIcon;
   }
 }
 
