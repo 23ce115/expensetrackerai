@@ -477,6 +477,30 @@ body::before {
     0 6px 20px rgba(52, 211, 153, 0.45) !important;
   border-color: rgba(52, 211, 153, 0.8) !important;
 }
+
+/* ── Explicit dark-mode green for .my-card (overrides any conflicting rule) ── */
+[data-theme="dark"] .my-card {
+  background: linear-gradient(135deg, #065f46 0%, #059669 40%, #10b981 75%, #34d399 100%) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  box-shadow:
+    0 12px 40px rgba(5, 150, 105, 0.55),
+    0 4px 16px rgba(52, 211, 153, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: white !important;
+}
+[data-theme="dark"] .my-card:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 35%, #10b981 70%, #6ee7b7 100%) !important;
+  box-shadow:
+    0 18px 50px rgba(5, 150, 105, 0.65),
+    0 6px 20px rgba(52, 211, 153, 0.45) !important;
+  border-color: rgba(52, 211, 153, 0.8) !important;
+  transform: translateY(-3px);
+}
+[data-theme="dark"] .my-card .card-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
 .my-card .card-title {
   color: rgba(255, 255, 255, 0.9);
 }
