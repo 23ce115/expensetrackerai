@@ -28,6 +28,9 @@ body {
   background: #0f172a;
   color: #f1f5f9;
   line-height: 1.5;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body::before {
@@ -2395,8 +2398,13 @@ body::before {
 }
 
 [data-theme="light"] body {
-  background: #f8fafc;
+  background: #eef2f7;
   color: #334155;
+}
+
+/* No dark overlay in light mode */
+[data-theme="light"] body::before {
+  display: none;
 }
 
 [data-theme="light"] .header {
@@ -2407,22 +2415,25 @@ body::before {
 }
 
 [data-theme="light"] .card-switcher-bar {
-  background: #f8fafc;
+  background: rgba(235, 240, 248, 0.97);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-bottom: 1px solid rgba(59, 130, 246, 0.12);
 }
 
 [data-theme="light"] .card-tab {
-  color: #64748b;
+  color: #475569;
+  background: rgba(203, 213, 225, 0.45) !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
 }
 [data-theme="light"] .card-tab--active {
-  color: #334155;
-  background: rgba(59, 130, 246, 0.08);
+  color: #1e40af;
+  background: rgba(59, 130, 246, 0.15) !important;
   border-bottom-color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.4) !important;
 }
 [data-theme="light"] .card-tab:hover {
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(148, 163, 184, 0.5) !important;
   color: #334155;
 }
 
@@ -4124,7 +4135,7 @@ body::before {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   AUTH SCREEN
+   AUTH SCREEN — Redesigned as minimal landing
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .auth-screen {
@@ -4134,17 +4145,234 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a0d14 0%, #0f1420 40%, #111827 100%);
-  padding: 0.75rem;
+  background: linear-gradient(160deg, #0a0d14 0%, #0f1a2e 50%, #111827 100%);
+  padding: 1.5rem;
   overflow-y: auto;
 }
 
+/* Landing card — compact, centered */
 .auth-card {
-  border-radius: 20px;
-  padding: 1.5rem 1.75rem 1.75rem;
+  border-radius: 24px;
+  padding: 2.5rem 2rem 2rem;
   width: 100%;
-  max-width: 400px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+/* Auth action buttons — large pill buttons */
+.auth-action-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.auth-action-btn {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.auth-action-btn:active {
+  transform: scale(0.97);
+}
+
+.auth-btn-login {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+}
+.auth-btn-login:hover {
+  background: #2563eb;
+  box-shadow: 0 6px 24px rgba(59,130,246,0.45);
+}
+
+.auth-btn-signup {
+  background: rgba(255,255,255,0.07);
+  color: #e2e8f0;
+  border: 1.5px solid rgba(255,255,255,0.15);
+}
+.auth-btn-signup:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* Auth modal popup */
+.auth-popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 9500;
+  animation: fadeIn 0.2s ease;
+  align-items: flex-end;
+  justify-content: center;
+}
+.auth-popup-overlay.open {
+  display: flex;
+}
+
+@media (min-width: 480px) {
+  .auth-popup-overlay {
+    align-items: center;
+  }
+}
+
+.auth-popup {
+  background: #111827;
+  border-radius: 24px 24px 0 0;
+  padding: 1.5rem 1.5rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+
+@media (min-width: 480px) {
+  .auth-popup {
+    border-radius: 20px;
+    padding: 1.75rem 2rem 2rem;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.auth-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.auth-popup-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.auth-popup-close {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+.auth-popup-close:hover {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+}
+
+.auth-google-btn {
+  width: 100%;
+  padding: 0.8rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #fff;
+  color: #1f2937;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.auth-google-btn:hover {
+  background: #f1f5f9;
+}
+
+.auth-or-divider {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #475569;
+  margin: 0.75rem 0;
+  position: relative;
+}
+.auth-or-divider::before, .auth-or-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.auth-or-divider::before { left: 0; }
+.auth-or-divider::after { right: 0; }
+
+/* Light mode auth popup */
+[data-theme="light"] .auth-popup-overlay {
+  background: rgba(0,0,0,0.5);
+}
+[data-theme="light"] .auth-popup {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+[data-theme="light"] .auth-popup-title {
+  color: #111318;
+}
+[data-theme="light"] .auth-popup-close {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.1);
+  color: #64748b;
+}
+[data-theme="light"] .auth-btn-signup {
+  background: rgba(0,0,0,0.04);
+  color: #334155;
+  border-color: rgba(0,0,0,0.15);
+}
+
+/* Biometric button - make it more prominent */
+.biometric-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1.5px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  color: #93c5fd;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.01em;
+}
+.biometric-btn:hover {
+  background: rgba(59, 130, 246, 0.22);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+}
+.biometric-btn:active { transform: scale(0.97); }
+.biometric-btn i { font-size: 1.3rem; }
 
 .auth-logo {
   display: flex;
@@ -4299,7 +4527,7 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 [data-theme="light"] .auth-screen {
-  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  background: linear-gradient(160deg, #c7d7f0 0%, #dbe7f8 50%, #e8f0fb 100%);
 }
 
 [data-theme="light"] .auth-card {
@@ -4405,16 +4633,16 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, calc(var(--glass-opacity) + 0.08)) !important;
 }
 
-/* Auth card glass */
+/* Auth card glass — minimal landing, subtle */
 .auth-card {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) + 0.03)) !important;
+  background: rgba(255, 255, 255, calc(var(--glass-opacity) + 0.04)) !important;
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur))
     saturate(var(--glass-saturate)) !important;
-  border: 1px solid rgba(255, 255, 255, calc(var(--glass-border) + 0.04)) !important;
+  border: 1px solid rgba(255, 255, 255, calc(var(--glass-border) + 0.05)) !important;
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, var(--glass-shadow)),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    0 24px 80px rgba(0, 0, 0, calc(var(--glass-shadow) * 0.6)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Lock card glass */
@@ -4556,22 +4784,22 @@ body::after {
 
 /* ── Light mode glass — these are handled in the theme section above ── */
 [data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.72) !important;
+  background: rgba(240, 245, 255, 0.85) !important;
   backdrop-filter: blur(20px) saturate(160%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-  border: 1.5px solid rgba(59, 130, 246, 0.16) !important;
+  color: #334155 !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.18) !important;
   box-shadow:
     0 4px 20px rgba(15, 23, 42, 0.08),
     0 1px 4px rgba(59, 130, 246, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-  color: #334155 !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 [data-theme="light"] .card:hover {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border-color: rgba(59, 130, 246, 0.32) !important;
+  background: rgba(235, 242, 255, 0.95) !important;
   box-shadow:
     0 8px 32px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.32) !important;
 }
 [data-theme="light"] .my-card {
   background: linear-gradient(135deg, #1e40af, #2563eb 55%, #0ea5e9) !important;
