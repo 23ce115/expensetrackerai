@@ -273,6 +273,103 @@ async function deriveSyncKeyHex(passphrase, userId) {
   return words.toString();
 }
 
+/* ── Google OAuth vault key: PBKDF2(deviceId, userId) ── */
+async function deriveGoogleVaultKey(userId) {
+  const deviceId = getDeviceId();
+  // Store a stable per-user random salt so the key is consistent across reloads
+  const saltKey = "bl_google_salt_" + userId;
+  let salt = localStorage.getItem(saltKey);
+  if (!salt) {
+    const arr = crypto.getRandomValues(new Uint8Array(32));
+    salt = Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(saltKey, salt);
+  }
+  const words = CryptoJS.PBKDF2(deviceId + userId, salt, {
+    keySize: 256 / 32,
+    iterations: 120000,
+  });
+  return words.toString();
+}
+
+async function doGoogleSignIn() {
+  const btn = document.getElementById("googleSignInBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Redirecting…';
+  }
+  try {
+    const client = getBLClient();
+    const { error } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.href.split("?")[0].split("#")[0],
+        queryParams: { access_type: "offline", prompt: "select_account" },
+      },
+    });
+    if (error) {
+      notify(error.message || "Google sign-in failed", "error");
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google'; }
+    }
+    // If no error, browser will redirect — nothing more to do here
+  } catch (e) {
+    notify(e.message || "Google sign-in failed", "error");
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Continue with Google'; }
+  }
+}
+
+async function _unlockGoogleUser(session) {
+  const userId = session.user.id;
+  const displayName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split("@")[0] || "User";
+  const email = session.user.email || "";
+
+  const vaultKey = await deriveGoogleVaultKey(userId);
+  sessionPin = vaultKey;
+  localStorage.setItem(AUTH_MODE_KEY, "password");
+  localStorage.setItem("bl_last_email", email);
+  localStorage.setItem("bl_is_google_auth", "1");
+
+  // Try local vault first
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    const vault = tryDecrypt(raw, vaultKey);
+    if (vault && (vault.verify === VERIFY_TOKEN || vault.verify === VERIFY_TOKEN_V2)) {
+      cards = vault.cards || [];
+      activeCardIdx = vault.activeCardIdx || 0;
+      syncConfig = cleanSyncConfig(vault.syncConfig);
+      if (activeCardIdx >= cards.length) activeCardIdx = 0;
+      if (cards.length > 0) loadActiveCard();
+      hideAuthScreen();
+      hideLockScreen();
+      _afterUnlock(vaultKey, userId);
+      return;
+    }
+  }
+
+  // Try cloud vault
+  const syncKeyHex = await deriveSyncKeyHex(vaultKey, userId);
+  syncConfig = { ...defaultSyncConfig(), enabled: true, userId, syncKeyHex, deviceId: getDeviceId(), status: "ok" };
+  try {
+    const client = getBLClient();
+    const { data: remote } = await client.from(SYNC_TABLE).select("ciphertext,updated_at").eq("user_id", userId).maybeSingle();
+    if (remote?.ciphertext) {
+      const remotePayload = tryDecrypt(remote.ciphertext, syncKeyHex);
+      if (remotePayload) {
+        applyVaultPayload(remotePayload);
+        hideAuthScreen();
+        hideLockScreen();
+        _afterUnlock(vaultKey, userId);
+        notify("Vault loaded from cloud sync", "success");
+        return;
+      }
+    }
+  } catch (e) { console.warn("Cloud fetch on Google login failed", e); }
+
+  // New Google user — card setup
+  _pendingCardSetup = { name: displayName, email, password: vaultKey, userId };
+  hideAuthScreen();
+  _openCardSetupModal();
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ENCRYPTED PERSISTENCE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -5184,7 +5281,14 @@ if ("serviceWorker" in navigator) {
 
       if (fresh?.session) {
         const userEmail = fresh.session.user?.email || "";
+        const provider = fresh.session.user?.app_metadata?.provider;
         const isRecovery = hash.includes("type=recovery");
+
+        // Google OAuth redirect
+        if (provider === "google" && !isRecovery) {
+          await _unlockGoogleUser(fresh.session);
+          return;
+        }
 
         if (isRecovery) {
           // Password reset — show reset password UI
@@ -5266,8 +5370,15 @@ if ("serviceWorker" in navigator) {
       // Legacy PIN vault — prompt migration
       document.getElementById("migrationModal").style.display = "flex";
     } else if (hasVault && authMode === "password" && hasSession) {
-      // Correct returning user with active session — show password lock screen
-      showLockScreen();
+      // Check if this is a Google auth user — skip password lock, re-derive vault key
+      const isGoogleAuth = localStorage.getItem("bl_is_google_auth") === "1";
+      const provider = sessionData.session?.user?.app_metadata?.provider;
+      if (isGoogleAuth || provider === "google") {
+        await _unlockGoogleUser(sessionData.session);
+      } else {
+        // Regular password user — show password lock screen
+        showLockScreen();
+      }
     } else if (hasVault && authMode === "password" && !hasSession) {
       // Vault exists but session expired — show login
       showAuthScreen("login");
