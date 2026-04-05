@@ -829,34 +829,26 @@
         Current account:
         <span id="bnCurrentAccountLabel">This account</span>
       </div>
-      <button
-        class="bn-sheet-btn bn-sheet-income"
-        onclick="
-          closeBnSheet();
-          openModal('incomeModal');
-        "
-      >
-        <span class="bn-sheet-icon"><i class="fas fa-plus"></i></span>
-        <div class="bn-sheet-text">
-          <div class="bn-sheet-label">Add Income</div>
-          <div class="bn-sheet-sub">Salary, freelance, gifts…</div>
-        </div>
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      <button
-        class="bn-sheet-btn bn-sheet-expense"
-        onclick="
-          closeBnSheet();
-          openModal('expenseModal');
-        "
-      >
-        <span class="bn-sheet-icon"><i class="fas fa-minus"></i></span>
-        <div class="bn-sheet-text">
-          <div class="bn-sheet-label">Add Expense</div>
-          <div class="bn-sheet-sub">Food, transport, shopping…</div>
-        </div>
-        <i class="fas fa-chevron-right"></i>
-      </button>
+
+      <!-- Circular ring of action cards -->
+      <div class="bn-ring-container">
+        <button
+          class="bn-ring-card bn-ring-income"
+          onclick="closeBnSheet(); openModal('incomeModal');"
+        >
+          <div class="bn-ring-icon"><i class="fas fa-arrow-down"></i></div>
+          <div class="bn-ring-label">Income</div>
+          <div class="bn-ring-sub">Salary, gifts…</div>
+        </button>
+        <button
+          class="bn-ring-card bn-ring-expense"
+          onclick="closeBnSheet(); openModal('expenseModal');"
+        >
+          <div class="bn-ring-icon"><i class="fas fa-arrow-up"></i></div>
+          <div class="bn-ring-label">Expense</div>
+          <div class="bn-ring-sub">Food, bills…</div>
+        </button>
+      </div>
     </div>
 
     <div
