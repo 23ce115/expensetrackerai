@@ -4517,7 +4517,10 @@ function setGlassOpacity(val) {
   );
   localStorage.setItem("bl_glass_opacity", val);
   const slider = document.getElementById("glassSlider");
-  if (slider && slider.value !== String(val)) slider.value = val;
+  if (slider) {
+    if (slider.value !== String(val)) slider.value = val;
+    slider.style.setProperty("--val", v + "%");
+  }
 }
 
 function loadGlassOpacity() {
@@ -4540,7 +4543,7 @@ function toggleSettingsMenu() {
     // Sync slider value
     const saved = localStorage.getItem("bl_glass_opacity") || "50";
     const slider = document.getElementById("glassSlider");
-    if (slider) slider.value = saved;
+    if (slider) { slider.value = saved; slider.style.setProperty("--val", saved + "%"); }
 
     // Update sync status row
     const dot = document.getElementById("settingsSyncDot");
