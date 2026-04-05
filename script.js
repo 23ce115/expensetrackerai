@@ -743,15 +743,21 @@ function showAuthScreen(tab = "login") {
     if (bioBtn && bioDivider) {
       bioBtn.style.display = canBio ? "flex" : "none";
       bioDivider.style.display = canBio ? "block" : "none";
-      // Label Face ID specifically on iOS
+      const hasWebAuthn = localStorage.getItem("bl_has_webauthn") === "1";
+      const iconEl = document.getElementById("authBioIcon");
+      const labelEl = document.getElementById("authBioLabel");
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMac =
-        /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-      if ((isIOS || isMac) && localStorage.getItem("bl_has_webauthn") === "1") {
-        const iconEl = document.getElementById("authBioIcon");
-        const labelEl = document.getElementById("authBioLabel");
+      const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      const isWindows = /Windows/.test(navigator.userAgent);
+      if (isIOS || isMac) {
         if (iconEl) iconEl.className = "fas fa-face-smile";
         if (labelEl) labelEl.textContent = "Use Face ID";
+      } else if (isWindows) {
+        if (iconEl) iconEl.className = "fab fa-windows";
+        if (labelEl) labelEl.textContent = "Use Windows Hello";
+      } else {
+        if (iconEl) iconEl.className = "fas fa-fingerprint";
+        if (labelEl) labelEl.textContent = "Use Fingerprint / Biometric";
       }
     }
   });
@@ -813,36 +819,72 @@ async function openBiometricSetup() {
       };
     }
   } else {
-    const useFaceID = (isIOS || isMac) && window.PublicKeyCredential;
-    if (titleEl)
-      titleEl.innerHTML = `<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>${useFaceID ? "Enable Face ID" : "Enable Biometric Login"}`;
-    if (descEl)
-      descEl.innerHTML = useFaceID
-        ? 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.'
-        : 'Use <strong style="color:#e2e8f0">fingerprint or device PIN</strong> to unlock BlueLedger instantly.';
-    if (iconEl)
-      iconEl.innerHTML = `<i class="fas ${useFaceID ? "fa-face-smile" : "fa-fingerprint"}" style="color:#3b82f6"></i>`;
-    if (btnEl) {
-      btnEl.innerHTML = `<i class="fas ${useFaceID ? "fa-face-smile" : "fa-fingerprint"}"></i> ${useFaceID ? "Enable Face ID" : "Enable"}`;
-      btnEl.onclick = registerBiometricNow;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    const isWindows = /Windows/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    let bioTitle, bioDesc, bioIconClass, bioBtnText;
+    if (isIOS || isMac) {
+      bioTitle = "Enable Face ID";
+      bioDesc = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
+      bioIconClass = "fas fa-face-smile";
+      bioBtnText = '<i class="fas fa-face-smile"></i> Enable Face ID';
+    } else if (isWindows) {
+      bioTitle = "Enable Windows Hello";
+      bioDesc = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
+      bioIconClass = "fab fa-windows";
+      bioBtnText = '<i class="fab fa-windows"></i> Enable Windows Hello';
+    } else if (isAndroid) {
+      bioTitle = "Enable Fingerprint Login";
+      bioDesc = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
+      bioIconClass = "fas fa-fingerprint";
+      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable Fingerprint';
+    } else {
+      bioTitle = "Enable Biometric Login";
+      bioDesc = 'Use your device\'s <strong style="color:#e2e8f0">biometric sensor</strong> to unlock BlueLedger instantly.';
+      bioIconClass = "fas fa-fingerprint";
+      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable Biometrics';
     }
+
+    if (titleEl) titleEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;margin-right:.5rem"></i>${bioTitle}`;
+    if (descEl) descEl.innerHTML = bioDesc;
+    if (iconEl) iconEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;font-size:3rem"></i>`;
+    if (btnEl) { btnEl.innerHTML = bioBtnText; btnEl.onclick = registerBiometricNow; }
   }
   document.getElementById("biometricSetupModal").style.display = "flex";
 }
 
+/* ── Detect platform biometric label ── */
+function _getBiometricLabel(hasWebAuthn) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const isWindows = /Windows/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  if (isIOS || isMac) {
+    return hasWebAuthn ? "Manage Face ID" : "Set Up Face ID";
+  } else if (isAndroid) {
+    return hasWebAuthn ? "Manage Fingerprint" : "Set Up Fingerprint";
+  } else if (isWindows) {
+    return hasWebAuthn ? "Manage Windows Hello" : "Set Up Windows Hello";
+  } else {
+    return hasWebAuthn ? "Manage Biometric Login" : "Set Up Biometric Login";
+  }
+}
+
+function _getBiometricIcon(hasWebAuthn) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const isWindows = /Windows/.test(navigator.userAgent);
+  if (isIOS || isMac) return hasWebAuthn ? "fa-face-smile" : "fa-face-smile";
+  if (isWindows) return "fa-windows";
+  return "fa-fingerprint";
+}
+
 function _refreshBiometricSettingsRow() {
   const hasWebAuthn = localStorage.getItem("bl_has_webauthn") === "1";
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isMac =
-    /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-  const useFaceID = isIOS || isMac;
-  const label = hasWebAuthn
-    ? useFaceID
-      ? "Manage Face ID"
-      : "Manage Biometrics"
-    : useFaceID
-      ? "Set Up Face ID"
-      : "Set Up Fingerprint";
+  const label = _getBiometricLabel(hasWebAuthn);
 
   ["bnBiometricRow", "settingsBiometricRow"].forEach((id) => {
     const row = document.getElementById(id);
@@ -1459,27 +1501,35 @@ async function completeCardSetup() {
       } catch {}
     }
     if (canPasswordCred || canWebAuthn) {
-      // Tailor modal text for iOS Face ID vs Android fingerprint
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isMac =
-        /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
-      const useFaceID = (isIOS || isMac) && canWebAuthn && !canPasswordCred;
+      const isMac = /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+      const isWindows = /Windows/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
       const titleEl = document.getElementById("bioModalTitle");
       const iconEl = document.getElementById("bioModalIcon");
       const descEl = document.getElementById("bioModalDesc");
       const btnEl = document.getElementById("bioModalEnableBtn");
-      if (useFaceID) {
-        if (titleEl)
-          titleEl.innerHTML =
-            '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
-        if (iconEl)
-          iconEl.innerHTML =
-            '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
-        if (descEl)
-          descEl.innerHTML =
-            'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
-        if (btnEl)
-          btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable Face ID';
+
+      if (isIOS || (isMac && canWebAuthn && !canPasswordCred)) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
+        if (iconEl) iconEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable Face ID';
+      } else if (isWindows && canWebAuthn) {
+        if (titleEl) titleEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;margin-right:.5rem"></i>Enable Windows Hello';
+        if (iconEl) iconEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
+        if (btnEl) btnEl.innerHTML = '<i class="fab fa-windows"></i> Enable Windows Hello';
+      } else if (isAndroid || canPasswordCred) {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Fingerprint Login';
+        if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable Fingerprint';
+      } else {
+        if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login';
+        if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
+        if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">device biometrics</strong> to unlock BlueLedger instantly.';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable Biometrics';
       }
       document.getElementById("biometricSetupModal").style.display = "flex";
     }
@@ -2020,22 +2070,23 @@ function showLockScreen(subtitle) {
       const canBio = hasPasswordCred || hasWebAuthn;
       bioBtn.style.display = canBio ? "flex" : "none";
       if (bioDivider) bioDivider.style.display = canBio ? "block" : "none";
-      // Label the button appropriately for iOS Face ID
+      // Label the button appropriately per platform
       if (canBio) {
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isMac =
-          /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
-        const useFaceID = (isIOS || isMac) && hasWebAuthn && !hasPasswordCred;
+        const isMac = /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
+        const isWindows = /Windows/.test(navigator.userAgent);
         const labelEl = document.getElementById("lockBiometricLabel");
         const iconEl = document.getElementById("lockBiometricIcon");
-        if (labelEl)
-          labelEl.textContent = useFaceID
-            ? "Use Face ID"
-            : "Use Face ID / Fingerprint";
-        if (iconEl)
-          iconEl.className = useFaceID
-            ? "fas fa-face-smile"
-            : "fas fa-fingerprint";
+        if (isIOS || (isMac && hasWebAuthn && !hasPasswordCred)) {
+          if (labelEl) labelEl.textContent = "Use Face ID";
+          if (iconEl) iconEl.className = "fas fa-face-smile";
+        } else if (isWindows && hasWebAuthn) {
+          if (labelEl) labelEl.textContent = "Use Windows Hello";
+          if (iconEl) iconEl.className = "fab fa-windows";
+        } else {
+          if (labelEl) labelEl.textContent = "Use Fingerprint / Biometric";
+          if (iconEl) iconEl.className = "fas fa-fingerprint";
+        }
         setTimeout(tryLockScreenBiometric, 600);
       }
     }
