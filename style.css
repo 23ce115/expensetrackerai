@@ -197,7 +197,7 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .card-switcher-bar {
-  background: #0f172a;
+  background: transparent;
   border-bottom: 1px solid rgba(96, 165, 250, 0.12);
   padding: 0 2rem;
   position: relative;
@@ -1373,8 +1373,8 @@ body::before {
   color: #64748b;
 }
 .form-input[type="date"] {
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   min-height: 46px;
   padding-right: 2.6rem;
   position: relative;
@@ -2402,9 +2402,16 @@ body::before {
   color: #334155;
 }
 
-/* No dark overlay in light mode */
+/* Cursor follow glow in light mode — subtle blue radial */
 [data-theme="light"] body::before {
-  display: none;
+  background: radial-gradient(
+    circle 220px at var(--x, 50%) var(--y, 50%),
+    rgba(59, 130, 246, 0.18),
+    rgba(99, 102, 241, 0.07) 55%,
+    transparent 75%
+  );
+  display: block;
+  z-index: 0;
 }
 
 [data-theme="light"] .header {
@@ -2415,7 +2422,7 @@ body::before {
 }
 
 [data-theme="light"] .card-switcher-bar {
-  background: rgba(235, 240, 248, 0.97);
+  background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-bottom: 1px solid rgba(59, 130, 246, 0.12);
@@ -2531,7 +2538,7 @@ body::before {
     0 1px 4px rgba(59, 130, 246, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
-[data-theme="light"] .card:hover {
+[data-theme="light"] .card:not(.my-card):hover {
   background: rgba(255, 255, 255, 0.88);
   box-shadow:
     0 8px 32px rgba(15, 23, 42, 0.12),
@@ -2547,6 +2554,14 @@ body::before {
     0 4px 16px rgba(14, 165, 233, 0.2) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+[data-theme="light"] .my-card:hover {
+  background: linear-gradient(135deg, #1e3a8a, #1d4ed8 55%, #0284c7) !important;
+  box-shadow:
+    0 18px 50px rgba(37, 99, 235, 0.5),
+    0 6px 20px rgba(14, 165, 233, 0.3) !important;
+  border-color: rgba(37, 99, 235, 0.6) !important;
+  transform: translateY(-3px);
 }
 [data-theme="light"] .my-card .card-title {
   color: rgba(255, 255, 255, 0.82);
@@ -4672,7 +4687,7 @@ body::before {
 
 /* Card switcher bar */
 .card-switcher-bar {
-  background: rgba(10, 13, 20, 0.6) !important;
+  background: rgba(15, 23, 42, 0) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
@@ -4809,7 +4824,7 @@ body::after {
     0 1px 4px rgba(59, 130, 246, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
-[data-theme="light"] .card:hover {
+[data-theme="light"] .card:not(.my-card):hover {
   background: rgba(235, 242, 255, 0.95) !important;
   box-shadow:
     0 8px 32px rgba(15, 23, 42, 0.12),
@@ -4824,6 +4839,13 @@ body::after {
     0 4px 16px rgba(14, 165, 233, 0.2) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+[data-theme="light"] .my-card:hover {
+  background: linear-gradient(135deg, #1e3a8a, #1d4ed8 55%, #0284c7) !important;
+  box-shadow:
+    0 18px 50px rgba(37, 99, 235, 0.5),
+    0 6px 20px rgba(14, 165, 233, 0.3) !important;
+  border-color: rgba(37, 99, 235, 0.6) !important;
 }
 [data-theme="light"] .auth-card {
   background: #ffffff !important;
@@ -5462,4 +5484,155 @@ body::after {
 }
 [data-theme="light"] .bn-ring-sub {
   color: #64748b;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE CIRCULAR RING CARD SWITCHER
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Hide pill tabs on mobile, show ring */
+@media (max-width: 768px) {
+  .card-switcher-bar {
+    padding: 0.75rem 1rem 0.65rem;
+    border-bottom: none;
+  }
+
+  /* The ring row */
+  .card-ring-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.2rem 0.1rem 0.3rem;
+  }
+  .card-ring-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide old pill tabs on mobile */
+  .card-tab:not(.card-tab--ring) {
+    display: none !important;
+  }
+
+  /* Each circular ring card avatar */
+  .card-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.32rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card-ring__circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(148, 163, 184, 0.35);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Coloured ring around active */
+  .card-ring--active .card-ring__circle {
+    border-width: 3px;
+    transform: scale(1.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-ring__label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-align: center;
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .card-ring--active .card-ring__label {
+    color: #e2e8f0;
+  }
+
+  /* Active dot indicator */
+  .card-ring__circle::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+    border: 2px solid #0f172a;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .card-ring--active .card-ring__circle::after {
+    opacity: 1;
+  }
+
+  /* Add card ring button */
+  .card-ring--add .card-ring__circle {
+    border-style: dashed;
+    border-color: rgba(96, 165, 250, 0.5);
+    background: rgba(59, 130, 246, 0.06);
+    color: #60a5fa;
+    font-size: 1.2rem;
+    font-weight: 400;
+  }
+  .card-ring--add .card-ring__label {
+    color: #60a5fa;
+  }
+  .card-ring--add:hover .card-ring__circle {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(96, 165, 250, 0.7);
+  }
+}
+
+/* Light mode ring */
+@media (max-width: 768px) {
+  [data-theme="light"] .card-ring__circle {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(148, 163, 184, 0.4);
+    color: #334155;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+  }
+  [data-theme="light"] .card-ring--active .card-ring__circle {
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+  }
+  [data-theme="light"] .card-ring__circle::after {
+    border-color: #eef2f7;
+  }
+  [data-theme="light"] .card-ring__label {
+    color: #64748b;
+  }
+  [data-theme="light"] .card-ring--active .card-ring__label {
+    color: #1e40af;
+  }
+  [data-theme="light"] .card-ring--add .card-ring__circle {
+    background: rgba(59, 130, 246, 0.06);
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+}
+
+/* Desktop: hide ring row, keep pill tabs */
+@media (min-width: 769px) {
+  .card-ring-row {
+    display: none;
+  }
 }
