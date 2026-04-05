@@ -4404,3 +4404,100 @@ body::after {
     radial-gradient(ellipse 60% 40% at 20% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
     radial-gradient(ellipse 50% 40% at 80% 80%, rgba(16,185,129,0.06) 0%, transparent 60%);
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETTINGS MENU — NEW DESIGN
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.settings-menu {
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,.3) transparent;
+}
+
+.settings-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 2;
+}
+
+.settings-close-btn {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  transition: all 0.15s;
+}
+.settings-close-btn:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.3);
+  color: #f87171;
+}
+
+/* Sync status row */
+.settings-sync-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 6px;
+  margin: 0.25rem 0.4rem;
+}
+.settings-sync-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Transaction item inside settings panel */
+.settings-txn-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .45rem .6rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: .78rem;
+}
+.settings-txn-item .txn-cat {
+  color: #94a3b8;
+  font-size: .72rem;
+}
+.settings-txn-item .txn-amt-pos { color: #10b981; font-weight: 700; }
+.settings-txn-item .txn-amt-neg { color: #f87171; font-weight: 700; }
+.settings-txn-empty {
+  text-align: center;
+  color: #475569;
+  font-size: .78rem;
+  padding: .75rem 0;
+}
+
+[data-theme="light"] .settings-close-btn {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.1);
+  color: #64748b;
+}
+[data-theme="light"] .settings-txn-item {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.07);
+}
