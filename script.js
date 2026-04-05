@@ -1100,6 +1100,10 @@ async function unlockWithLockPassword() {
   const password = document.getElementById("lockPasswordInput").value;
   if (!password) return;
 
+  // Clear any previous attempt feedback immediately
+  document.getElementById("lockAttempts").textContent = "";
+  document.getElementById("lockError").textContent = "";
+
   const now = Date.now();
   if (now < pinLockedUntil) {
     document.getElementById("lockError").textContent =
@@ -1112,7 +1116,6 @@ async function unlockWithLockPassword() {
 
   const errEl = document.getElementById("lockError");
   errEl.textContent = "";
-  document.getElementById("lockAttempts").textContent = "";
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -4101,7 +4104,7 @@ function closeTxnFullPage() {
   if (!page) return;
   page.classList.add("txn-page-closing");
   page.classList.remove("txn-page-open");
-  setTimeout(() => page.classList.remove("txn-page-closing"), 400);
+  setTimeout(() => page.classList.remove("txn-page-closing"), 600);
 }
 
 function openBnSettingsWithSync() {
@@ -4143,8 +4146,19 @@ function toggleGlassSlider() {
 }
 
 function toggleSettingsTransactions() {
-  closeSettingsMenu();
-  openTxnFullPage();
+  const panel = document.getElementById("settingsTxnPanel");
+  const chevron = document.getElementById("txnChevron");
+  const glassPanel = document.getElementById("glassSliderPanel");
+  const glassChevron = document.getElementById("glassChevron");
+  if (glassPanel && glassPanel.style.display !== "none") {
+    glassPanel.style.display = "none";
+    if (glassChevron) glassChevron.style.transform = "";
+  }
+  if (!panel) return;
+  const isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+  if (!isOpen) renderSettingsTransactions();
 }
 
 function renderSettingsTransactions() {
