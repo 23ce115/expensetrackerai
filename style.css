@@ -4651,3 +4651,123 @@ body::after {
 }
 [data-theme="light"] .txn-full-desc { color: #0f172a; }
 [data-theme="light"] .txn-month-label { color: #94a3b8; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIX 1: Lock card — more rounded borders
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.lock-card {
+  border-radius: 28px !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIX 2: Light mode — card text readability
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-theme="light"] .card {
+  color: #1e293b !important;
+}
+[data-theme="light"] .card-title {
+  color: #1e293b !important;
+}
+[data-theme="light"] .card-header {
+  color: #1e293b !important;
+}
+[data-theme="light"] .section-header h3 {
+  color: #1e293b !important;
+}
+[data-theme="light"] .stat-label,
+[data-theme="light"] .stat-value,
+[data-theme="light"] .total-expenses,
+[data-theme="light"] .expense-bar-label,
+[data-theme="light"] .expense-bar-amount,
+[data-theme="light"] .expense-categories li {
+  color: #1e293b !important;
+}
+[data-theme="light"] .period-btn {
+  color: #334155 !important;
+}
+[data-theme="light"] .filter-btn {
+  color: #334155 !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIX 3: Light mode — settings menu text dark
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[data-theme="light"] .settings-menu-item {
+  color: #1e293b !important;
+}
+[data-theme="light"] .settings-menu-item i {
+  color: #475569 !important;
+}
+[data-theme="light"] .settings-menu-header {
+  color: #475569 !important;
+}
+[data-theme="light"] .bn-settings-row {
+  color: #1e293b !important;
+}
+[data-theme="light"] .bn-settings-row i {
+  color: #475569 !important;
+}
+[data-theme="light"] .bn-settings-section {
+  color: #64748b !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIX 4: Slower macOS-style transitions
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.modal {
+  animation: fadeIn 0.5s ease !important;
+}
+.modal-content {
+  animation: slideIn 0.55s ease !important;
+}
+#txnFullPage {
+  transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1),
+              opacity 0.45s ease !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIX 7: All transactions — darker, readable text
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.txn-full-desc {
+  color: #f1f5f9 !important;
+}
+.txn-full-cat {
+  color: #cbd5e1 !important;
+}
+.txn-full-date {
+  color: #94a3b8 !important;
+}
+.txn-full-account {
+  color: #94a3b8 !important;
+}
+.txn-month-label {
+  color: #94a3b8 !important;
+}
+.txn-page-title {
+  color: #f1f5f9 !important;
+}
+
+/* Light mode transaction page */
+[data-theme="light"] .txn-full-desc {
+  color: #0f172a !important;
+}
+[data-theme="light"] .txn-full-cat {
+  color: #475569 !important;
+}
+[data-theme="light"] .txn-full-date {
+  color: #334155 !important;
+}
+[data-theme="light"] .txn-full-account {
+  color: #334155 !important;
+}
+[data-theme="light"] .txn-month-label {
+  color: #64748b !important;
+}
+[data-theme="light"] .txn-page-title {
+  color: #0f172a !important;
+}
+[data-theme="light"] .txn-page-close {
+  color: #475569 !important;
+  background: rgba(0,0,0,0.06) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
