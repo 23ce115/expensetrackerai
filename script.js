@@ -624,18 +624,15 @@ function showAuthScreen(tab = "login") {
   document.getElementById("lockScreen").style.display = "none";
   switchAuthTab(tab);
 
-  // Show biometric button: on mobile, if credentials API works OR if WebAuthn platform auth is available
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile) {
-    _checkBiometricAvailable().then(canBio => {
-      const bioBtn = document.getElementById("authBiometricBtn");
-      const bioDivider = document.getElementById("authBiometricDivider");
-      if (bioBtn && bioDivider) {
-        bioBtn.style.display = canBio ? "flex" : "none";
-        bioDivider.style.display = canBio ? "block" : "none";
-      }
-    });
-  }
+  // Show biometric button on any device that supports it
+  _checkBiometricAvailable().then(canBio => {
+    const bioBtn = document.getElementById("authBiometricBtn");
+    const bioDivider = document.getElementById("authBiometricDivider");
+    if (bioBtn && bioDivider) {
+      bioBtn.style.display = canBio ? "flex" : "none";
+      bioDivider.style.display = canBio ? "block" : "none";
+    }
+  });
 }
 
 async function _checkBiometricAvailable() {
