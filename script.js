@@ -2229,7 +2229,9 @@ async function changePin() {
 function renderCardSwitcher() {
   const strip = document.getElementById("cardSwitcher");
   if (!strip) return;
-  let html = cards
+
+  // ── Desktop pill tabs ──────────────────────────
+  let pillHtml = cards
     .map((c, i) => {
       const last4 = (c.userData?.cardNumber || "••••").slice(-4);
       const nickname = c.userData?.nickname?.trim();
@@ -2249,9 +2251,36 @@ function renderCardSwitcher() {
     })
     .join("");
   if (cards.length < 4) {
-    html += `<button class="card-tab card-tab--add" onclick="addNewCard()"><i class="fas fa-plus"></i><span>Add Card</span></button>`;
+    pillHtml += `<button class="card-tab card-tab--add" onclick="addNewCard()"><i class="fas fa-plus"></i><span>Add Card</span></button>`;
   }
-  strip.innerHTML = html;
+
+  // ── Mobile circular ring ───────────────────────
+  let ringHtml = `<div class="card-ring-row">`;
+  ringHtml += cards
+    .map((c, i) => {
+      const nickname = c.userData?.nickname?.trim();
+      const first = nickname || c.userData?.name?.split(" ")[0] || "Card";
+      // Initial letter(s) for the avatar
+      const initials = first.slice(0, 2).toUpperCase();
+      const color = CARD_ACCENT_COLORS[i];
+      const active = i === activeCardIdx ? "card-ring--active" : "";
+      return `<div class="card-ring ${active}" onclick="switchCard(${i})">
+        <div class="card-ring__circle" style="border-color:${color};${active ? `box-shadow:0 0 0 2px ${color}44,0 4px 16px rgba(0,0,0,0.3)` : ""}">
+          ${initials}
+        </div>
+        <span class="card-ring__label">${first}</span>
+      </div>`;
+    })
+    .join("");
+  if (cards.length < 4) {
+    ringHtml += `<div class="card-ring card-ring--add" onclick="addNewCard()">
+      <div class="card-ring__circle"><i class="fas fa-plus"></i></div>
+      <span class="card-ring__label">Add</span>
+    </div>`;
+  }
+  ringHtml += `</div>`;
+
+  strip.innerHTML = pillHtml + ringHtml;
 }
 
 function switchCard(idx) {
