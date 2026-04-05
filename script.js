@@ -1112,6 +1112,7 @@ async function unlockWithLockPassword() {
 
   const errEl = document.getElementById("lockError");
   errEl.textContent = "";
+  document.getElementById("lockAttempts").textContent = "";
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -4142,19 +4143,8 @@ function toggleGlassSlider() {
 }
 
 function toggleSettingsTransactions() {
-  const panel = document.getElementById("settingsTxnPanel");
-  const chevron = document.getElementById("txnChevron");
-  const glassPanel = document.getElementById("glassSliderPanel");
-  const glassChevron = document.getElementById("glassChevron");
-  if (glassPanel && glassPanel.style.display !== "none") {
-    glassPanel.style.display = "none";
-    if (glassChevron) glassChevron.style.transform = "";
-  }
-  if (!panel) return;
-  const isOpen = panel.style.display !== "none";
-  panel.style.display = isOpen ? "none" : "block";
-  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
-  if (!isOpen) renderSettingsTransactions();
+  closeSettingsMenu();
+  openTxnFullPage();
 }
 
 function renderSettingsTransactions() {
