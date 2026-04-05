@@ -44,8 +44,8 @@
         <!-- Password mode -->
         <div id="passwordArea" style="display:none;width:100%">
           <button class="biometric-btn" id="lockBiometricBtn" style="display:none" onclick="tryLockScreenBiometric()">
-            <i class="fas fa-fingerprint"></i>
-            <span>Use Face ID / Fingerprint</span>
+            <i class="fas fa-fingerprint" id="lockBiometricIcon"></i>
+            <span id="lockBiometricLabel">Use Face ID / Fingerprint</span>
           </button>
           <div class="auth-divider" id="lockBiometricDivider" style="display:none;margin:0.75rem 0">or enter password</div>
           <div class="form-group" style="margin-bottom:0.75rem">
@@ -234,20 +234,22 @@
     <div id="biometricSetupModal" class="modal" style="display:none">
       <div class="modal-content" style="width:380px">
         <div class="modal-header">
-          <h2 class="modal-title"><i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login</h2>
+          <h2 class="modal-title" id="bioModalTitle">
+            <i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login
+          </h2>
         </div>
         <div class="modal-body" style="padding:1.75rem;text-align:center">
-          <div style="font-size:3rem;margin-bottom:1rem">
+          <div style="font-size:3rem;margin-bottom:1rem" id="bioModalIcon">
             <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
           </div>
-          <p style="color:#94a3b8;font-size:.9rem;line-height:1.7">
+          <p style="color:#94a3b8;font-size:.9rem;line-height:1.7" id="bioModalDesc">
             Use <strong style="color:#e2e8f0">Face ID or fingerprint</strong> to unlock BlueLedger instantly.<br>
             Your password is still required on new devices.
           </p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="document.getElementById('biometricSetupModal').style.display='none'">Skip</button>
-          <button class="btn btn-primary" onclick="registerBiometricNow()">
+          <button class="btn btn-primary" id="bioModalEnableBtn" onclick="registerBiometricNow()">
             <i class="fas fa-fingerprint"></i> Enable
           </button>
         </div>
