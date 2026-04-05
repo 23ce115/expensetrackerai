@@ -358,25 +358,25 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .card {
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.55);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   color: #f1f5f9;
   border-radius: 20px;
-  border: 1.5px solid rgba(96, 165, 250, 0.18);
+  border: 1.5px solid rgba(96, 165, 250, 0.22);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
   padding: 1.5rem;
 }
 .card:hover {
   transform: translateY(-3px);
-  background: #243349;
+  background: rgba(36, 51, 73, 0.7);
   box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border-color: rgba(96, 165, 250, 0.32);
+    0 16px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(96, 165, 250, 0.38);
 }
 .card-header {
   display: flex;
@@ -2460,17 +2460,18 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .card {
-  background: #ffffff;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   color: #334155;
   border: 1.5px solid rgba(59, 130, 246, 0.16);
   box-shadow:
     0 4px 20px rgba(15, 23, 42, 0.08),
-    0 1px 4px rgba(59, 130, 246, 0.06);
+    0 1px 4px rgba(59, 130, 246, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 [data-theme="light"] .card:hover {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
   box-shadow:
     0 8px 32px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(59, 130, 246, 0.1);
@@ -4440,14 +4441,15 @@ body::after {
 
 /* ── Light mode glass — these are handled in the theme section above ── */
 [data-theme="light"] .card {
-  background: #ffffff !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
   border: 1.5px solid rgba(59, 130, 246, 0.16) !important;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(59, 130, 246, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(59, 130, 246, 0.06), inset 0 1px 0 rgba(255,255,255,0.9) !important;
   color: #334155 !important;
 }
 [data-theme="light"] .card:hover {
+  background: rgba(255, 255, 255, 0.88) !important;
   border-color: rgba(59, 130, 246, 0.32) !important;
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(59, 130, 246, 0.1) !important;
 }
@@ -4801,3 +4803,134 @@ body::after {
 
 /* Header background body for light */
 [data-theme="light"] .main-content { background: transparent; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE ADD SHEET — CIRCULAR RING CARDS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.bn-ring-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0.5rem 0 1.25rem;
+}
+
+.bn-ring-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.4rem 1rem 1.2rem;
+  border-radius: 28px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+  text-align: center;
+}
+.bn-ring-card:active {
+  transform: scale(0.94);
+}
+
+.bn-ring-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: transform 0.15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  border: 2px solid rgba(255,255,255,0.15);
+}
+
+.bn-ring-label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.bn-ring-sub {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  line-height: 1.3;
+}
+
+/* Income card — green */
+.bn-ring-income {
+  border-color: rgba(52, 211, 153, 0.3);
+  box-shadow: 0 6px 24px rgba(52, 211, 153, 0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.bn-ring-income:hover {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 8px 32px rgba(52, 211, 153, 0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.bn-ring-income .bn-ring-icon {
+  background: rgba(52, 211, 153, 0.18);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+.bn-ring-income .bn-ring-label { color: #34d399; }
+.bn-ring-income .bn-ring-sub   { color: #94a3b8; }
+
+/* Expense card — red */
+.bn-ring-expense {
+  border-color: rgba(248, 113, 113, 0.3);
+  box-shadow: 0 6px 24px rgba(248, 113, 113, 0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.bn-ring-expense:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 8px 32px rgba(248, 113, 113, 0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.bn-ring-expense .bn-ring-icon {
+  background: rgba(248, 113, 113, 0.18);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+.bn-ring-expense .bn-ring-label { color: #f87171; }
+.bn-ring-expense .bn-ring-sub   { color: #94a3b8; }
+
+/* Light mode ring cards */
+[data-theme="light"] .bn-ring-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1.5px solid rgba(59, 130, 246, 0.14);
+}
+[data-theme="light"] .bn-ring-income {
+  border-color: rgba(5, 150, 105, 0.25);
+  box-shadow: 0 6px 24px rgba(5, 150, 105, 0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+[data-theme="light"] .bn-ring-income:hover {
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.4);
+}
+[data-theme="light"] .bn-ring-income .bn-ring-icon {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.2);
+}
+[data-theme="light"] .bn-ring-income .bn-ring-label { color: #059669; }
+[data-theme="light"] .bn-ring-expense {
+  border-color: rgba(225, 29, 72, 0.2);
+  box-shadow: 0 6px 24px rgba(225, 29, 72, 0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+[data-theme="light"] .bn-ring-expense:hover {
+  background: rgba(225, 29, 72, 0.05);
+  border-color: rgba(225, 29, 72, 0.35);
+}
+[data-theme="light"] .bn-ring-expense .bn-ring-icon {
+  background: rgba(225, 29, 72, 0.1);
+  color: #e11d48;
+  border-color: rgba(225, 29, 72, 0.18);
+}
+[data-theme="light"] .bn-ring-expense .bn-ring-label { color: #e11d48; }
+[data-theme="light"] .bn-ring-sub { color: #64748b; }
