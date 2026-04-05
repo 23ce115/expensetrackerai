@@ -761,8 +761,15 @@
             ></i
             >Spending Insights
           </h3>
-          <span class="insights-badge" id="insightsBadge">This month</span>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <button class="ai-insights-btn" id="aiInsightsBtn" onclick="runAiInsights()" title="Get AI-powered advice">
+              <i class="fas fa-wand-magic-sparkles"></i> AI Advice
+            </button>
+            <span class="insights-badge" id="insightsBadge">This month</span>
+          </div>
         </div>
+        <!-- AI Advice panel — hidden until triggered -->
+        <div id="aiInsightsPanel" class="ai-insights-panel" style="display:none"></div>
         <div id="anomalyAlerts"></div>
         <div class="insights-grid" id="insightsGrid"></div>
         <div class="prediction-bar" id="predictionBar" style="display: none">
@@ -1178,13 +1185,19 @@
           </div>
           <div class="form-group">
             <label class="form-label">Description (optional)</label>
-            <input
-              type="text"
-              class="form-input"
-              id="incomeDesc"
-              placeholder="e.g. Monthly salary"
-              oninput="aiAutoCategory('income', this.value)"
-            />
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <input
+                type="text"
+                class="form-input"
+                id="incomeDesc"
+                placeholder="e.g. Monthly salary"
+                oninput="aiAutoCategory('income', this.value)"
+                style="flex:1"
+              />
+              <button class="btn-receipt" id="incomeReceiptBtn" onclick="openReceiptScanner('income')" title="Scan receipt">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
             <div id="incomeAiBadge" class="ai-cat-badge" style="display:none"></div>
           </div>
           <div class="form-group">
@@ -1220,6 +1233,9 @@
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal('incomeModal')">
             Cancel
+          </button>
+          <button class="btn btn-voice" id="incomeVoiceBtn" onclick="startVoiceLog('income')" title="Log by voice">
+            <i class="fas fa-microphone"></i>
           </button>
           <button class="btn btn-primary" onclick="addIncome()">
             Add Income
@@ -1282,13 +1298,19 @@
           </div>
           <div class="form-group">
             <label class="form-label">Description (optional)</label>
-            <input
-              type="text"
-              class="form-input"
-              id="expenseDesc"
-              placeholder="e.g. Grocery run"
-              oninput="aiAutoCategory('expense', this.value)"
-            />
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <input
+                type="text"
+                class="form-input"
+                id="expenseDesc"
+                placeholder="e.g. Grocery run"
+                oninput="aiAutoCategory('expense', this.value)"
+                style="flex:1"
+              />
+              <button class="btn-receipt" id="expenseReceiptBtn" onclick="openReceiptScanner('expense')" title="Scan receipt">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
             <div id="expenseAiBadge" class="ai-cat-badge" style="display:none"></div>
           </div>
           <div class="form-group">
@@ -1327,6 +1349,9 @@
             onclick="closeModal('expenseModal')"
           >
             Cancel
+          </button>
+          <button class="btn btn-voice" id="expenseVoiceBtn" onclick="startVoiceLog('expense')" title="Log by voice">
+            <i class="fas fa-microphone"></i>
           </button>
           <button class="btn btn-primary" onclick="addExpense()">
             Add Expense
