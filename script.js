@@ -829,22 +829,22 @@ async function openBiometricSetup() {
       bioTitle = "Enable Face ID";
       bioDesc = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
       bioIconClass = "fas fa-face-smile";
-      bioBtnText = '<i class="fas fa-face-smile"></i> Enable Face ID';
+      bioBtnText = '<i class="fas fa-face-smile"></i> Enable';
     } else if (isWindows) {
       bioTitle = "Enable Windows Hello";
       bioDesc = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
       bioIconClass = "fab fa-windows";
-      bioBtnText = '<i class="fab fa-windows"></i> Enable Windows Hello';
+      bioBtnText = '<i class="fab fa-windows"></i> Enable';
     } else if (isAndroid) {
       bioTitle = "Enable Fingerprint Login";
       bioDesc = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
       bioIconClass = "fas fa-fingerprint";
-      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable Fingerprint';
+      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable';
     } else {
       bioTitle = "Enable Biometric Login";
       bioDesc = 'Use your device\'s <strong style="color:#e2e8f0">biometric sensor</strong> to unlock BlueLedger instantly.';
       bioIconClass = "fas fa-fingerprint";
-      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable Biometrics';
+      bioBtnText = '<i class="fas fa-fingerprint"></i> Enable';
     }
 
     if (titleEl) titleEl.innerHTML = `<i class="${bioIconClass}" style="color:#3b82f6;margin-right:.5rem"></i>${bioTitle}`;
@@ -1514,22 +1514,22 @@ async function completeCardSetup() {
         if (titleEl) titleEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;margin-right:.5rem"></i>Enable Face ID';
         if (iconEl) iconEl.innerHTML = '<i class="fas fa-face-smile" style="color:#3b82f6;font-size:3rem"></i>';
         if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Face ID</strong> to unlock BlueLedger instantly.<br>Your password is still required on new devices.';
-        if (btnEl) btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable Face ID';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-face-smile"></i> Enable';
       } else if (isWindows && canWebAuthn) {
         if (titleEl) titleEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;margin-right:.5rem"></i>Enable Windows Hello';
         if (iconEl) iconEl.innerHTML = '<i class="fab fa-windows" style="color:#3b82f6;font-size:3rem"></i>';
         if (descEl) descEl.innerHTML = 'Use <strong style="color:#e2e8f0">Windows Hello</strong> (PIN, fingerprint, or face) to unlock BlueLedger instantly.';
-        if (btnEl) btnEl.innerHTML = '<i class="fab fa-windows"></i> Enable Windows Hello';
+        if (btnEl) btnEl.innerHTML = '<i class="fab fa-windows"></i> Enable';
       } else if (isAndroid || canPasswordCred) {
         if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Fingerprint Login';
         if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
         if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">fingerprint</strong> to unlock BlueLedger instantly.';
-        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable Fingerprint';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
       } else {
         if (titleEl) titleEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login';
         if (iconEl) iconEl.innerHTML = '<i class="fas fa-fingerprint" style="color:#3b82f6;font-size:3rem"></i>';
         if (descEl) descEl.innerHTML = 'Use your <strong style="color:#e2e8f0">device biometrics</strong> to unlock BlueLedger instantly.';
-        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable Biometrics';
+        if (btnEl) btnEl.innerHTML = '<i class="fas fa-fingerprint"></i> Enable';
       }
       document.getElementById("biometricSetupModal").style.display = "flex";
     }
@@ -1543,37 +1543,36 @@ async function registerBiometricNow() {
     btnEl.style.opacity = "0.6";
   }
   try {
-    // Get credentials — either from pending card setup or stored session
     const setupData = _pendingCardSetup || {};
     const email =
       setupData.email ||
       localStorage.getItem("bl_last_email") ||
       "blueledger-user";
-    const password = setupData.password || sessionPin; // sessionPin holds current session password
+    const password = setupData.password || sessionPin;
 
-    // Android Chrome — PasswordCredential
-    if (
-      "credentials" in navigator &&
-      window.PasswordCredential &&
-      email &&
-      password
-    ) {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    const canPasswordCred = "credentials" in navigator && !!window.PasswordCredential;
+    const canWebAuthn = !!window.PublicKeyCredential;
+
+    // Only use PasswordCredential on Android (it shows the fingerprint prompt there).
+    // On Windows/desktop, PasswordCredential just shows the "Save password?" browser dialog — use WebAuthn instead.
+    if (isAndroid && canPasswordCred && email && password) {
       const cred = new PasswordCredential({ id: email, password });
       await navigator.credentials.store(cred);
       localStorage.setItem("bl_has_stored_creds", "1");
-      notify("Biometric login enabled ✓", "success");
-    }
-    // iOS / WebAuthn — register platform authenticator (Face ID / Touch ID)
-    else if (window.PublicKeyCredential) {
+      notify("Fingerprint login enabled ✓", "success");
+    } else if (canWebAuthn) {
       await _webAuthnRegister(email);
       if (password) _webAuthnStorePassword(password);
       if (email && email !== "blueledger-user")
         localStorage.setItem("bl_last_email", email);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMac =
-        /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+      const isWindows = /Windows/.test(navigator.userAgent);
       notify(
-        isIOS || isMac ? "Face ID enabled ✓" : "Biometric login enabled ✓",
+        isIOS || isMac ? "Face ID enabled ✓"
+        : isWindows ? "Windows Hello enabled ✓"
+        : "Biometric login enabled ✓",
         "success",
       );
     } else {
