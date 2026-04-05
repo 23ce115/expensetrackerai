@@ -5487,152 +5487,68 @@ body::after {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MOBILE CIRCULAR RING CARD SWITCHER
+   MOBILE CARD SWITCHER — PILL TABS
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* Hide pill tabs on mobile, show ring */
+/* Hide ring row on all screen sizes */
+.card-ring-row {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .card-switcher-bar {
-    padding: 0.75rem 1rem 0.65rem;
-    border-bottom: none;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.12);
   }
 
-  /* The ring row */
-  .card-ring-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.65rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 0.2rem 0.1rem 0.3rem;
-  }
-  .card-ring-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide old pill tabs on mobile */
+  /* Show the regular pill tabs on mobile too */
   .card-tab:not(.card-tab--ring) {
-    display: none !important;
+    display: flex !important;
   }
 
-  /* Each circular ring card avatar */
-  .card-ring {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.32rem;
-    cursor: pointer;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .card-ring__circle {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 2.5px solid rgba(148, 163, 184, 0.35);
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #e2e8f0;
-    transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  }
-
-  /* Coloured ring around active */
-  .card-ring--active .card-ring__circle {
-    border-width: 3px;
-    transform: scale(1.12);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  }
-
-  .card-ring__label {
-    font-size: 0.6rem;
-    font-weight: 700;
+  /* Pill shape on mobile */
+  .card-tab {
+    border-radius: 999px !important;
+    border: 1.5px solid rgba(148, 163, 184, 0.25) !important;
+    border-bottom: 1.5px solid rgba(148, 163, 184, 0.25) !important;
+    padding: 0.38rem 0.75rem;
+    font-size: 0.78rem;
+    background: rgba(255, 255, 255, 0.05) !important;
     color: #94a3b8;
-    text-align: center;
-    max-width: 52px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
+    gap: 0.4rem;
+    margin: 0.2rem 0;
   }
-  .card-ring--active .card-ring__label {
+  .card-tab:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.4) !important;
+  }
+  .card-tab--active {
+    background: rgba(59, 130, 246, 0.15) !important;
+    border-color: rgba(96, 165, 250, 0.5) !important;
+    border-bottom-color: rgba(96, 165, 250, 0.5) !important;
     color: #e2e8f0;
   }
-
-  /* Active dot indicator */
-  .card-ring__circle::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #3b82f6;
-    border: 2px solid #0f172a;
-    opacity: 0;
-    transition: opacity 0.15s;
-  }
-  .card-ring--active .card-ring__circle::after {
-    opacity: 1;
-  }
-
-  /* Add card ring button */
-  .card-ring--add .card-ring__circle {
-    border-style: dashed;
-    border-color: rgba(96, 165, 250, 0.5);
-    background: rgba(59, 130, 246, 0.06);
-    color: #60a5fa;
-    font-size: 1.2rem;
-    font-weight: 400;
-  }
-  .card-ring--add .card-ring__label {
-    color: #60a5fa;
-  }
-  .card-ring--add:hover .card-ring__circle {
-    background: rgba(59, 130, 246, 0.14);
-    border-color: rgba(96, 165, 250, 0.7);
+  .card-tab--add {
+    /* inherits existing pill styles already set */
   }
 }
 
-/* Light mode ring */
+/* Light mode pills on mobile */
 @media (max-width: 768px) {
-  [data-theme="light"] .card-ring__circle {
-    background: rgba(255, 255, 255, 0.75);
-    border-color: rgba(148, 163, 184, 0.4);
-    color: #334155;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+  [data-theme="light"] .card-tab {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+    color: #475569;
   }
-  [data-theme="light"] .card-ring--active .card-ring__circle {
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
-  }
-  [data-theme="light"] .card-ring__circle::after {
-    border-color: #eef2f7;
-  }
-  [data-theme="light"] .card-ring__label {
-    color: #64748b;
-  }
-  [data-theme="light"] .card-ring--active .card-ring__label {
+  [data-theme="light"] .card-tab:hover {
+    background: rgba(59, 130, 246, 0.07) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
     color: #1e40af;
   }
-  [data-theme="light"] .card-ring--add .card-ring__circle {
-    background: rgba(59, 130, 246, 0.06);
-    border-color: rgba(59, 130, 246, 0.4);
-  }
-}
-
-/* Desktop: hide ring row, keep pill tabs */
-@media (min-width: 769px) {
-  .card-ring-row {
-    display: none;
+  [data-theme="light"] .card-tab--active {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.45) !important;
+    color: #1e40af;
   }
 }
