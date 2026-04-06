@@ -3758,12 +3758,6 @@ function getChartData(period) {
 
 function setChartPeriod(p) {
   chartPeriod = p;
-  ["daily", "weekly", "monthly"].forEach((x) => {
-    const btn = document.getElementById(
-      "cp" + x.charAt(0).toUpperCase() + x.slice(1),
-    );
-    if (btn) btn.classList.toggle("active", x === p);
-  });
   renderChart(p);
 }
 
