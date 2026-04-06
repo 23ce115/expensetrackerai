@@ -2478,6 +2478,20 @@ async function tryBiometricLogin() {
     // iOS / WebAuthn path (Face ID / Touch ID / Windows Hello)
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
+      // Google auth users: the WebAuthn vault holds the derived vault key, not
+      // a real password. Re-use the live Supabase session to unlock instead of
+      // calling signInWithPassword (which would always fail for Google accounts).
+      const isGoogleAuth = localStorage.getItem("bl_is_google_auth") === "1";
+      if (isGoogleAuth) {
+        try {
+          const client = getBLClient();
+          const { data } = await client.auth.getSession();
+          if (data?.session) {
+            await _unlockGoogleUser(data.session);
+            return;
+          }
+        } catch {}
+      }
       const emailEl = document.getElementById("loginEmail");
       if (!emailEl.value) {
         emailEl.value = localStorage.getItem("bl_last_email") || "";
@@ -2864,6 +2878,24 @@ async function tryLockScreenBiometric() {
     // iOS Safari / WebAuthn path — Face ID / Touch ID / Windows Hello
     if (localStorage.getItem("bl_has_webauthn") === "1") {
       const password = await _webAuthnAuthenticate();
+
+      // Google auth users: vault key is derived, not a password — re-derive and unlock
+      const isGoogleAuth = localStorage.getItem("bl_is_google_auth") === "1";
+      if (isGoogleAuth) {
+        try {
+          const client = getBLClient();
+          const { data } = await client.auth.getSession();
+          if (data?.session) {
+            await _unlockGoogleUser(data.session);
+            return;
+          }
+        } catch {}
+        document.getElementById("lockError").textContent =
+          "Session expired. Please sign in again.";
+        return;
+      }
+
+      // Regular password user — decrypt local vault with recovered password
       const raw = localStorage.getItem(STORAGE_KEY);
       const vault = raw ? tryDecrypt(raw, password) : null;
       if (
@@ -2873,7 +2905,7 @@ async function tryLockScreenBiometric() {
         await _lockScreenSuccess(password, vault);
         return;
       }
-      // Local vault not found — try cloud unlock
+      // Local vault not found — try cloud unlock (password users only)
       document.getElementById("lockPasswordInput").value = password;
       await unlockWithLockPassword();
     }
