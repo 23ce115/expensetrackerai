@@ -1954,7 +1954,19 @@ async function openBiometricSetup() {
   const iconEl = document.getElementById("bioModalIcon");
   const btnEl = document.getElementById("bioModalEnableBtn");
 
-  if (hasWebAuthn) {
+  // Treat as not-set-up if vault or credId is missing (partial registration failure)
+  const hasValidWebAuthn =
+    hasWebAuthn &&
+    !!localStorage.getItem("bl_webauthn_cred_id") &&
+    !!localStorage.getItem("bl_webauthn_pwd_vault");
+  if (!hasValidWebAuthn && hasWebAuthn) {
+    // Clean up stale partial state
+    localStorage.removeItem("bl_has_webauthn");
+    localStorage.removeItem("bl_webauthn_cred_id");
+    localStorage.removeItem("bl_webauthn_pwd_vault");
+  }
+
+  if (hasValidWebAuthn) {
     // Already set up — offer to remove
     if (titleEl)
       titleEl.innerHTML =
@@ -2085,13 +2097,18 @@ async function _checkBiometricAvailable() {
     window.PasswordCredential
   )
     return true;
-  // iOS Safari / any platform — WebAuthn credential registered
-  if (
-    localStorage.getItem("bl_has_webauthn") === "1" &&
-    window.PublicKeyCredential
-  )
-    return true;
-  // Check if the device even has a platform authenticator (Face ID, Touch ID, Windows Hello…)
+  // iOS Safari / any platform — WebAuthn: both cred_id AND pwd_vault must exist
+  // Guard against partial registration leaving stale bl_has_webauthn flag
+  if (localStorage.getItem("bl_has_webauthn") === "1") {
+    const credOk = !!localStorage.getItem("bl_webauthn_cred_id");
+    const vaultOk = !!localStorage.getItem("bl_webauthn_pwd_vault");
+    if (credOk && vaultOk && window.PublicKeyCredential) return true;
+    // Partial/stale registration — clear it so the button is not shown
+    localStorage.removeItem("bl_has_webauthn");
+    localStorage.removeItem("bl_webauthn_cred_id");
+    localStorage.removeItem("bl_webauthn_pwd_vault");
+  }
+  // Check if the device has a platform authenticator available (for showing the Settings setup row)
   if (window.PublicKeyCredential) {
     try {
       return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
@@ -2111,7 +2128,7 @@ async function _webAuthnRegister(email) {
   const credential = await navigator.credentials.create({
     publicKey: {
       challenge,
-      rp: { name: "BlueLedger", id: location.hostname },
+      rp: { name: "BlueLedger", id: location.hostname || undefined },
       user: {
         id: userId,
         name: email || "blueledger-user",
@@ -2143,14 +2160,19 @@ async function _webAuthnAuthenticate() {
   if (!credIdB64) throw new Error("No WebAuthn credential registered");
   const credId = Uint8Array.from(atob(credIdB64), (c) => c.charCodeAt(0));
   const challenge = crypto.getRandomValues(new Uint8Array(32));
-  const assertion = await navigator.credentials.get({
+  const getOptions = {
     publicKey: {
       challenge,
       allowCredentials: [{ id: credId, type: "public-key" }],
       userVerification: "required",
       timeout: 60000,
     },
-  });
+  };
+  // rpId must match registration exactly — omit when hostname is empty (file://)
+  if (location.hostname) {
+    getOptions.publicKey.rpId = location.hostname;
+  }
+  const assertion = await navigator.credentials.get(getOptions);
   if (!assertion) throw new Error("Authentication failed");
   // Return the stored password (WebAuthn just gates access to it)
   const vaultRaw = localStorage.getItem("bl_webauthn_pwd_vault");
@@ -2746,6 +2768,16 @@ async function registerBiometricNow() {
       localStorage.getItem("bl_last_email") ||
       "blueledger-user";
     const password = setupData.password || sessionPin;
+
+    // Guard: if password is unavailable, abort — storing an empty vault breaks auth
+    if (!password) {
+      notify(
+        "Please log in first, then enable biometrics from Settings.",
+        "error",
+      );
+      document.getElementById("biometricSetupModal").style.display = "none";
+      return;
+    }
 
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
