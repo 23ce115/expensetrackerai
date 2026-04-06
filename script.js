@@ -136,6 +136,8 @@ const TXN_PREVIEW_LIMITS = {
 
 const AI_MODEL = "claude-sonnet-4-20250514";
 let _aiCatTimers = {};
+let _aiCatGeneration = {}; // generation counter per type — stale responses are ignored
+let _aiCatDismissed = {}; // track if user dismissed badge for current input
 let _askBlHistory = [];
 let _askBlBusy = false;
 
@@ -157,22 +159,341 @@ async function _callAI(messages, systemPrompt, maxTokens = 300) {
 }
 
 /* ──────────────────────────────────────────────
+   LOCAL KEYWORD CLASSIFIER
+   Runs instantly on every keystroke for immediate
+   feedback. Falls back to Claude API for ambiguous
+   cases after a debounce delay.
+────────────────────────────────────────────── */
+const _AI_KEYWORD_MAP = {
+  // Food & Dining
+  Food: [
+    "starbucks",
+    "coffee",
+    "cafe",
+    "restaurant",
+    "lunch",
+    "dinner",
+    "breakfast",
+    "zomato",
+    "swiggy",
+    "dominos",
+    "pizza",
+    "burger",
+    "biryani",
+    "food",
+    "grocery",
+    "supermarket",
+    "vegetables",
+    "fruits",
+    "milk",
+    "bread",
+    "chai",
+    "tea",
+    "snack",
+    "meal",
+    "eat",
+    "dunkin",
+    "mcdonalds",
+    "kfc",
+    "subway",
+    "barbeque",
+    "bakery",
+    "hotel",
+    "canteen",
+    "tiffin",
+    "dine",
+    "dining",
+    "juice",
+    "coca",
+    "pepsi",
+    "maggi",
+    "rice",
+    "dal",
+  ],
+  // Transport
+  Transport: [
+    "uber",
+    "ola",
+    "rapido",
+    "auto",
+    "taxi",
+    "cab",
+    "petrol",
+    "diesel",
+    "fuel",
+    "metro",
+    "bus",
+    "train",
+    "flight",
+    "airways",
+    "airline",
+    "travel",
+    "transport",
+    "toll",
+    "parking",
+    "irctc",
+    "indigo",
+    "spicejet",
+    "air india",
+    "vistara",
+    "redbus",
+    "rickshaw",
+    "bike",
+    "carpool",
+    "share",
+    "commute",
+    "railway",
+    "station",
+  ],
+  // Shopping
+  Shopping: [
+    "amazon",
+    "flipkart",
+    "myntra",
+    "ajio",
+    "nykaa",
+    "meesho",
+    "zepto",
+    "blinkit",
+    "bigbasket",
+    "reliance",
+    "dmart",
+    "mall",
+    "shopping",
+    "clothes",
+    "shirt",
+    "shoes",
+    "fashion",
+    "apparel",
+    "dress",
+    "watch",
+    "bag",
+    "accessories",
+    "cosmetics",
+    "beauty",
+    "electronics",
+    "mobile",
+    "laptop",
+    "gadget",
+    "appliance",
+    "furniture",
+    "decor",
+  ],
+  // Entertainment
+  Entertainment: [
+    "netflix",
+    "hotstar",
+    "prime",
+    "disney",
+    "spotify",
+    "youtube",
+    "gaming",
+    "game",
+    "movie",
+    "cinema",
+    "pvr",
+    "inox",
+    "concert",
+    "event",
+    "ticket",
+    "show",
+    "play",
+    "netflix",
+    "hbo",
+    "apple tv",
+    "jio",
+    "sonyliv",
+    "zee",
+    "music",
+    "stream",
+  ],
+  // Health
+  Health: [
+    "pharmacy",
+    "medicine",
+    "doctor",
+    "hospital",
+    "clinic",
+    "apollo",
+    "medplus",
+    "health",
+    "gym",
+    "fitness",
+    "yoga",
+    "physiotherapy",
+    "dental",
+    "optician",
+    "lab",
+    "test",
+    "pathology",
+    "prescription",
+    "tablet",
+    "capsule",
+    "syrup",
+    "ayurvedic",
+    "wellness",
+    "therapy",
+    "insurance",
+    "mediclaim",
+  ],
+  // Education
+  Education: [
+    "udemy",
+    "coursera",
+    "school",
+    "college",
+    "university",
+    "fees",
+    "course",
+    "book",
+    "stationery",
+    "tuition",
+    "coaching",
+    "class",
+    "exam",
+    "study",
+    "subscription",
+    "skill",
+    "certificate",
+    "degree",
+    "notes",
+    "pen",
+    "pencil",
+  ],
+  // Utilities
+  Utilities: [
+    "electricity",
+    "water",
+    "gas",
+    "broadband",
+    "wifi",
+    "internet",
+    "mobile recharge",
+    "recharge",
+    "dth",
+    "cable",
+    "postpaid",
+    "prepaid",
+    "rent",
+    "maintenance",
+    "society",
+    "bsnl",
+    "airtel",
+    "jio",
+    "vi",
+    "vodafone",
+    "idea",
+    "tata",
+    "dish",
+    "tatasky",
+    "telephone",
+    "bill",
+    "utility",
+    "municipal",
+  ],
+  // Salary / Income
+  Salary: [
+    "salary",
+    "payroll",
+    "wage",
+    "stipend",
+    "ctc",
+    "increment",
+    "hike",
+    "bonus",
+    "appraisal",
+    "employer",
+    "company",
+    "office",
+    "paycheck",
+    "remuneration",
+  ],
+  // Freelance
+  Freelance: [
+    "freelance",
+    "client",
+    "project",
+    "invoice",
+    "contract",
+    "consulting",
+    "upwork",
+    "fiverr",
+    "toptal",
+    "design",
+    "development",
+    "writing",
+    "gig",
+    "work from home",
+  ],
+};
+
+function _localKeywordGuess(desc) {
+  const lower = desc.toLowerCase();
+  const scores = {};
+  for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
+    for (const kw of keywords) {
+      if (lower.includes(kw)) {
+        scores[cat] = (scores[cat] || 0) + kw.length; // longer matches score higher
+      }
+    }
+  }
+  if (!Object.keys(scores).length) return null;
+  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+/* ──────────────────────────────────────────────
    FEATURE 1: AI AUTO-CATEGORIZATION
-   Called oninput on income/expense description fields.
-   Debounced 600ms. Updates the category <select>
-   and shows a small dismissible badge.
+   1. Instant local guess shown immediately (no API wait)
+   2. Claude API called after 700ms debounce for accuracy
+   3. Generation counter ensures stale API responses
+      never overwrite a newer result
+   4. Badge persists — only hides on dismiss or modal close
 ────────────────────────────────────────────── */
 function aiAutoCategory(type, value) {
   clearTimeout(_aiCatTimers[type]);
   const badgeEl = document.getElementById(`${type}AiBadge`);
-  if (!value || value.trim().length < 3) {
-    if (badgeEl) badgeEl.style.display = "none";
+  if (!badgeEl) return;
+
+  const trimmed = value ? value.trim() : "";
+
+  // Reset dismissed state when user changes text significantly
+  if (!trimmed || trimmed.length < 3) {
+    // Only hide if user hasn't already seen + kept a good suggestion
+    const currentlyApplied = badgeEl.dataset.appliedMatch;
+    if (!currentlyApplied) {
+      badgeEl.style.display = "none";
+      badgeEl.dataset.appliedMatch = "";
+    }
+    _aiCatDismissed[type] = false;
     return;
   }
-  _aiCatTimers[type] = setTimeout(() => _runAiCat(type, value.trim()), 600);
+
+  // If user dismissed the badge for this exact text, don't re-show
+  if (_aiCatDismissed[type] && badgeEl.dataset.lastDesc === trimmed) return;
+  _aiCatDismissed[type] = false;
+
+  // ── Step 1: Instant local guess ──
+  const localGuess = _localKeywordGuess(trimmed);
+  if (localGuess) {
+    _showAiBadge(type, localGuess, trimmed, false /* not final yet */);
+  } else if (badgeEl.style.display === "none") {
+    // Show "thinking" only if badge isn't already showing a good result
+    badgeEl.style.display = "flex";
+    badgeEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#a78bfa"></i><span style="color:#94a3b8">Thinking…</span>`;
+  }
+
+  // ── Step 2: Debounced Claude API call for accuracy ──
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  const myGen = _aiCatGeneration[type];
+
+  _aiCatTimers[type] = setTimeout(async () => {
+    // If a newer call has been scheduled, bail out
+    if (_aiCatGeneration[type] !== myGen) return;
+    await _runAiCat(type, trimmed, myGen);
+  }, 700);
 }
 
-async function _runAiCat(type, desc) {
+async function _runAiCat(type, desc, generation) {
   const cats =
     type === "income"
       ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
@@ -181,57 +502,103 @@ async function _runAiCat(type, desc) {
   const selectEl = document.getElementById(`${type}Category`);
   if (!badgeEl || !selectEl) return;
 
-  // Show loading state
-  badgeEl.style.display = "flex";
-  badgeEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#a78bfa"></i><span style="color:#94a3b8">Suggesting…</span>`;
-
   try {
     const system = `You are a financial transaction categorizer for an Indian personal finance app.
 Given a transaction description, return ONLY the single best matching category name from the list.
 Do not explain. Do not add punctuation. Return only the category name exactly as given.
 Categories: ${cats.join(", ")}`;
     const result = await _callAI([{ role: "user", content: desc }], system, 20);
+
+    // Stale response guard — generation must still match
+    if (_aiCatGeneration[type] !== generation) return;
+
     const suggested = result.trim();
     const match =
       cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
       cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+
     if (!match) {
-      badgeEl.style.display = "none";
+      // API gave no match — keep local guess if we had one, else hide
+      const localGuess = _localKeywordGuess(desc);
+      if (!localGuess) badgeEl.style.display = "none";
       return;
     }
 
-    // Only auto-select if no category chosen yet
-    const current = selectEl.value;
-    if (!current || current === "") {
-      selectEl.value = match;
-    }
-
-    // Show badge — clickable to apply
-    const isApplied = selectEl.value === match;
-    badgeEl.style.display = "flex";
-    badgeEl.innerHTML = `
-      <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
-      <span>AI suggests: <strong style="color:#e2e8f0">${match}</strong></span>
-      ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
-      <button class="ai-cat-dismiss" onclick="document.getElementById('${type}AiBadge').style.display='none'" title="Dismiss"><i class="fas fa-times"></i></button>
-    `;
+    _showAiBadge(type, match, desc, true /* final */);
   } catch (e) {
-    badgeEl.style.display = "none";
+    // Network/API failure — keep local guess if shown, else silently hide
+    if (_aiCatGeneration[type] !== generation) return;
+    const localGuess = _localKeywordGuess(desc);
+    if (!localGuess) badgeEl.style.display = "none";
     console.warn("AI categorization failed", e);
   }
+}
+
+function _showAiBadge(type, match, desc, isFinal) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+
+  // Don't overwrite a user-dismissed badge for the same description
+  if (_aiCatDismissed[type] && badgeEl.dataset.lastDesc === desc) return;
+
+  // Auto-apply only if no category is selected yet
+  if (!selectEl.value || selectEl.value === "") {
+    selectEl.value = match;
+  }
+
+  const isApplied = selectEl.value === match;
+  badgeEl.dataset.appliedMatch = isApplied ? match : "";
+  badgeEl.dataset.lastDesc = desc;
+
+  const confidenceIcon = isFinal
+    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
+    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess — AI confirming…"></i>`;
+
+  badgeEl.style.display = "flex";
+  badgeEl.innerHTML = `
+    ${confidenceIcon}
+    <span>AI suggests: <strong style="color:#e2e8f0">${match}</strong>${isFinal ? "" : " <span style='color:#64748b;font-size:.72rem'>(confirming…)</span>"}</span>
+    ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
+    <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+  `;
 }
 
 function aiApplyCategory(type, category) {
   const selectEl = document.getElementById(`${type}Category`);
   const badgeEl = document.getElementById(`${type}AiBadge`);
   if (selectEl) selectEl.value = category;
-  if (badgeEl)
+  if (badgeEl) {
+    badgeEl.dataset.appliedMatch = category;
     badgeEl.innerHTML = `
-    <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
-    <span>AI suggests: <strong style="color:#e2e8f0">${category}</strong></span>
-    <span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>
-    <button class="ai-cat-dismiss" onclick="document.getElementById('${type}AiBadge').style.display='none'" title="Dismiss"><i class="fas fa-times"></i></button>
-  `;
+      <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
+      <span>AI suggests: <strong style="color:#e2e8f0">${category}</strong></span>
+      <span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>
+      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+    `;
+  }
+}
+
+function aiDismissBadge(type) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.appliedMatch = "";
+    _aiCatDismissed[type] = true;
+  }
+}
+
+/* Called by openModal / closeModal to reset badge state for fresh entries */
+function resetAiCatBadge(type) {
+  clearTimeout(_aiCatTimers[type]);
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1; // invalidate any in-flight calls
+  _aiCatDismissed[type] = false;
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.appliedMatch = "";
+    badgeEl.dataset.lastDesc = "";
+  }
 }
 
 /* ──────────────────────────────────────────────
@@ -5283,6 +5650,7 @@ function openModal(id, options = {}) {
     document.getElementById("incomeFrequencyRow").style.display = "none";
     populateCategorySelects();
     document.getElementById("incomeCategory").value = "";
+    resetAiCatBadge("income");
     applyTxnDraft("income", options.draft);
   }
   if (id === "expenseModal") {
@@ -5296,6 +5664,7 @@ function openModal(id, options = {}) {
     document.getElementById("expenseFrequencyRow").style.display = "none";
     populateCategorySelects();
     document.getElementById("expenseCategory").value = "";
+    resetAiCatBadge("expense");
     applyTxnDraft("expense", options.draft);
   }
   if (id === "syncModal") {
