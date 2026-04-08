@@ -307,6 +307,10 @@ const _AI_KEYWORD_MAP = {
     "hotstar",
     "prime",
     "disney",
+    "apple music",
+    "youtube music",
+    "amazon prime",
+    "prime video",
     "spotify",
     "youtube",
     "gaming",
@@ -471,16 +475,24 @@ function _localKeywordGuess(type, desc) {
   const lower = desc.toLowerCase();
   const allowed = new Set(_getAiCategories(type));
   const scores = {};
+  const strongest = {};
   for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
     if (!allowed.has(cat)) continue;
     for (const kw of keywords) {
       if (lower.includes(kw)) {
-        scores[cat] = (scores[cat] || 0) + kw.length;
+        const phraseBonus = kw.includes(" ") ? 8 : 0;
+        const score = kw.length + phraseBonus;
+        scores[cat] = (scores[cat] || 0) + score;
+        strongest[cat] = Math.max(strongest[cat] || 0, score);
       }
     }
   }
   if (!Object.keys(scores).length) return null;
-  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  return Object.entries(scores)
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
+    })[0][0];
 }
 
 /* ──────────────────────────────────────────────
