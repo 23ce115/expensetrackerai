@@ -512,6 +512,115 @@ const _AI_KEYWORD_MAP = {
   ],
 };
 
+const _AI_CATEGORY_SEEDS = {
+  Food: [
+    "coffee",
+    "tea",
+    "snack",
+    "meal",
+    "restaurant",
+    "breakfast",
+    "lunch",
+    "dinner",
+    "grocery",
+  ],
+  Entertainment: [
+    "music",
+    "movie",
+    "game",
+    "concert",
+    "show",
+    "ott",
+    "streaming",
+  ],
+  Shopping: [
+    "shopping",
+    "clothes",
+    "shoes",
+    "gift",
+    "accessory",
+    "cosmetic",
+    "bag",
+  ],
+  Transport: [
+    "uber",
+    "ola",
+    "taxi",
+    "metro",
+    "bus",
+    "fuel",
+    "petrol",
+    "diesel",
+  ],
+  Health: [
+    "medicine",
+    "pharmacy",
+    "doctor",
+    "clinic",
+    "hospital",
+    "condom",
+    "sanitary",
+    "medical",
+  ],
+  Investment: ["sip", "mutual fund", "stock", "shares", "investment", "fd"],
+  Salary: ["salary", "payroll", "payslip", "salary credit"],
+  Freelance: ["client", "invoice", "project", "gig", "retainer"],
+  Business: ["business", "vendor", "gst", "shop", "inventory"],
+  Insurance: ["insurance", "premium", "policy", "mediclaim"],
+  Furniture: [
+    "bed",
+    "mattress",
+    "sofa",
+    "couch",
+    "chair",
+    "table",
+    "desk",
+    "wardrobe",
+    "cupboard",
+    "shelf",
+    "pillow",
+    "blanket",
+    "lamp",
+    "furniture",
+  ],
+  Electronics: [
+    "mobile",
+    "phone",
+    "laptop",
+    "charger",
+    "headphones",
+    "earbuds",
+    "tv",
+    "monitor",
+  ],
+  Groceries: [
+    "grocery",
+    "vegetable",
+    "fruit",
+    "milk",
+    "bread",
+    "rice",
+    "dal",
+    "egg",
+  ],
+  Utilities: [
+    "electricity",
+    "water",
+    "wifi",
+    "internet",
+    "recharge",
+    "rent",
+    "maintenance",
+    "bill",
+  ],
+  Education: ["course", "fees", "book", "exam", "tuition", "class", "study"],
+  Travel: ["flight", "hotel", "trip", "booking", "train", "bus", "travel"],
+  Fitness: ["gym", "protein", "workout", "yoga", "fitness"],
+  Beauty: ["salon", "spa", "makeup", "cosmetic", "skincare", "perfume"],
+  Pets: ["dog", "cat", "pet", "vet", "pet food", "litter"],
+  Kids: ["toy", "school", "diaper", "baby", "formula", "stroller"],
+};
+
 function _getAiCategories(type) {
   return type === "income"
     ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
@@ -534,6 +643,16 @@ function _addAiScore(scores, strongest, cat, score) {
   if (!cat || !score) return;
   scores[cat] = (scores[cat] || 0) + score;
   strongest[cat] = Math.max(strongest[cat] || 0, score);
+}
+
+function _getCategorySeeds(cat) {
+  if (!cat) return [];
+  const exact = _AI_CATEGORY_SEEDS[cat];
+  if (exact) return exact;
+  const found = Object.entries(_AI_CATEGORY_SEEDS).find(
+    ([name]) => name.toLowerCase() === cat.toLowerCase(),
+  );
+  return found ? found[1] : [];
 }
 
 function _tokenizeAiText(text) {
@@ -587,6 +706,13 @@ function _localKeywordGuess(type, desc) {
     ).length;
     if (overlap) {
       _addAiScore(scores, strongest, cat, overlap * 5);
+    }
+
+    for (const seed of _getCategorySeeds(cat)) {
+      if (lower.includes(seed)) {
+        const seedScore = seed.length + (seed.includes(" ") ? 10 : 4);
+        _addAiScore(scores, strongest, cat, seedScore);
+      }
     }
   }
 
