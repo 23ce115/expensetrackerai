@@ -26,6 +26,9 @@ const BL_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
 const AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
 const VERIFY_TOKEN_V2 = "BL_OK_v2";
+const WEBAUTHN_CRED_ID_KEY = "bl_webauthn_cred_id";
+const WEBAUTHN_PWD_VAULT_KEY = "bl_webauthn_pwd_vault";
+const WEBAUTHN_RP_ID_KEY = "bl_webauthn_rp_id";
 
 function encrypt(data, pin) {
   return CryptoJS.AES.encrypt(JSON.stringify(data), pin).toString();
@@ -137,7 +140,8 @@ const TXN_PREVIEW_LIMITS = {
 const AI_MODEL = "claude-sonnet-4-20250514";
 let _aiCatTimers = {};
 let _aiCatGeneration = {}; // generation counter per type — stale responses are ignored
-let _aiCatDismissed = {}; // track if user dismissed badge for current input
+let _aiCatDismissed = {}; // exact description text dismissed by the user
+let _aiCatState = {};
 let _askBlHistory = [];
 let _askBlBusy = false;
 
@@ -167,7 +171,6 @@ async function _callAI(messages, systemPrompt, maxTokens = 300) {
 const _AI_KEYWORD_MAP = {
   // Food & Dining
   Food: [
-    // Delivery & Restaurant Apps/Chains
     "starbucks",
     "coffee",
     "cafe",
@@ -180,6 +183,7 @@ const _AI_KEYWORD_MAP = {
     "dominos",
     "pizza",
     "burger",
+    "biryani",
     "food",
     "grocery",
     "supermarket",
@@ -207,2124 +211,539 @@ const _AI_KEYWORD_MAP = {
     "coca",
     "pepsi",
     "maggi",
-    "dhaba",
-    "halwai",
-    "mithai",
-    "sweet shop",
-    "ice cream",
-    "kulfi",
-    "lassi",
-    "nimbu pani",
-    "shikanji",
-    "amul",
-    "mother dairy",
-    "vadilal",
-    "havmor",
-    "baskin robbins",
-    "natural ice cream",
-
-    // Indian Rice & Biryani dishes
-    "biryani",
     "rice",
-    "pulao",
-    "khichdi",
-    "jeera rice",
-    "fried rice",
-    "curd rice",
-    "lemon rice",
-    "tamarind rice",
-    "coconut rice",
-    "pongal",
-    "bisi bele bath",
-    "vangi bath",
-    "tehri",
-    "kabuli rice",
-    "matar pulao",
-    "kashmiri pulao",
-    "vegetable biryani",
-    "chicken biryani",
-    "mutton biryani",
-    "egg biryani",
-    "prawn biryani",
-    "hyderabadi biryani",
-    "lucknowi biryani",
-    "kolkata biryani",
-    "ambur biryani",
-    "dindigul biryani",
-    "thalassery biryani",
-
-    // Indian Breads
-    "roti",
-    "chapati",
-    "paratha",
-    "naan",
-    "kulcha",
-    "puri",
-    "bhatura",
-    "lachha paratha",
-    "aloo paratha",
-    "gobi paratha",
-    "methi paratha",
-    "paneer paratha",
-    "stuffed paratha",
-    "roomali roti",
-    "tandoori roti",
-    "missi roti",
-    "thepla",
-    "bajra roti",
-    "jowar roti",
-    "makki roti",
-    "poori",
-    "bedmi puri",
-    "kachori",
-    "dal kachori",
-
-    // Lentils & Dals
     "dal",
-    "dal tadka",
-    "dal makhani",
-    "dal fry",
-    "dal baati",
-    "chana dal",
-    "moong dal",
-    "masoor dal",
-    "toor dal",
-    "urad dal",
-    "rajma",
-    "chhole",
-    "chole",
-    "kadala curry",
-    "sambar",
-    "rasam",
-    "varan",
-    "amti",
-
-    // Indian Curries & Gravies
-    "curry",
-    "sabzi",
-    "gravy",
-    "masala",
-    "korma",
-    "butter chicken",
-    "murgh makhani",
-    "chicken curry",
-    "mutton curry",
-    "palak paneer",
-    "paneer butter masala",
-    "paneer tikka masala",
-    "shahi paneer",
-    "kadai paneer",
-    "matar paneer",
-    "aloo matar",
-    "aloo gobi",
-    "aloo palak",
-    "baingan bharta",
-    "baingan masala",
-    "bhindi masala",
-    "lauki sabzi",
-    "tinda masala",
-    "capsicum masala",
-    "mix veg",
-    "navratan korma",
-    "dum aloo",
-    "jackfruit curry",
-    "kofta curry",
-    "malai kofta",
-    "egg curry",
-    "fish curry",
-    "prawn masala",
-    "crab curry",
-    "lamb curry",
-    "goat curry",
-    "paya",
-    "nihari",
-    "haleem",
-
-    // South Indian
+    "apple",
+    "banana",
+    "orange",
+    "mango",
+    "grapes",
+    "fruit",
+    "vegetable",
+    "tomato",
+    "potato",
+    "onion",
+    "egg",
+    "eggs",
+    "chicken",
+    "paneer",
+    "biscuit",
+    "biscuits",
+    "chips",
+    "chocolate",
     "dosa",
+    "masala dosa",
     "idli",
     "vada",
-    "uttapam",
-    "appam",
-    "idiyappam",
-    "puttu",
-    "aviyal",
-    "kalan",
-    "thoran",
-    "olan",
-    "kootu",
-    "rasavangi",
-    "parippu",
     "sambar",
-    "rasam",
-    "chettinad",
-    "meen curry",
-    "prawn masala",
-    "masala dosa",
-    "rava dosa",
-    "set dosa",
-    "neer dosa",
-    "benne dosa",
-    "pesarattu",
-    "medu vada",
-    "sambhar vada",
-    "coconut chutney",
-    "tomato chutney",
-    "tamarind rice",
-    "pongal",
+    "uttapam",
+    "poha",
     "upma",
-    "rava upma",
-    "semiya upma",
-    "ven pongal",
-    "sakkarai pongal",
-    "kesari",
-    "payasam",
-    "kheer",
-    "halwa",
-
-    // Snacks & Street Food
-    "pani puri",
-    "golgappa",
-    "puchka",
-    "bhel puri",
-    "sev puri",
-    "dahi puri",
-    "ragda pattice",
-    "vada pav",
-    "pav bhaji",
-    "dabeli",
-    "kachori",
-    "samosa",
-    "aloo tikki",
-    "papdi chaat",
-    "dahi bhalla",
-    "dahi vada",
-    "chole bhature",
-    "raj kachori",
-    "momos",
-    "frankies",
-    "roll",
-    "kathi roll",
-    "egg roll",
-    "spring roll",
-    "pakoda",
-    "bhajiya",
-    "onion bhaji",
-    "mirchi bajji",
-    "aloo bajji",
-    "bonda",
-    "medu vada",
-    "mysore bonda",
-    "punugulu",
-    "murukku",
-    "chakli",
-    "chivda",
-    "poha chivda",
-    "namkeen",
-    "farsan",
-    "gathiya",
-    "sev",
-    "fafda",
-    "jalebi",
-    "imarti",
-    "balushahi",
-    "malpua",
-
-    // Sweet Dishes & Desserts
-    "gulab jamun",
-    "rasgulla",
-    "rasmalai",
-    "kalakand",
-    "peda",
-    "barfi",
-    "burfi",
-    "ladoo",
-    "laddoo",
-    "modak",
-    "motichoor ladoo",
-    "besan ladoo",
-    "rava ladoo",
-    "til ladoo",
-    "gajar halwa",
-    "sooji halwa",
-    "moong dal halwa",
-    "badam halwa",
-    "suji halwa",
-    "kheer",
-    "payasam",
-    "phirni",
-    "rabri",
-    "shrikhand",
-    "basundi",
-    "mishti doi",
-    "sandesh",
-    "chena murki",
-    "pantua",
-    "khaja",
-    "chiroti",
-    "mysore pak",
-    "tirunelveli halwa",
-    "adhirasam",
-    "puran poli",
-    "gujiya",
-    "malpua",
-    "jalebi",
-    "imarti",
-    "ghevar",
-    "balushahi",
-    "sohan halwa",
-    "meetha",
-    "mithai",
-
-    // Beverages & Drinks
-    "chai",
-    "tea",
-    "coffee",
-    "lassi",
-    "chaas",
-    "buttermilk",
-    "kadha",
-    "sharbat",
-    "sherbet",
-    "nimbu pani",
-    "nariyal pani",
-    "coconut water",
-    "sugarcane juice",
-    "ganne ka ras",
-    "jaljeera",
-    "aam panna",
-    "badam milk",
-    "haldi doodh",
-    "masala chai",
-    "adrak chai",
-    "cutting chai",
-    "filter coffee",
-    "bournvita",
-    "horlicks",
-    "complan",
-    "boost",
-    "milo",
-    "ovaltine",
-    "shakes",
-    "smoothie",
-    "thandai",
-    "falooda",
-    "rose milk",
-    "sol kadhi",
-
-    // Regional Cuisines
+    "paratha",
+    "roti",
+    "naan",
+    "sabzi",
     "thali",
-    "gujarati thali",
-    "rajasthani thali",
-    "punjabi thali",
-    "south indian thali",
-    "odia thali",
-    "bengali thali",
-    "dal baati churma",
-    "litti chokha",
-    "makki di roti sarson da saag",
-    "appe",
-    "dharwad peda",
-    "mysore rasam",
-    "coorg pandi curry",
-    "malabar parotta",
-    "kerala sadhya",
-    "kozhikodan halwa",
-    "bombay sandwich",
-    "vada pav",
-    "misal pav",
-    "thalipeeth",
-    "sabudana khichdi",
-    "kolhapuri misal",
-    "puneri misal",
-    "usal",
-    "bharli vangi",
-    "kanda pohe",
-    "batata pohe",
-    "dhokla",
-    "khandvi",
-    "handvo",
-    "muthiya",
-    "undhiyu",
-    "surti locho",
-    "dabeli",
-    "sev tameta",
-    "green chutney",
-    "khakhra",
-    "methi thepla",
-    "rotla",
-    "laal maas",
-    "ker sangri",
-    "gatte ki sabzi",
-    "bajra khichdi",
-    "rabdi",
-    "mawa kachori",
-    "pyaaz kachori",
-    "mirchi vada",
-    "amritsari kulcha",
-    "chole kulche",
-    "sarson saag",
-    "makki roti",
-    "pinni",
-    "gajak",
-    "rewri",
-    "til chikki",
-    "hilsa",
-    "kosha mangsho",
-    "sorshe ilish",
-    "chingri malaikari",
-    "aloo posto",
-    "shukto",
-    "mochar ghonto",
-    "luchi",
-    "kochuri",
-    "biryani",
-    "mutton chap",
-    "mustard fish",
-    "akki rotti",
-    "jolada rotti",
-    "bisi bele bath",
-    "ragi mudde",
-    "nati koli saaru",
-    "uppittu",
-    "chow chow bath",
-    "erissery",
-    "thoran",
-    "pulissery",
-    "kalan",
-    "olan",
-    "meen pollichathu",
-    "inji curry",
-    "pachadi",
-    "ada pradhaman",
-    "palada",
-    "rogan josh",
-    "yakhni",
-    "dum aloo kashmiri",
-    "methi chaman",
-    "shab degh",
-    "harisa",
-    "modur pulao",
-    "shufta",
-    "chhena poda",
-    "dalma",
-    "santula",
-    "besara",
-    "macha ghanta",
-    "pakhala",
-    "saga bhaja",
-    "dohneiiong",
-    "jadoh",
-    "tungrymbai",
-    "pumaloi",
-    "smoked pork",
-    "bamboo shoot curry",
-    "anishi",
-
-    // Non-Veg Indian
-    "chicken",
-    "mutton",
-    "lamb",
-    "fish",
-    "prawn",
-    "crab",
-    "egg",
-    "seekh kabab",
-    "shami kabab",
-    "galouti kabab",
-    "boti kabab",
-    "tikka",
-    "chicken tikka",
-    "malai tikka",
-    "tandoori chicken",
-    "chicken 65",
-    "chicken lollipop",
-    "fish fry",
-    "fish tikka",
-    "prawn fry",
-    "crab masala",
-    "keema",
-    "keema matar",
-    "keema pav",
-    "bheja fry",
-    "paya soup",
-    "nihari",
-    "haleem",
-    "nalli",
-    "brain masala",
-
-    // Popular Indian Brands & Restaurants
-    "bikanervala",
-    "haldirams",
-    "bikaji",
-    "parle",
-    "britannia",
-    "sunfeast",
-    "patanjali",
-    "dabur",
-    "lijjat",
-    "everest",
-    "mtr",
-    "aashirvaad",
-    "annapurna",
-    "kitchens of india",
-    "amul",
-    "mother dairy",
-    "nandini",
-    "aavin",
-    "milma",
-    "saravana bhavan",
-    "udupi",
-    "sagar ratna",
-    "barbeque nation",
-    "paradise biryani",
-    "behrouz biryani",
-    "box8",
-    "faasos",
-    "wow momo",
-    "burger king",
-    "pizza hut",
-    "dominos",
-    "haldirams",
-    "bikanervala",
-    "nathu sweets",
+    "sandwich",
+    "shawarma",
+    "wrap",
+    "roll",
+    "momo",
+    "momos",
+    "noodles",
+    "pasta",
+    "ice cream",
+    "kulfi",
+    "mithai",
+    "sweet",
+    "sweets",
+    "lassi",
   ],
   // Transport
   Transport: [
-    // Ride-hailing & Taxis (India)
     "uber",
     "ola",
     "rapido",
-    "meru",
-    "jugnoo",
-    "savaari",
-    "blablacar",
+    "auto",
     "taxi",
     "cab",
-    "auto",
-    "autorickshaw",
-    "e-rickshaw",
-    "toto",
-    "rickshaw",
-    "cycle rickshaw",
-    "bike taxi",
-    "carpool",
-    "share cab",
-
-    // Fuel & Vehicle
     "petrol",
     "diesel",
     "fuel",
-    "cng",
-    "lpg",
-    "gas station",
-    "petrol pump",
-    "hpcl",
-    "bpcl",
-    "iocl",
-    "indian oil",
-    "bharat petroleum",
-    "hindustan petroleum",
-    "shell",
-    "reliance petrol",
-    "essar",
-    "nayara",
-    "ev charging",
-    "fastag",
-    "toll",
-    "toll plaza",
-    "highway toll",
-    "expressway",
-    "parking",
-    "valet parking",
-    "vehicle service",
-    "car service",
-    "bike service",
-    "two wheeler service",
-    "oil change",
-    "tyre",
-    "puncture",
-    "battery",
-    "car wash",
-    "rto",
-
-    // Road Transport
-    "bus",
-    "state bus",
-    "ksrtc",
-    "msrtc",
-    "gsrtc",
-    "rsrtc",
-    "apsrtc",
-    "tsrtc",
-    "upsrtc",
-    "hrtc",
-    "osrtc",
-    "astc",
-    "volvo bus",
-    "sleeper bus",
-    "ac bus",
-    "mini bus",
-    "tempo traveller",
-    "maxi cab",
-    "vanity van",
-    "redbus",
-    "abhibus",
-    "makemytrip bus",
-    "paytm bus",
-    "goibibo bus",
-
-    // Rail
-    "train",
-    "railway",
-    "irctc",
-    "indian railways",
-    "rajdhani",
-    "shatabdi",
-    "duronto",
-    "vande bharat",
-    "humsafar",
-    "garib rath",
-    "jan shatabdi",
     "metro",
-    "delhi metro",
-    "mumbai metro",
-    "bangalore metro",
-    "bmtc",
-    "chennai metro",
-    "hyderabad metro",
-    "kolkata metro",
-    "kochi metro",
-    "namma metro",
-    "dmrc",
-    "nmmc",
-    "local train",
-    "suburban train",
-    "mumbai local",
-    "harbour line",
-    "western railway",
-    "central railway",
-
-    // Air Travel
+    "bus",
+    "train",
     "flight",
-    "airline",
     "airways",
-    "airport",
+    "airline",
+    "travel",
+    "transport",
+    "toll",
+    "parking",
+    "irctc",
     "indigo",
     "spicejet",
     "air india",
     "vistara",
-    "go first",
-    "akasa air",
-    "blue dart",
-    "air asia",
-    "go air",
-    "air deccan",
-    "alliance air",
-    "trujet",
-    "star air",
-    "fly big",
-    "pawan hans",
-    "helicopter",
-    "charter flight",
-    "makemytrip flight",
-    "goibibo flight",
-    "cleartrip",
-    "ixigo",
-    "yatra",
-    "skyscanner",
-    "ease my trip",
-    "check in",
-    "boarding pass",
-    "baggage",
-
-    // Water Transport
-    "ferry",
-    "boat",
-    "ship",
-    "cruise",
-    "water taxi",
-    "ro-ro ferry",
-    "konkan railway ferry",
-    "goa ferry",
-    "andaman ferry",
-    "lakshadweep ship",
-
-    // Inter-city & Other
+    "redbus",
+    "rickshaw",
+    "bike",
+    "carpool",
+    "share",
     "commute",
-    "travel",
-    "transport",
+    "railway",
     "station",
-    "bus stand",
-    "bus depot",
-    "interstate",
-    "outstation",
-    "day trip",
-    "road trip",
   ],
-
   // Shopping
   Shopping: [
-    // Indian E-commerce
     "amazon",
     "flipkart",
     "myntra",
     "ajio",
     "nykaa",
     "meesho",
-    "snapdeal",
-    "shopclues",
-    "paytm mall",
-    "tata cliq",
-    "jiomart",
-    "firstcry",
-    "hopscotch",
-    "limeroad",
-    "voonik",
-    "craftsvilla",
-    "jaypore",
-    "okhai",
-    "fabindia",
-    "w for woman",
-    "biba",
-    "global desi",
-    "aurelia",
-    "rangmanch",
-
-    // Quick Commerce & Grocery Delivery
     "zepto",
     "blinkit",
-    "swiggy instamart",
-    "dunzo",
     "bigbasket",
-    "grofers",
-    "jiomart",
-    "milk basket",
-    "daily basket",
-    "dmart ready",
-    "amazon fresh",
-    "flipkart grocery",
-    "country delight",
-    "farm2fork",
-    "licious",
-    "zappfresh",
-
-    // Retail Chains
-    "dmart",
     "reliance",
-    "reliance fresh",
-    "reliance smart",
-    "reliance digital",
-    "big bazaar",
-    "more megastore",
-    "star bazaar",
-    "easyday",
-    "spencers",
-    "foodhall",
-    "hypercity",
-    "vishal megamart",
-    "v2 retail",
-    "v-mart",
-    "pantaloons",
-    "max fashion",
-    "lifestyle",
-    "shoppers stop",
-    "central mall",
-    "trends",
-    "westside",
-    "landmark",
-    "crossword",
-    "odyssey",
-
-    // Electronics Retail
-    "croma",
-    "vijay sales",
-    "reliance digital",
-    "poorvika",
-    "lot mobiles",
-    "sangeetha mobiles",
-    "mobile store",
-    "univercell",
-    "hotspot",
-    "samsung store",
-    "apple store",
-    "mi store",
-    "realme store",
-    "oneplus store",
-    "lenovo store",
-    "hp world",
-    "dell exclusive",
-    "asus store",
-
-    // Clothing & Fashion
+    "dmart",
     "mall",
     "shopping",
     "clothes",
     "shirt",
-    "kurta",
-    "salwar",
-    "saree",
-    "lehenga",
-    "sherwani",
-    "dhoti",
-    "lungi",
-    "dupatta",
-    "chunni",
-    "jeans",
-    "trousers",
-    "pant",
-    "shorts",
-    "tshirt",
-    "top",
-    "kurti",
-    "anarkali",
-    "palazzo",
-    "churidar",
-    "blouse",
-    "petticoat",
-    "innerwear",
-    "underwear",
-    "bra",
-    "socks",
-    "stockings",
-    "nightwear",
-    "pyjama",
     "shoes",
-    "chappal",
-    "sandal",
-    "slipper",
-    "heels",
-    "sneakers",
-    "boots",
-    "kolhapuri",
-    "mojari",
-    "jutis",
-    "loafers",
-    "formal shoes",
     "fashion",
     "apparel",
     "dress",
-    "ethnic wear",
-    "western wear",
-    "kids wear",
-    "maternity wear",
-    "sportswear",
-    "activewear",
-
-    // Accessories & Jewellery
     "watch",
     "bag",
-    "purse",
-    "handbag",
-    "clutch",
-    "wallet",
-    "belt",
-    "sunglasses",
-    "spectacles",
-    "cap",
-    "hat",
-    "scarf",
-    "stole",
-    "jewellery",
-    "gold",
-    "silver",
-    "diamond",
-    "tanishq",
-    "kalyan jewellers",
-    "malabar gold",
-    "pc jewellers",
-    "joyalukkas",
-    "senco gold",
-    "png jewellers",
-    "caratlane",
-    "bluestone",
-    "candere",
-    "bangles",
-    "necklace",
-    "earrings",
-    "ring",
-    "bracelet",
-    "anklet",
-    "mangalsutra",
-    "tikka",
-    "maang tikka",
-    "nose pin",
-
-    // Beauty & Personal Care
+    "accessories",
     "cosmetics",
     "beauty",
-    "makeup",
-    "skincare",
-    "haircare",
-    "perfume",
-    "lakme",
-    "lotus herbals",
-    "biotique",
-    "himalaya",
-    "patanjali beauty",
-    "vlcc",
-    "shahnaz husain",
-    "kama ayurveda",
-    "forest essentials",
-    "wow skin science",
-    "mamaearth",
-    "plum",
-    "mcaffeine",
-    "minimalist",
-    "sugar cosmetics",
-    "nykaa beauty",
-    "colorbar",
-    "chambor",
-    "loreal",
-    "maybelline",
-    "mac",
-    "huda beauty",
-    "nars",
-    "salon",
-    "parlour",
-    "beauty parlour",
-    "spa",
-    "waxing",
-    "threading",
-    "haircut",
-    "hair color",
-    "hair treatment",
-    "pedicure",
-    "manicure",
-    "facial",
-    "cleanup",
-    "bleach",
-
-    // Electronics & Gadgets
     "electronics",
     "mobile",
-    "smartphone",
     "laptop",
-    "tablet",
-    "ipad",
-    "computer",
-    "desktop",
-    "monitor",
-    "keyboard",
-    "mouse",
-    "printer",
-    "tv",
-    "television",
-    "led tv",
-    "smart tv",
-    "ac",
-    "air conditioner",
-    "refrigerator",
-    "fridge",
-    "washing machine",
-    "microwave",
-    "oven",
-    "mixer grinder",
-    "juicer",
-    "induction cooktop",
-    "pressure cooker",
-    "fan",
-    "cooler",
-    "heater",
-    "geyser",
-    "water purifier",
-    "ro",
-    "vacuum cleaner",
-    "iron",
-    "trimmer",
-    "hair dryer",
     "gadget",
-    "earphones",
-    "headphones",
-    "speaker",
-    "bluetooth",
-    "smartwatch",
-    "camera",
-    "dslr",
-    "drone",
-    "power bank",
-    "charger",
-    "cable",
-
-    // Home & Furniture
+    "appliance",
     "furniture",
-    "sofa",
-    "bed",
-    "mattress",
-    "dining table",
-    "wardrobe",
-    "almirah",
-    "cupboard",
-    "bookshelf",
-    "study table",
-    "office chair",
-    "curtains",
-    "bedsheet",
-    "pillow",
-    "blanket",
-    "comforter",
-    "towel",
     "decor",
-    "home decor",
-    "puja items",
-    "idol",
-    "frame",
-    "painting",
-    "ikea",
-    "urban ladder",
-    "pepperfry",
-    "wooden street",
-    "hometown",
-    "fabfurnish",
-    "nilkamal",
-    "godrej interio",
-    "durian",
-
-    // Stationery & Office
-    "stationery",
-    "pen",
-    "pencil",
-    "notebook",
-    "register",
-    "file",
-    "folder",
-    "stapler",
-    "tape",
-    "glue",
-    "scissors",
-    "marker",
-    "highlighter",
-    "sticky notes",
-    "whiteboard",
-    "printer paper",
-    "ink cartridge",
+    "gift",
+    "toys",
+    "toy",
+    "perfume",
+    "soap",
+    "shampoo",
+    "detergent",
+    "bucket",
+    "bottle",
+    "utensils",
+    "kitchen",
   ],
-
   // Entertainment
   Entertainment: [
-    // Indian OTT Platforms
-    "hotstar",
-    "disney hotstar",
-    "jiocinema",
-    "sonyliv",
-    "zee5",
-    "voot",
-    "altbalaji",
-    "erosnow",
-    "shemaroo",
-    "hungama",
-    "mxplayer",
-    "stage",
-    "hoichoi",
-    "sun nxt",
-    "aha",
-    "watcho",
-    "discovery plus",
-    "lionsgate play",
-    "manorama max",
-
-    // Global OTT
     "netflix",
+    "hotstar",
     "prime",
-    "amazon prime",
-    "apple tv",
-    "hbo",
-    "hulu",
-    "paramount plus",
-    "peacock",
-    "crunchyroll",
-    "funimation",
-
-    // Music Streaming
-    "spotify",
-    "gaana",
-    "wynk",
-    "jiosaavn",
-    "saavn",
-    "hungama music",
-    "youtube music",
+    "disney",
     "apple music",
-    "amazon music",
-    "resso",
-
-    // Video Platforms
+    "youtube music",
+    "amazon prime",
+    "prime video",
+    "spotify",
     "youtube",
-    "mx takatak",
-    "moj",
-    "josh",
-    "reels",
-    "shorts",
-    "twitch",
-    "loco",
-    "rooter",
-
-    // Gaming
     "gaming",
     "game",
-    "steam",
-    "epic games",
-    "playstation",
-    "xbox",
-    "nintendo",
-    "pubg",
-    "bgmi",
-    "free fire",
-    "garena",
-    "valorant",
-    "minecraft",
-    "gta",
-    "call of duty",
-    "cod",
-    "battlegrounds",
-    "dream11",
-    "my11circle",
-    "mpl",
-    "winzo",
-    "gamezop",
-    "fantasy cricket",
-    "fantasy sports",
-
-    // Cinema & Theatres
     "movie",
     "cinema",
     "pvr",
     "inox",
-    "cinepolis",
-    "carnival cinemas",
-    "miraj cinemas",
-    "moviemax",
-    "fun cinemas",
-    "spi cinemas",
-    "bookmyshow",
-    "paytm movies",
-    "ticket",
-    "multiplex",
-    "bollywood",
-    "hollywood",
-    "tollywood",
-    "kollywood",
-    "mollywood",
-    "film",
-    "documentary",
-    "web series",
-    "short film",
-
-    // Live Events
     "concert",
     "event",
+    "ticket",
     "show",
-    "live show",
-    "standup comedy",
-    "comedy show",
-    "drama",
-    "theatre",
     "play",
-    "ballet",
-    "circus",
-    "magic show",
-    "carnival",
-    "exhibition",
-    "expo",
-    "trade fair",
-    "mela",
-    "fair",
-    "diwali mela",
-    "navratri",
-    "garba",
-    "dandiya",
-    "cultural event",
-    "sports event",
-    "ipl",
-    "cricket match",
-    "football match",
-    "kabaddi",
-    "pro kabaddi",
-    "badminton match",
-    "tennis match",
-    "insider",
-    "skillbox",
-    "townscript",
-
-    // Amusement & Theme Parks
-    "amusement park",
-    "theme park",
-    "water park",
-    "adlabs imagica",
-    "wonderla",
-    "essel world",
-    "worlds of wonder",
-    "appu ghar",
-    "nicco park",
-    "kishkinta",
-    "black thunder",
-    "veegaland",
-    "zoo",
-    "aquarium",
-    "museum",
-    "planetarium",
-    "science centre",
-    "botanical garden",
-    "national park",
-    "wildlife sanctuary",
-
-    // Sports & Fitness Recreation
-    "bowling",
-    "skating",
-    "go karting",
-    "trampoline",
-    "archery",
-    "paintball",
-    "laser tag",
-    "escape room",
-    "virtual reality",
-    "vr",
-    "billiards",
-    "snooker",
-    "pool",
-    "chess tournament",
-    "carrom",
-
-    // Hobbies & Subscriptions
+    "netflix",
+    "hbo",
+    "apple tv",
+    "jio",
+    "sonyliv",
+    "zee",
+    "music",
     "stream",
-    "subscription",
-    "pass",
-    "membership",
-    "club",
-    "kindle",
-    "audible",
-    "podcast",
-    "comic",
-    "manga",
   ],
-
   // Health
   Health: [
-    // Pharmacies & Chemists
     "pharmacy",
-    "chemist",
     "medicine",
-    "medical store",
-    "drug store",
-    "apollo pharmacy",
-    "medplus",
-    "1mg",
-    "netmeds",
-    "pharmeasy",
-    "flipkart health",
-    "tata 1mg",
-    "wellness forever",
-    "frank ross",
-    "guardian pharmacy",
-    "sastasundar",
-    "saveo",
-    "myra medicines",
-
-    // Doctors & Hospitals
     "doctor",
-    "physician",
-    "specialist",
-    "surgeon",
-    "consultant",
     "hospital",
-    "nursing home",
     "clinic",
-    "polyclinic",
-    "dispensary",
     "apollo",
-    "apollo hospitals",
-    "fortis",
-    "max hospital",
-    "aiims",
-    "manipal hospital",
-    "columbia asia",
-    "cloudnine",
-    "motherhood",
-    "narayana health",
-    "narayana hrudayalaya",
-    "medanta",
-    "kokilaben",
-    "lilavati",
-    "hinduja",
-    "breach candy",
-    "wockhardt",
-    "aster",
-    "care hospitals",
-    "yashoda",
-    "continental hospitals",
-    "rainbow",
-    "nhm",
-    "esic",
-    "cghs",
-    "government hospital",
-    "primary health centre",
-    "phc",
-    "chc",
-    "community health centre",
-
-    // Diagnostics & Labs
+    "medplus",
+    "health",
+    "gym",
+    "fitness",
+    "yoga",
+    "physiotherapy",
+    "dental",
+    "optician",
     "lab",
     "test",
     "pathology",
-    "radiology",
-    "blood test",
-    "urine test",
-    "x-ray",
-    "xray",
-    "mri",
-    "ct scan",
-    "ultrasound",
-    "ecg",
-    "echocardiogram",
-    "thyroid test",
-    "diabetes test",
-    "cholesterol test",
-    "cbc",
-    "lipid profile",
-    "dr lal pathlabs",
-    "srl diagnostics",
-    "metropolis",
-    "thyrocare",
-    "healthians",
-    "redcliffe labs",
-    "vijaya diagnostics",
-
-    // Prescriptions & Medicines
     "prescription",
     "tablet",
     "capsule",
     "syrup",
-    "injection",
-    "ointment",
-    "drops",
-    "inhaler",
-    "spray",
-    "cream",
-    "gel",
-    "patch",
-    "suppository",
-    "antibiotics",
-    "paracetamol",
-    "crocin",
-    "dolo",
-    "combiflam",
-    "aspirin",
-    "antacid",
-    "pan d",
-    "omeprazole",
-    "gelusil",
-    "pudin hara",
-    "eno",
-    "cough syrup",
-    "benadryl",
-    "corex",
-    "vicks",
-    "strepsils",
-    "halls",
-    "vitamin",
-    "calcium",
-    "iron tablet",
-    "folic acid",
-    "multivitamin",
-    "protein powder",
-    "whey protein",
-    "creatine",
-    "bcaa",
-
-    // Fitness & Wellness
-    "gym",
-    "fitness",
-    "fitness centre",
-    "crossfit",
-    "cult fit",
-    "curefit",
-    "gold's gym",
-    "anytime fitness",
-    "snap fitness",
-    "fitness first",
-    "talwalkars",
-    "energy aerobics",
-    "workout",
-    "personal trainer",
-    "pt session",
-    "zumba",
-    "aerobics",
-    "pilates",
-    "yoga",
-    "yoga class",
-    "meditation",
-    "art of living",
-    "isha yoga",
-    "sri sri yoga",
-    "sivananda yoga",
-    "iyengar yoga",
-    "physiotherapy",
-    "physio",
-    "chiropractor",
-    "osteopath",
-    "sports medicine",
-    "rehabilitation",
-
-    // Mental Health
-    "therapy",
-    "counselling",
-    "psychologist",
-    "psychiatrist",
-    "therapist",
-    "mental health",
-    "depression",
-    "anxiety",
-    "stress management",
-    "mindfulness",
-    "iCall",
-    "vandrevala foundation",
-    "lissun",
-    "wysa",
-    "innerhour",
-    "betterhelp",
-    "talkspace",
-
-    // Dental & Eye Care
-    "dental",
-    "dentist",
-    "orthodontist",
-    "braces",
-    "root canal",
-    "tooth extraction",
-    "cleaning",
-    "scaling",
-    "dental implant",
-    "optician",
-    "eye doctor",
-    "ophthalmologist",
-    "spectacles",
-    "glasses",
-    "lens",
-    "contact lens",
-    "lasik",
-    "vasan eye care",
-    "dr agarwals",
-    "sankara nethralaya",
-    "shroff eye",
-    "centre for sight",
-
-    // Ayurveda, Homeopathy & Alternative
     "ayurvedic",
-    "ayurveda",
-    "homeopathy",
-    "homeopathic",
-    "naturopathy",
-    "unani",
-    "siddha",
-    "panchakarma",
-    "kashayam",
-    "chyawanprash",
-    "patanjali medicine",
-    "dabur medicine",
-    "baidyanath",
-    "zandu",
-    "himalaya medicine",
-    "vaidyaratnam",
-    "kottakkal",
-
-    // Health Insurance
-    "health insurance",
+    "wellness",
+    "therapy",
+    "insurance",
     "mediclaim",
-    "star health",
-    "care insurance",
-    "niva bupa",
-    "hdfc ergo health",
-    "bajaj health",
-    "aditya birla health",
-    "max bupa",
-    "new india assurance",
-    "national insurance",
-    "lic health",
-
-    // Maternity & Child
-    "maternity",
-    "delivery",
-    "c section",
-    "normal delivery",
-    "paediatrician",
-    "child specialist",
-    "vaccination",
-    "immunization",
-    "baby formula",
-    "pampers",
-    "huggies",
-    "baby care",
+    "condom",
+    "condoms",
+    "sanitary pad",
+    "sanitary pads",
+    "pad",
+    "pads",
+    "tampon",
+    "pregnancy test",
+    "mask",
+    "masks",
+    "first aid",
+    "bandage",
+    "painkiller",
+    "medical",
+    "wellwoman",
   ],
-
   // Education
   Education: [
-    // Indian EdTech Platforms
-    "byju's",
-    "byjus",
-    "unacademy",
-    "vedantu",
-    "toppr",
-    "meritnation",
-    "doubtnut",
-    "embibe",
-    "extramarks",
-    "classplus",
-    "teachmint",
-    "diksha",
-    "swayam",
-    "nptel",
-    "e-pathshala",
     "udemy",
     "coursera",
-    "edx",
-    "linkedin learning",
-    "skillshare",
-    "simplilearn",
-    "upgrad",
-    "great learning",
-    "emeritus",
-    "talentsprint",
-    "whitehat jr",
-    "coding ninjas",
-    "scaler",
-    "masai school",
-    "physics wallah",
-    "pw",
-    "allen",
-    "fiitjee",
-    "resonance",
-    "aakash",
-
-    // Schools & Colleges
     "school",
-    "cbse",
-    "icse",
-    "state board",
-    "primary school",
-    "secondary school",
-    "high school",
-    "higher secondary",
-    "kindergarten",
-    "pre school",
-    "nursery",
-    "playschool",
     "college",
-    "junior college",
-    "degree college",
-    "engineering college",
-    "medical college",
-    "law college",
-    "arts college",
-    "commerce college",
     "university",
-    "iit",
-    "nit",
-    "iiit",
-    "iim",
-    "iisc",
-    "iiser",
-    "bits pilani",
-    "vit",
-    "manipal university",
-    "amity",
-    "symbiosis",
-    "du",
-    "mumbai university",
-    "pune university",
-    "anna university",
-
-    // Fees & Payments
     "fees",
-    "school fees",
-    "college fees",
-    "tuition fees",
-    "admission fees",
-    "exam fees",
-    "hostel fees",
-    "mess fees",
-    "library fees",
-    "development fees",
-    "transportation fees",
-    "uniform fees",
-    "lab fees",
-    "activity fees",
-    "annual charges",
-
-    // Coaching & Tutoring
+    "course",
+    "book",
+    "stationery",
     "tuition",
     "coaching",
-    "coaching class",
-    "home tutor",
-    "private tutor",
-    "group tuition",
-    "online tuition",
-    "spoken english",
-    "abacus",
-    "vedic maths",
-    "calligraphy",
-    "drawing class",
-    "art class",
-    "music class",
-    "dance class",
-    "sports coaching",
-    "swimming class",
-    "chess class",
-    "karate",
-    "taekwondo",
-
-    // Exams & Certifications
-    "exam",
-    "jee",
-    "neet",
-    "upsc",
-    "gate",
-    "cat",
-    "mat",
-    "gmat",
-    "gre",
-    "sat",
-    "ielts",
-    "toefl",
-    "pte",
-    "ssc",
-    "banking exam",
-    "ibps",
-    "rrb",
-    "mpsc",
-    "tnpsc",
-    "gpsc",
-    "appsc",
-    "kpsc",
-    "bpsc",
-    "clat",
-    "ailet",
-    "nata",
-    "uceed",
-    "ceed",
-    "nid",
-    "certification",
-    "certificate course",
-    "diploma",
-    "degree",
-
-    // Books & Stationery
-    "book",
-    "textbook",
-    "reference book",
-    "ncert",
-    "rd sharma",
-    "hc verma",
-    "dc pandey",
-    "arihant",
-    "oswaal",
-    "s chand",
-    "comic book",
-    "novel",
-    "fiction",
-    "non fiction",
-    "biography",
-    "amazon books",
-    "flipkart books",
-    "crossword books",
-    "strand books",
-    "stationery",
-    "notebook",
-    "register",
-    "rough register",
-    "pen",
-    "ball pen",
-    "gel pen",
-    "fountain pen",
-    "sketch pen",
-    "pencil",
-    "eraser",
-    "sharpener",
-    "ruler",
-    "compass",
-    "protractor",
-    "highlighter",
-    "marker",
-    "whiteboard marker",
-    "ink",
-    "refill",
-    "bag",
-    "school bag",
-    "backpack",
-    "geometry box",
-    "colour box",
-    "crayon",
-    "watercolour",
-    "acrylic",
-    "canvas",
-
-    // Online Courses & Subscriptions
-    "course",
     "class",
+    "exam",
+    "study",
     "subscription",
     "skill",
-    "workshop",
-    "bootcamp",
-    "webinar",
-    "masterclass",
-    "mentorship",
-    "internship",
-    "study",
-    "study material",
+    "certificate",
+    "degree",
     "notes",
-    "mock test",
-    "test series",
-    "previous year papers",
-    "question bank",
+    "pen",
+    "pencil",
   ],
-
   // Utilities
   Utilities: [
-    // Electricity
     "electricity",
-    "electric bill",
-    "power bill",
-    "bijli",
-    "eb bill",
-    "bescom",
-    "msedcl",
-    "tata power",
-    "adani electricity",
-    "bses",
-    "wbsedcl",
-    "kseb",
-    "tneb",
-    "apspdcl",
-    "tsspdcl",
-    "cesc",
-    "paytm electricity",
-    "phonepe electricity",
-    "gpay electricity",
-
-    // Water
     "water",
-    "water bill",
-    "water tank",
-    "water supply",
-    "bmc water",
-    "tanker water",
-    "borewell",
-    "municipal water",
-
-    // Gas & LPG
     "gas",
-    "lpg",
-    "cylinder",
-    "gas cylinder",
-    "cooking gas",
-    "indane gas",
-    "hp gas",
-    "bharat gas",
-    "piped gas",
-    "png",
-    "mgl",
-    "igl",
-    "adani gas",
-    "mahanagar gas",
-    "gujarat gas",
-    "gas booking",
-    "gas refill",
-    "gas connection",
-
-    // Internet & Broadband
     "broadband",
     "wifi",
     "internet",
-    "fiber",
-    "optical fiber",
-    "jiofiber",
-    "airtel xstream fiber",
-    "bsnl broadband",
-    "act fibernet",
-    "hathway",
-    "den",
-    "sify",
-    "excitel",
-    "tikona",
-    "you broadband",
-    "spectranet",
-    "beam fiber",
-    "nextra",
-    "gigatel",
-    "router",
-    "modem",
-    "wifi bill",
-    "broadband bill",
-
-    // Mobile & DTH Recharge
     "mobile recharge",
     "recharge",
-    "prepaid recharge",
-    "plan",
+    "dth",
+    "cable",
     "postpaid",
-    "postpaid bill",
     "prepaid",
-    "data pack",
-    "talktime",
-    "jio",
+    "rent",
+    "maintenance",
+    "society",
+    "bsnl",
     "airtel",
+    "jio",
     "vi",
     "vodafone",
     "idea",
-    "bsnl",
-    "mtnl",
-    "jio recharge",
-    "airtel recharge",
-    "vi recharge",
-    "dth",
-    "cable tv",
-    "tata sky",
-    "tataplay",
-    "dish tv",
-    "d2h",
-    "videocon d2h",
-    "sun direct",
-    "airtel dth",
-    "hathway cable",
-    "den cable",
-    "siti cable",
-    "cable bill",
-
-    // Rent & Housing
-    "rent",
-    "house rent",
-    "flat rent",
-    "room rent",
-    "pg rent",
-    "hostel rent",
-    "office rent",
-    "shop rent",
-    "commercial rent",
-    "maintenance",
-    "society maintenance",
-    "building maintenance",
-    "car parking",
-    "society charges",
-    "rwa charges",
-    "property tax",
-    "house tax",
-    "municipal tax",
-
-    // Home Services
-    "plumber",
-    "electrician",
-    "carpenter",
-    "painter",
-    "civil work",
-    "housekeeping",
-    "cleaning",
-    "maid",
-    "bai",
-    "cook",
-    "watchman",
-    "security guard",
-    "driver salary",
-    "helper salary",
-    "pest control",
-    "termite treatment",
-    "chimney cleaning",
-    "ac service",
-    "fridge service",
-    "washing machine service",
-    "ro service",
-    "water purifier service",
-    "appliance repair",
-    "urban company",
-    "urbanclap",
-    "housejoy",
-
-    // Banking & Finance Charges
-    "bank charges",
-    "atm charges",
-    "locker charges",
-    "processing fee",
-    "annual fee",
-    "late fee",
-    "penalty",
-    "fine",
-    "emi",
-    "loan emi",
-    "home loan emi",
-    "car loan emi",
-    "personal loan emi",
-
-    // Subscriptions & Recurring
-    "subscription",
-    "annual subscription",
-    "monthly subscription",
-    "newspaper",
-    "magazine",
-    "milk subscription",
-    "vegetable subscription",
-    "tiffin subscription",
-    "courier",
-    "speed post",
-    "india post",
+    "tata",
+    "dish",
+    "tatasky",
     "telephone",
-    "landline",
     "bill",
-    "utility bill",
-    "municipal bill",
-    "nmc",
-    "bmc",
-    "pmc",
-    "amc",
-    "ghmc",
-    "bbmp",
-    "kmc",
+    "utility",
+    "municipal",
   ],
-
   // Salary / Income
   Salary: [
-    // Employment Income
     "salary",
     "payroll",
-    "pay slip",
-    "payslip",
-    "monthly salary",
-    "weekly salary",
-    "wages",
     "wage",
-    "daily wage",
-    "piece rate",
     "stipend",
-    "fellowship",
-    "scholarship",
     "ctc",
-    "in hand salary",
-    "take home",
-    "gross salary",
-    "net salary",
     "increment",
     "hike",
-    "revision",
-    "appraisal",
-    "performance pay",
     "bonus",
-    "annual bonus",
-    "diwali bonus",
-    "performance bonus",
-    "joining bonus",
-    "retention bonus",
-    "referral bonus",
-    "allowance",
-    "hra",
-    "da",
-    "ta",
-    "lta",
-    "conveyance allowance",
-    "medical allowance",
-    "special allowance",
-    "shift allowance",
-    "overtime",
-    "variable pay",
-    "incentive",
-    "commission",
+    "appraisal",
     "employer",
     "company",
     "office",
     "paycheck",
     "remuneration",
-    "compensation",
-    "emoluments",
-    "ex gratia",
-    "gratuity",
-    "pf",
-    "epf",
-    "provident fund",
-    "esic",
-    "professional tax",
-    "tds refund",
-    "itr refund",
-
-    // Government & PSU
-    "government salary",
-    "psu salary",
-    "central government pay",
-    "state government pay",
-    "7th pay commission",
-    "pay commission",
-    "defence salary",
-    "army pay",
-    "police salary",
-    "teacher salary",
-
-    // Business Income
-    "business income",
-    "profit",
-    "revenue",
-    "turnover",
-    "sales proceeds",
-    "dividend",
-    "interest income",
-    "fd interest",
-    "rd interest",
-    "savings interest",
-    "rental income",
-    "property income",
-    "capital gains",
-    "stock profit",
-    "mutual fund gain",
-
-    // Investments & Returns
-    "investment return",
-    "sip return",
-    "fd maturity",
-    "rd maturity",
-    "nsc maturity",
-    "ppf withdrawal",
-    "epf withdrawal",
-    "insurance maturity",
-    "pension",
-    "nps",
-    "annuity",
-    "mutual fund",
-    "stock market",
-    "share market",
-    "trading profit",
-    "intraday",
-    "f&o",
-    "options profit",
+    "payslip",
+    "salary credit",
+    "monthly salary",
   ],
-
   // Freelance
   Freelance: [
-    // Freelance Platforms
     "freelance",
-    "freelancer",
+    "client",
+    "project",
+    "invoice",
+    "contract",
+    "consulting",
     "upwork",
     "fiverr",
     "toptal",
-    "guru",
-    "peopleperhour",
-    "99designs",
-    "designcrowd",
-    "freelancer.com",
-    "truelancer",
-    "worknhire",
-    "kool kanya",
-    "internshala freelance",
-    "linkedin freelance",
-    "contra",
-    "arc dev",
-
-    // Project Work
-    "client",
-    "project",
-    "project payment",
-    "milestone payment",
-    "contract",
-    "contract payment",
-    "retainer",
-    "consulting",
-    "consulting fee",
-    "advisory fee",
-    "professional fee",
-    "invoice",
-    "invoice payment",
-    "receipt",
-
-    // Creative & Digital Services
     "design",
-    "graphic design",
-    "logo design",
-    "ui design",
-    "ux design",
-    "web design",
-    "web development",
-    "app development",
     "development",
-    "coding",
-    "programming",
-    "software development",
-    "backend",
-    "frontend",
     "writing",
-    "content writing",
-    "copywriting",
-    "blog writing",
-    "article writing",
-    "ghostwriting",
-    "translation",
-    "proofreading",
-    "editing",
-    "social media",
-    "digital marketing",
-    "seo",
-    "sem",
-    "photography",
-    "videography",
-    "video editing",
-    "animation",
-    "illustration",
-    "3d modeling",
-    "motion graphics",
-    "voice over",
-    "dubbing",
-    "transcription",
-    "data entry",
-    "virtual assistant",
-    "customer support",
-    "chat support",
-
-    // Gig & Part-time
     "gig",
-    "side hustle",
-    "part time",
-    "part-time",
-    "moonlighting",
     "work from home",
-    "wfh",
-    "remote work",
-    "remote job",
-    "uber earnings",
-    "ola earnings",
-    "driver income",
-    "delivery partner",
-    "zomato delivery",
-    "swiggy delivery",
-    "porter",
-    "dunzo delivery",
-    "urban company service",
-    "task rabbit",
-
-    // Business & Teaching
-    "tuition income",
-    "class income",
-    "workshop income",
-    "training income",
-    "youtube income",
-    "adsense",
-    "affiliate income",
-    "referral income",
-    "online coaching",
-    "online course income",
-    "udemy income",
-    "instagram income",
-    "influencer",
-    "brand deal",
-    "sponsored post",
-    "dropshipping",
-    "reselling",
-    "meesho income",
+    "payment received",
+    "milestone",
+    "retainer",
   ],
 };
 
-function _localKeywordGuess(desc) {
+const _AI_CATEGORY_SEEDS = {
+  Food: [
+    "coffee",
+    "tea",
+    "snack",
+    "meal",
+    "restaurant",
+    "breakfast",
+    "lunch",
+    "dinner",
+    "grocery",
+  ],
+  Entertainment: [
+    "music",
+    "movie",
+    "game",
+    "concert",
+    "show",
+    "ott",
+    "streaming",
+  ],
+  Shopping: [
+    "shopping",
+    "clothes",
+    "shoes",
+    "gift",
+    "accessory",
+    "cosmetic",
+    "bag",
+  ],
+  Transport: [
+    "uber",
+    "ola",
+    "taxi",
+    "metro",
+    "bus",
+    "fuel",
+    "petrol",
+    "diesel",
+  ],
+  Health: [
+    "medicine",
+    "pharmacy",
+    "doctor",
+    "clinic",
+    "hospital",
+    "condom",
+    "sanitary",
+    "medical",
+  ],
+  Investment: ["sip", "mutual fund", "stock", "shares", "investment", "fd"],
+  Salary: ["salary", "payroll", "payslip", "salary credit"],
+  Freelance: ["client", "invoice", "project", "gig", "retainer"],
+  Business: ["business", "vendor", "gst", "shop", "inventory"],
+  Insurance: ["insurance", "premium", "policy", "mediclaim"],
+  Furniture: [
+    "bed",
+    "mattress",
+    "sofa",
+    "couch",
+    "chair",
+    "table",
+    "desk",
+    "wardrobe",
+    "cupboard",
+    "shelf",
+    "pillow",
+    "blanket",
+    "lamp",
+    "furniture",
+  ],
+  Electronics: [
+    "mobile",
+    "phone",
+    "laptop",
+    "charger",
+    "headphones",
+    "earbuds",
+    "tv",
+    "monitor",
+  ],
+  Groceries: [
+    "grocery",
+    "vegetable",
+    "fruit",
+    "milk",
+    "bread",
+    "rice",
+    "dal",
+    "egg",
+  ],
+  Utilities: [
+    "electricity",
+    "water",
+    "wifi",
+    "internet",
+    "recharge",
+    "rent",
+    "maintenance",
+    "bill",
+  ],
+  Education: ["course", "fees", "book", "exam", "tuition", "class", "study"],
+  Travel: ["flight", "hotel", "trip", "booking", "train", "bus", "travel"],
+  Fitness: ["gym", "protein", "workout", "yoga", "fitness"],
+  Beauty: ["salon", "spa", "makeup", "cosmetic", "skincare", "perfume"],
+  Pets: ["dog", "cat", "pet", "vet", "pet food", "litter"],
+  Kids: ["toy", "school", "diaper", "baby", "formula", "stroller"],
+};
+
+function _getAiCategories(type) {
+  return type === "income"
+    ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+    : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+}
+
+function _getAiCatState(type) {
+  if (!_aiCatState[type]) {
+    _aiCatState[type] = {
+      suggestedCategory: "",
+      suggestedDesc: "",
+      acceptedCategory: "",
+      acceptedDesc: "",
+    };
+  }
+  return _aiCatState[type];
+}
+
+function _addAiScore(scores, strongest, cat, score) {
+  if (!cat || !score) return;
+  scores[cat] = (scores[cat] || 0) + score;
+  strongest[cat] = Math.max(strongest[cat] || 0, score);
+}
+
+function _getCategorySeeds(cat) {
+  if (!cat) return [];
+  const exact = _AI_CATEGORY_SEEDS[cat];
+  if (exact) return exact;
+  const found = Object.entries(_AI_CATEGORY_SEEDS).find(
+    ([name]) => name.toLowerCase() === cat.toLowerCase(),
+  );
+  return found ? found[1] : [];
+}
+
+function _tokenizeAiText(text) {
+  return [
+    ...new Set(
+      (text.toLowerCase().match(/[a-z0-9]+/g) || []).filter(
+        (token) =>
+          token.length >= 3 &&
+          ![
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "this",
+            "that",
+            "your",
+          ].includes(token),
+      ),
+    ),
+  ];
+}
+
+function _localKeywordGuess(type, desc) {
   const lower = desc.toLowerCase();
+  const allowed = new Set(_getAiCategories(type));
+  const descTokens = _tokenizeAiText(desc);
   const scores = {};
+  const strongest = {};
+
   for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
+    if (!allowed.has(cat)) continue;
     for (const kw of keywords) {
       if (lower.includes(kw)) {
-        scores[cat] = (scores[cat] || 0) + kw.length; // longer matches score higher
+        const phraseBonus = kw.includes(" ") ? 8 : 0;
+        const score = kw.length + phraseBonus;
+        _addAiScore(scores, strongest, cat, score);
       }
     }
   }
+
+  for (const cat of allowed) {
+    const catLower = cat.toLowerCase();
+    if (lower.includes(catLower)) {
+      _addAiScore(scores, strongest, cat, catLower.length + 6);
+    }
+
+    const catTokens = _tokenizeAiText(cat);
+    const overlap = catTokens.filter((token) =>
+      descTokens.includes(token),
+    ).length;
+    if (overlap) {
+      _addAiScore(scores, strongest, cat, overlap * 5);
+    }
+
+    for (const seed of _getCategorySeeds(cat)) {
+      if (lower.includes(seed)) {
+        const seedScore = seed.length + (seed.includes(" ") ? 10 : 4);
+        _addAiScore(scores, strongest, cat, seedScore);
+      }
+    }
+  }
+
+  for (const txn of (transactions || []).slice(0, 300)) {
+    if (txn.type !== type || !allowed.has(txn.category)) continue;
+    const txnDesc = (txn.description || "").trim();
+    if (!txnDesc) continue;
+
+    const txnLower = txnDesc.toLowerCase();
+    const txnTokens = _tokenizeAiText(txnDesc);
+    const overlap = txnTokens.filter((token) =>
+      descTokens.includes(token),
+    ).length;
+
+    if (lower === txnLower) {
+      _addAiScore(scores, strongest, txn.category, 40);
+      continue;
+    }
+    if (lower.includes(txnLower) || txnLower.includes(lower)) {
+      _addAiScore(scores, strongest, txn.category, 20);
+    }
+    if (overlap > 0) {
+      _addAiScore(scores, strongest, txn.category, overlap * 7);
+    }
+  }
+
   if (!Object.keys(scores).length) return null;
-  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  return Object.entries(scores).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
+  })[0][0];
 }
 
 /* ──────────────────────────────────────────────
@@ -2890,126 +1309,749 @@ function _safeText(str) {
    Uses Web Speech API → transcribes → Claude
    parses amount, description, category → pre-fills form.
 ────────────────────────────────────────────── */
+const VOICE_BACKEND_TIMEOUT_MS = 6500;
+const VOICE_IDLE_MESSAGE =
+  "Tap the mic and speak a transaction. We'll fill the draft for you.";
+const VOICE_EXPENSE_ACTION_PATTERN =
+  "spend|spent|pay|paid|use|used|buy|bought|order|ordered|book|booked|give|gave|purchase|purchased|charge|charged|expense";
+const VOICE_INCOME_ACTION_PATTERN =
+  "receive|received|earn|earned|get|got|make|made|credit|credited|income|salary|refund|bonus";
+const VOICE_NUMBER_WORDS = {
+  a: 1,
+  an: 1,
+  zero: 0,
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+  thirteen: 13,
+  fourteen: 14,
+  fifteen: 15,
+  sixteen: 16,
+  seventeen: 17,
+  eighteen: 18,
+  nineteen: 19,
+  twenty: 20,
+  thirty: 30,
+  forty: 40,
+  fifty: 50,
+  sixty: 60,
+  seventy: 70,
+  eighty: 80,
+  ninety: 90,
+};
+const VOICE_NUMBER_WORD_PATTERN = Object.keys(VOICE_NUMBER_WORDS)
+  .sort((a, b) => b.length - a.length)
+  .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("|");
+const VOICE_UI_COPY = {
+  idle: {
+    icon: "fa-microphone",
+    title: "Log by voice",
+    hint: 'Say "Spent 200 rupees on lunch"',
+  },
+  starting: {
+    icon: "fa-spinner fa-spin",
+    title: "Preparing mic",
+    hint: "Allow microphone access if the browser asks.",
+  },
+  listening: {
+    icon: "fa-wave-square",
+    title: "Listening...",
+    hint: "Tap again to stop listening.",
+  },
+  processing: {
+    icon: "fa-spinner fa-spin",
+    title: "Processing...",
+    hint: "Turning speech into a draft.",
+  },
+  success: {
+    icon: "fa-check",
+    title: "Draft ready",
+    hint: "Review the fields, then confirm the entry.",
+  },
+  error: {
+    icon: "fa-rotate-right",
+    title: "Try again",
+    hint: "Tap to retry voice logging.",
+  },
+  unsupported: {
+    icon: "fa-circle-info",
+    title: "Voice unavailable",
+    hint: "Use Chrome or Edge with microphone access.",
+  },
+};
+
 let _voiceRecognition = null;
 let _voiceBusy = false;
+let _voiceSession = {
+  id: 0,
+  type: "",
+  resultReceived: false,
+};
 
 function startVoiceLog(type) {
-  if (_voiceBusy) {
-    _stopVoice(type);
+  const activeType = _voiceSession.type;
+
+  if (_voiceBusy && activeType === type) {
+    _cancelVoiceCapture(
+      type,
+      "Listening stopped. Tap again when you're ready.",
+    );
     return;
+  }
+
+  if (_voiceBusy && activeType && activeType !== type) {
+    _cancelVoiceCapture(activeType);
   }
 
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    notify(
-      "Voice input is not supported in this browser. Try Chrome or Edge.",
-      "error",
+    _hideVoicePreview(type);
+    _setVoiceUi(
+      type,
+      "unsupported",
+      "Voice dictation needs Chrome or Edge with microphone access.",
     );
     return;
   }
 
-  const btn = document.getElementById(`${type}VoiceBtn`);
+  const recognition = new SpeechRecognition();
+  const sessionId = Date.now() + Math.random();
+  _voiceRecognition = recognition;
   _voiceBusy = true;
-  if (btn) {
-    btn.classList.add("voice-btn--listening");
-    btn.innerHTML = '<i class="fas fa-stop"></i>';
-    btn.title = "Stop recording";
+  _voiceSession = {
+    id: sessionId,
+    type,
+    resultReceived: false,
+  };
+
+  _hideVoicePreview(type);
+  _setVoiceUi(type, "starting", "Requesting microphone access...");
+
+  recognition.lang = navigator.language || "en-IN";
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 3;
+
+  recognition.onstart = () => {
+    if (_voiceSession.id !== sessionId) return;
+    _setVoiceUi(
+      type,
+      "listening",
+      'Listening... say "Spent 200 rupees on lunch".',
+    );
+  };
+
+  recognition.onresult = async (event) => {
+    if (_voiceSession.id !== sessionId) return;
+
+    let interimTranscript = "";
+    let finalTranscript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const piece = event.results[i][0]?.transcript?.trim();
+      if (!piece) continue;
+      if (event.results[i].isFinal) finalTranscript += `${piece} `;
+      else interimTranscript += `${piece} `;
+    }
+
+    finalTranscript = finalTranscript.trim();
+    interimTranscript = interimTranscript.trim();
+
+    if (finalTranscript) {
+      _voiceSession.resultReceived = true;
+      _voiceBusy = false;
+      _renderVoicePreview(type, finalTranscript);
+      _setVoiceUi(type, "processing", "Processing what you said...");
+      try {
+        recognition.stop();
+      } catch {}
+      _voiceRecognition = null;
+      await _handleVoiceTranscript(type, finalTranscript);
+      return;
+    }
+
+    if (interimTranscript) {
+      _setVoiceUi(type, "listening", `Hearing: "${interimTranscript}"`);
+    }
+  };
+
+  recognition.onerror = (event) => {
+    if (_voiceSession.id !== sessionId) return;
+    const errorCode = event?.error || "unknown";
+    _voiceRecognition = null;
+    _voiceBusy = false;
+    _voiceSession = {
+      id: 0,
+      type: "",
+      resultReceived: false,
+    };
+    _setVoiceUi(type, "error", _getVoiceErrorMessage(errorCode));
+  };
+
+  recognition.onend = () => {
+    if (_voiceSession.id !== sessionId) return;
+    _voiceRecognition = null;
+
+    if (_voiceBusy && !_voiceSession.resultReceived) {
+      _voiceBusy = false;
+      _voiceSession = {
+        id: 0,
+        type: "",
+        resultReceived: false,
+      };
+      _setVoiceUi(
+        type,
+        "error",
+        "No speech detected. Try again and speak a little closer to the mic.",
+      );
+      return;
+    }
+
+    if (_voiceSession.resultReceived) {
+      _voiceSession = {
+        id: 0,
+        type: "",
+        resultReceived: false,
+      };
+    }
+  };
+
+  try {
+    recognition.start();
+  } catch (error) {
+    _voiceRecognition = null;
+    _voiceBusy = false;
+    _voiceSession = {
+      id: 0,
+      type: "",
+      resultReceived: false,
+    };
+    _setVoiceUi(
+      type,
+      "error",
+      "The microphone couldn't start in this browser. Refresh and try again.",
+    );
+    console.warn("Voice recognition start failed", error);
   }
-
-  _voiceRecognition = new SpeechRecognition();
-  _voiceRecognition.lang = "en-IN";
-  _voiceRecognition.interimResults = false;
-  _voiceRecognition.maxAlternatives = 1;
-
-  _voiceRecognition.onresult = async (e) => {
-    const transcript = e.results[0][0].transcript;
-    _stopVoice(type);
-    await _parseVoiceTranscript(type, transcript);
-  };
-
-  _voiceRecognition.onerror = (e) => {
-    _stopVoice(type);
-    if (e.error !== "aborted")
-      notify("Voice capture failed. Please try again.", "error");
-  };
-
-  _voiceRecognition.onend = () => _stopVoice(type);
-  _voiceRecognition.start();
-  notify("Listening… speak now", "info");
 }
 
-function _stopVoice(type) {
-  _voiceBusy = false;
+function _cancelVoiceCapture(type, message = VOICE_IDLE_MESSAGE) {
   try {
     _voiceRecognition?.stop();
   } catch {}
   _voiceRecognition = null;
-  const btn = document.getElementById(`${type}VoiceBtn`);
-  if (btn) {
-    btn.classList.remove("voice-btn--listening");
-    btn.innerHTML = '<i class="fas fa-microphone"></i>';
-    btn.title = "Log by voice";
+  _voiceBusy = false;
+  _voiceSession = {
+    id: 0,
+    type: "",
+    resultReceived: false,
+  };
+  _setVoiceUi(type, "idle", message);
+}
+
+function resetVoiceUi(type) {
+  if (_voiceBusy && _voiceSession.type === type) {
+    _cancelVoiceCapture(type);
+    return;
+  }
+
+  _hideVoicePreview(type);
+  _setVoiceUi(type, "idle", VOICE_IDLE_MESSAGE);
+}
+
+function _getVoiceElements(type) {
+  return {
+    btn: document.getElementById(`${type}VoiceBtn`),
+    icon: document.querySelector(`#${type}VoiceBtn .voice-btn-icon i`),
+    title: document.querySelector(`#${type}VoiceBtn .voice-btn-title`),
+    hint: document.querySelector(`#${type}VoiceBtn .voice-btn-hint`),
+    status: document.getElementById(`${type}VoiceStatus`),
+    preview: document.getElementById(`${type}VoicePreview`),
+    transcript: document.getElementById(`${type}VoiceTranscript`),
+    chips: document.getElementById(`${type}VoiceChips`),
+  };
+}
+
+function _setVoiceUi(type, state, message) {
+  const els = _getVoiceElements(type);
+  if (!els.btn || !els.status) return;
+
+  const copy = VOICE_UI_COPY[state] || VOICE_UI_COPY.idle;
+  els.btn.dataset.state = state;
+  els.status.dataset.state = state;
+  els.btn.disabled = state === "starting" || state === "processing";
+
+  if (els.icon) els.icon.className = `fas ${copy.icon}`;
+  if (els.title) els.title.textContent = copy.title;
+  if (els.hint) els.hint.textContent = copy.hint;
+  els.status.textContent = message || VOICE_IDLE_MESSAGE;
+}
+
+function _hideVoicePreview(type) {
+  const els = _getVoiceElements(type);
+  if (!els.preview) return;
+  els.preview.hidden = true;
+  if (els.transcript) els.transcript.textContent = "";
+  if (els.chips) els.chips.innerHTML = "";
+}
+
+function _renderVoicePreview(type, transcript, draft = null) {
+  const els = _getVoiceElements(type);
+  if (!els.preview || !els.transcript || !els.chips) return;
+
+  els.preview.hidden = false;
+  els.transcript.textContent = transcript;
+  els.chips.innerHTML = "";
+
+  if (!draft) return;
+  if (draft.amount) {
+    _appendVoiceChip(
+      els.chips,
+      `₹${Number(draft.amount).toLocaleString("en-IN")}`,
+      "amount",
+    );
+  }
+  if (draft.category) {
+    _appendVoiceChip(els.chips, draft.category, "category");
+  }
+  if (draft.description) {
+    _appendVoiceChip(els.chips, draft.description, "description");
   }
 }
 
-async function _parseVoiceTranscript(type, transcript) {
-  notify(`Heard: "${transcript}" — parsing…`, "info");
-  const cats =
-    type === "income"
-      ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
-      : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
-
-  const system = `You are a financial transaction parser for an Indian personal finance app.
-The user spoke a voice command to log a transaction. Extract the details and return ONLY valid JSON:
-{
-  "amount": 250,
-  "description": "lunch at canteen",
-  "category": "Food",
-  "date": "today"
+function _appendVoiceChip(container, label, variant = "default") {
+  const chip = document.createElement("span");
+  chip.className = `voice-preview-chip voice-preview-chip--${variant}`;
+  chip.textContent = label;
+  container.appendChild(chip);
 }
-Rules:
-- amount is a number in rupees (no symbol). If unclear, use null.
-- description is a short cleaned-up description string.
-- category must be exactly one of: ${cats.join(", ")}
-- date: return "today" always (date auto-fills from form).
-- Return ONLY the JSON, no explanation.`;
+
+function _getVoiceErrorMessage(errorCode) {
+  const messages = {
+    "audio-capture":
+      "No microphone was found (audio-capture). Check device mic access and try again.",
+    "not-allowed":
+      "Microphone access was blocked (not-allowed). Allow mic permission and try again.",
+    "service-not-allowed":
+      "This browser blocked speech services (service-not-allowed). Try Chrome or Edge.",
+    network:
+      "Speech recognition lost its network connection (network). Check connectivity and try again.",
+    "no-speech":
+      "No speech was detected (no-speech). Speak a little louder or closer to the mic.",
+    "language-not-supported":
+      "This browser can't recognize the current language setting (language-not-supported).",
+    aborted: "Listening stopped.",
+  };
+
+  return (
+    messages[errorCode] ||
+    `Voice capture failed (${errorCode}). Please try again.`
+  );
+}
+
+function _escapeVoiceRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function _scaleVoiceAmount(numberText, multiplierText) {
+  let amount = Number.parseFloat(String(numberText).replace(/,/g, ""));
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const multiplier = String(multiplierText || "").toLowerCase();
+  if (multiplier === "k" || multiplier === "thousand") amount *= 1000;
+  if (multiplier === "lakh" || multiplier === "lac") amount *= 100000;
+  return Math.round(amount * 100) / 100;
+}
+
+function _parseWordNumber(phrase) {
+  const tokens = String(phrase)
+    .toLowerCase()
+    .replace(/-/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!tokens.length) return null;
+
+  let total = 0;
+  let current = 0;
+  let decimal = "";
+  let afterPoint = false;
+  let seenNumber = false;
+
+  for (const token of tokens) {
+    if (token === "and") continue;
+    if (token === "point") {
+      afterPoint = true;
+      continue;
+    }
+
+    if (afterPoint) {
+      if (!(token in VOICE_NUMBER_WORDS)) return null;
+      const digit = VOICE_NUMBER_WORDS[token];
+      if (digit < 0 || digit > 9) return null;
+      decimal += String(digit);
+      seenNumber = true;
+      continue;
+    }
+
+    if (token === "hundred") {
+      current = (current || 1) * 100;
+      seenNumber = true;
+      continue;
+    }
+    if (token === "thousand") {
+      total += (current || 1) * 1000;
+      current = 0;
+      seenNumber = true;
+      continue;
+    }
+    if (token === "lakh" || token === "lac") {
+      total += (current || 1) * 100000;
+      current = 0;
+      seenNumber = true;
+      continue;
+    }
+
+    const value = VOICE_NUMBER_WORDS[token];
+    if (value === undefined) return null;
+    current += value;
+    seenNumber = true;
+  }
+
+  if (!seenNumber) return null;
+  const whole = total + current;
+  if (!decimal) return whole || null;
+  return Number.parseFloat(`${whole}.${decimal}`);
+}
+
+function _extractWordAmount(transcript) {
+  const patterns = [
+    new RegExp(
+      `\\b((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\s+(?:rupees?|rs|inr)\\b`,
+      "i",
+    ),
+    new RegExp(
+      `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\b`,
+      "i",
+    ),
+  ];
+
+  for (const pattern of patterns) {
+    const match = transcript.match(pattern);
+    if (!match) continue;
+    const amount = _parseWordNumber(match[1]);
+    if (amount) {
+      return {
+        amount,
+        matchedText: match[0],
+      };
+    }
+  }
+
+  return {
+    amount: null,
+    matchedText: "",
+  };
+}
+
+function _extractVoiceAmount(transcript) {
+  const patterns = [
+    /\b(?:rs\.?|inr|rupees?)\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)?\b/i,
+    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)\b/i,
+    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rs\.?|inr|rupees?)\b/i,
+    new RegExp(
+      `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+(\\d+(?:,\\d+)*(?:\\.\\d+)?)\\s*(k|thousand|lakh|lac)?\\b`,
+      "i",
+    ),
+    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s+(?:on|for|towards|at|from)\b/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = transcript.match(pattern);
+    if (!match) continue;
+    const amount = _scaleVoiceAmount(match[1], match[2]);
+    if (amount) {
+      return {
+        amount,
+        matchedText: match[0],
+      };
+    }
+  }
+
+  return _extractWordAmount(transcript);
+}
+
+function _fallbackVoiceDescription(type, transcript, category) {
+  if (category && category !== "Other") {
+    if (type === "income") {
+      if (category === "Salary") return "Salary";
+      if (category === "Freelance") return "Freelance payment";
+      return `${category} income`;
+    }
+    if (category === "Food") return "Food expense";
+    if (category === "Transport") return "Transport expense";
+    return `${category} expense`;
+  }
+
+  const trimmed = String(transcript || "").trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : "";
+}
+
+function _cleanVoiceDescription(type, transcript, matchedText) {
+  let cleaned = String(transcript || "");
+
+  if (matchedText) {
+    cleaned = cleaned.replace(
+      new RegExp(_escapeVoiceRegExp(matchedText), "i"),
+      " ",
+    );
+  }
+
+  const actionPattern =
+    type === "income"
+      ? new RegExp(
+          `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_INCOME_ACTION_PATTERN})(?:\\s+from|\\s+payment|\\s+of)?\\b`,
+          "gi",
+        )
+      : new RegExp(
+          `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_EXPENSE_ACTION_PATTERN})(?:\\s+for)?\\b`,
+          "gi",
+        );
+
+  cleaned = cleaned
+    .replace(actionPattern, " ")
+    .replace(/\b(?:rs\.?|inr|rupees?)\b/gi, " ")
+    .replace(/\b(?:today|right now|just now|please|transaction|entry)\b/gi, " ")
+    .replace(/^[\s,.-]*(?:on|for|from|towards|to|at|via|of)\b/gi, " ")
+    .replace(/[.,]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return "";
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function _parseVoiceLocally(type, transcript) {
+  const allowedCategories = _getAiCategories(type);
+  const amountResult = _extractVoiceAmount(transcript);
+  const directCategory =
+    _localKeywordGuess(type, transcript) || _localKeywordGuess(type, "");
+  let description = _cleanVoiceDescription(
+    type,
+    transcript,
+    amountResult.matchedText,
+  );
+  let category =
+    _localKeywordGuess(type, description) || directCategory || "Other";
+
+  const matchedCategory = allowedCategories.find(
+    (item) => item.toLowerCase() === String(category).toLowerCase(),
+  );
+  category =
+    matchedCategory || (allowedCategories.includes("Other") ? "Other" : "");
+
+  if (!description) {
+    description = _fallbackVoiceDescription(type, transcript, category);
+  }
+
+  let confidence = 0;
+  if (amountResult.amount) confidence += 0.5;
+  if (description && description.toLowerCase() !== transcript.toLowerCase()) {
+    confidence += 0.2;
+  }
+  if (category && category !== "Other") confidence += 0.2;
+  if (
+    amountResult.matchedText &&
+    /rs|inr|rupees?|k|thousand|lakh|lac/i.test(amountResult.matchedText)
+  ) {
+    confidence += 0.1;
+  }
+
+  return {
+    amount: amountResult.amount,
+    description,
+    category,
+    date: todayStr(),
+    confidence: Math.min(confidence, 1),
+    source: "local",
+  };
+}
+
+function _needsVoiceBackendFallback(draft) {
+  return (
+    !draft.amount ||
+    !draft.description ||
+    !draft.category ||
+    draft.category === "Other" ||
+    draft.confidence < 0.75
+  );
+}
+
+function _getVoiceAiEndpoint() {
+  return String(
+    window.BLUELEDGER_VOICE_AI_ENDPOINT ||
+      document.body?.dataset.voiceAiEndpoint ||
+      localStorage.getItem("bl_voice_ai_endpoint") ||
+      "",
+  ).trim();
+}
+
+function _sanitizeVoiceDraft(type, payload) {
+  const source = payload?.draft || payload;
+  if (!source || typeof source !== "object") return null;
+
+  const allowedCategories = _getAiCategories(type);
+  const amount = _scaleVoiceAmount(source.amount, "");
+  let description = String(source.description || "").trim();
+  let category = String(source.category || "").trim();
+
+  if (!description) description = "";
+  const matchedCategory = allowedCategories.find(
+    (item) => item.toLowerCase() === category.toLowerCase(),
+  );
+  category = matchedCategory || "";
+
+  return {
+    amount,
+    description,
+    category,
+    date: todayStr(),
+    confidence: 1,
+    source: "backend",
+  };
+}
+
+async function _parseVoiceWithBackend(type, transcript, localDraft) {
+  const endpoint = _getVoiceAiEndpoint();
+  if (!endpoint) return null;
+
+  const controller =
+    typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), VOICE_BACKEND_TIMEOUT_MS)
+    : null;
 
   try {
-    const raw = await _callAI(
-      [{ role: "user", content: transcript }],
-      system,
-      120,
-    );
-    const clean = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        transcript,
+        type,
+        categories: _getAiCategories(type),
+        localDraft,
+      }),
+      signal: controller?.signal,
+    });
 
-    // Pre-fill the form
-    if (parsed.amount) {
-      const amtEl = document.getElementById(`${type}Amount`);
-      if (amtEl) amtEl.value = parsed.amount;
+    if (!response.ok) {
+      throw new Error(`Voice AI endpoint error ${response.status}`);
     }
-    if (parsed.description) {
-      const descEl = document.getElementById(`${type}Desc`);
-      if (descEl) {
-        descEl.value = parsed.description;
-        aiAutoCategory(type, parsed.description);
-      }
-    }
-    if (parsed.category) {
-      const catEl = document.getElementById(`${type}Category`);
-      if (catEl) {
-        const match = cats.find(
-          (c) => c.toLowerCase() === parsed.category.toLowerCase(),
-        );
-        if (match) catEl.value = match;
-      }
-    }
-    notify("Voice entry filled in — please review and confirm ✓", "success");
-  } catch (e) {
-    notify("Couldn't parse voice input. Please fill in manually.", "error");
-    console.warn("Voice parse failed", e);
+
+    const payload = await response.json();
+    return _sanitizeVoiceDraft(type, payload);
+  } catch (error) {
+    console.warn("Voice AI fallback skipped", error);
+    return null;
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
+}
+
+function _applyVoiceDraft(type, draft) {
+  const amtEl = document.getElementById(`${type}Amount`);
+  const descEl = document.getElementById(`${type}Desc`);
+  const catEl = document.getElementById(`${type}Category`);
+  const dateEl = document.getElementById(`${type}Date`);
+
+  if (amtEl && draft.amount) {
+    amtEl.value = draft.amount;
+  }
+  if (descEl && draft.description) {
+    descEl.value = draft.description;
+  }
+  if (dateEl && !dateEl.value) {
+    dateEl.value = draft.date || todayStr();
+  }
+  if (catEl && draft.category) {
+    catEl.value = draft.category;
+  }
+
+  if (
+    descEl &&
+    draft.description &&
+    (!draft.category || draft.category === "Other")
+  ) {
+    aiAutoCategory(type, draft.description);
+  }
+}
+
+async function _handleVoiceTranscript(type, transcript) {
+  const localDraft = _parseVoiceLocally(type, transcript);
+  let finalDraft = localDraft;
+
+  if (_needsVoiceBackendFallback(localDraft)) {
+    const backendDraft = await _parseVoiceWithBackend(
+      type,
+      transcript,
+      localDraft,
+    );
+    if (backendDraft) {
+      finalDraft = {
+        ...localDraft,
+        ...backendDraft,
+        amount: backendDraft.amount || localDraft.amount,
+        description: backendDraft.description || localDraft.description,
+        category: backendDraft.category || localDraft.category,
+      };
+    }
+  }
+
+  _renderVoicePreview(type, transcript, finalDraft);
+  _applyVoiceDraft(type, {
+    ...finalDraft,
+    amount: finalDraft.amount || null,
+  });
+
+  if (!finalDraft.amount) {
+    _setVoiceUi(
+      type,
+      "error",
+      "I heard the transcript, but couldn't detect the amount. Try again or type the amount manually.",
+    );
+    return;
+  }
+
+  if (!finalDraft.category) {
+    finalDraft.category = "Other";
+  }
+  if (!finalDraft.description) {
+    finalDraft.description = _fallbackVoiceDescription(
+      type,
+      transcript,
+      finalDraft.category,
+    );
+  }
+
+  _applyVoiceDraft(type, finalDraft);
+  _renderVoicePreview(type, transcript, finalDraft);
+  _setVoiceUi(
+    type,
+    "success",
+    `Draft ready${finalDraft.source === "backend" ? " with AI assist" : ""}. Review the fields, then confirm the entry.`,
+  );
 }
 
 /* ──────────────────────────────────────────────
@@ -3843,13 +2885,11 @@ async function openBiometricSetup() {
   // Treat as not-set-up if vault or credId is missing (partial registration failure)
   const hasValidWebAuthn =
     hasWebAuthn &&
-    !!localStorage.getItem("bl_webauthn_cred_id") &&
-    !!localStorage.getItem("bl_webauthn_pwd_vault");
+    !!localStorage.getItem(WEBAUTHN_CRED_ID_KEY) &&
+    !!localStorage.getItem(WEBAUTHN_PWD_VAULT_KEY);
   if (!hasValidWebAuthn && hasWebAuthn) {
     // Clean up stale partial state
-    localStorage.removeItem("bl_has_webauthn");
-    localStorage.removeItem("bl_webauthn_cred_id");
-    localStorage.removeItem("bl_webauthn_pwd_vault");
+    _clearWebAuthnState();
   }
 
   if (hasValidWebAuthn) {
@@ -3866,9 +2906,7 @@ async function openBiometricSetup() {
     if (btnEl) {
       btnEl.textContent = "Disable Biometrics";
       btnEl.onclick = () => {
-        localStorage.removeItem("bl_has_webauthn");
-        localStorage.removeItem("bl_webauthn_cred_id");
-        localStorage.removeItem("bl_webauthn_pwd_vault");
+        _clearWebAuthnState();
         document.getElementById("biometricSetupModal").style.display = "none";
         notify("Biometric login disabled", "info");
         _refreshBiometricSettingsRow();
@@ -3930,13 +2968,13 @@ function _getBiometricLabel(hasWebAuthn) {
   const isAndroid = /Android/.test(navigator.userAgent);
 
   if (isIOS || isMac) {
-    return hasWebAuthn ? "Manage Face ID" : "Set Up Face ID";
+    return hasWebAuthn ? "Face ID" : "Enable Face ID";
   } else if (isAndroid) {
-    return hasWebAuthn ? "Manage Fingerprint" : "Set Up Fingerprint";
+    return hasWebAuthn ? "Fingerprint" : "Enable Fingerprint";
   } else if (isWindows) {
-    return hasWebAuthn ? "Manage Windows Hello" : "Set Up Windows Hello";
+    return hasWebAuthn ? "Windows Hello" : "Enable Windows Hello";
   } else {
-    return hasWebAuthn ? "Manage Biometric Login" : "Set Up Biometric Login";
+    return hasWebAuthn ? "Biometric Login" : "Enable Biometrics";
   }
 }
 
@@ -3964,6 +3002,20 @@ function _refreshBiometricSettingsRow() {
   });
 }
 
+function _canUsePasswordCredentialFlow() {
+  return (
+    /Android/i.test(navigator.userAgent) &&
+    "credentials" in navigator &&
+    !!window.PasswordCredential
+  );
+}
+
+function _clearUnsupportedPasswordCredentialState() {
+  if (!_canUsePasswordCredentialFlow()) {
+    localStorage.removeItem("bl_has_stored_creds");
+  }
+}
+
 // Show/hide biometric row in settings on load
 _checkBiometricAvailable().then((canBio) => {
   if (canBio || window.PublicKeyCredential) _refreshBiometricSettingsRow();
@@ -3979,20 +3031,17 @@ async function _checkBiometricAvailable() {
   // Android Chrome — PasswordCredential stored
   if (
     localStorage.getItem("bl_has_stored_creds") === "1" &&
-    "credentials" in navigator &&
-    window.PasswordCredential
+    _canUsePasswordCredentialFlow()
   )
     return true;
   // iOS Safari / any platform — WebAuthn: both cred_id AND pwd_vault must exist
   // Guard against partial registration leaving stale bl_has_webauthn flag
   if (localStorage.getItem("bl_has_webauthn") === "1") {
-    const credOk = !!localStorage.getItem("bl_webauthn_cred_id");
-    const vaultOk = !!localStorage.getItem("bl_webauthn_pwd_vault");
+    const credOk = !!localStorage.getItem(WEBAUTHN_CRED_ID_KEY);
+    const vaultOk = !!localStorage.getItem(WEBAUTHN_PWD_VAULT_KEY);
     if (credOk && vaultOk && window.PublicKeyCredential) return true;
     // Partial/stale registration — clear it so the button is not shown
-    localStorage.removeItem("bl_has_webauthn");
-    localStorage.removeItem("bl_webauthn_cred_id");
-    localStorage.removeItem("bl_webauthn_pwd_vault");
+    _clearWebAuthnState();
   }
   // Check if the device has a platform authenticator available (for showing the Settings setup row)
   if (window.PublicKeyCredential) {
@@ -4007,14 +3056,30 @@ async function _checkBiometricAvailable() {
 
 /* ── WebAuthn helpers (iOS Face ID / Touch ID, Windows Hello) ── */
 
+function _getCurrentWebAuthnRpId() {
+  return location.hostname || "";
+}
+
+function _getStoredWebAuthnRpId() {
+  return localStorage.getItem(WEBAUTHN_RP_ID_KEY) || "";
+}
+
+function _clearWebAuthnState() {
+  localStorage.removeItem("bl_has_webauthn");
+  localStorage.removeItem(WEBAUTHN_CRED_ID_KEY);
+  localStorage.removeItem(WEBAUTHN_PWD_VAULT_KEY);
+  localStorage.removeItem(WEBAUTHN_RP_ID_KEY);
+}
+
 async function _webAuthnRegister(email) {
   if (!window.PublicKeyCredential) throw new Error("WebAuthn not supported");
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   const userId = crypto.getRandomValues(new Uint8Array(16));
+  const rpId = _getCurrentWebAuthnRpId();
   const credential = await navigator.credentials.create({
     publicKey: {
       challenge,
-      rp: { name: "BlueLedger", id: location.hostname || undefined },
+      rp: rpId ? { name: "BlueLedger", id: rpId } : { name: "BlueLedger" },
       user: {
         id: userId,
         name: email || "blueledger-user",
@@ -4027,7 +3092,7 @@ async function _webAuthnRegister(email) {
       authenticatorSelection: {
         authenticatorAttachment: "platform",
         userVerification: "required",
-        residentKey: "discouraged",
+        residentKey: "preferred",
       },
       timeout: 60000,
       attestation: "none",
@@ -4036,14 +3101,23 @@ async function _webAuthnRegister(email) {
   // Store credential ID for later assertion
   const rawId = new Uint8Array(credential.rawId);
   const credIdB64 = btoa(String.fromCharCode(...rawId));
-  localStorage.setItem("bl_webauthn_cred_id", credIdB64);
+  localStorage.setItem(WEBAUTHN_CRED_ID_KEY, credIdB64);
+  if (rpId) localStorage.setItem(WEBAUTHN_RP_ID_KEY, rpId);
+  else localStorage.removeItem(WEBAUTHN_RP_ID_KEY);
   return credIdB64;
 }
 
 async function _webAuthnAuthenticate() {
   if (!window.PublicKeyCredential) throw new Error("WebAuthn not supported");
-  const credIdB64 = localStorage.getItem("bl_webauthn_cred_id");
+  const credIdB64 = localStorage.getItem(WEBAUTHN_CRED_ID_KEY);
   if (!credIdB64) throw new Error("No WebAuthn credential registered");
+  const storedRpId = _getStoredWebAuthnRpId();
+  const currentRpId = _getCurrentWebAuthnRpId();
+  if (storedRpId && currentRpId && storedRpId !== currentRpId) {
+    throw new Error(
+      "Windows Hello was set up on a different app address. Disable it and enable it again here.",
+    );
+  }
   const credId = Uint8Array.from(atob(credIdB64), (c) => c.charCodeAt(0));
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   const getOptions = {
@@ -4055,13 +3129,12 @@ async function _webAuthnAuthenticate() {
     },
   };
   // rpId must match registration exactly — omit when hostname is empty (file://)
-  if (location.hostname) {
-    getOptions.publicKey.rpId = location.hostname;
-  }
+  const rpId = storedRpId || currentRpId;
+  if (rpId) getOptions.publicKey.rpId = rpId;
   const assertion = await navigator.credentials.get(getOptions);
   if (!assertion) throw new Error("Authentication failed");
   // Return the stored password (WebAuthn just gates access to it)
-  const vaultRaw = localStorage.getItem("bl_webauthn_pwd_vault");
+  const vaultRaw = localStorage.getItem(WEBAUTHN_PWD_VAULT_KEY);
   if (!vaultRaw) throw new Error("No password vault found");
   // Simple XOR obfuscation keyed on credId (not real crypto — the biometric IS the auth gate)
   const key = credIdB64.slice(0, 64).padEnd(64, "x");
@@ -4076,7 +3149,11 @@ async function _webAuthnAuthenticate() {
 }
 
 function _webAuthnStorePassword(password) {
-  const credIdB64 = localStorage.getItem("bl_webauthn_cred_id") || "fallback";
+  const credIdB64 = localStorage.getItem(WEBAUTHN_CRED_ID_KEY);
+  if (!credIdB64) {
+    _clearWebAuthnState();
+    throw new Error("No WebAuthn credential available");
+  }
   const key = credIdB64.slice(0, 64).padEnd(64, "x");
   const obfuscated = btoa(
     password
@@ -4086,7 +3163,7 @@ function _webAuthnStorePassword(password) {
       )
       .join(""),
   );
-  localStorage.setItem("bl_webauthn_pwd_vault", obfuscated);
+  localStorage.setItem(WEBAUTHN_PWD_VAULT_KEY, obfuscated);
   localStorage.setItem("bl_has_webauthn", "1");
 }
 
@@ -4275,10 +3352,12 @@ async function doSignIn() {
       localStorage.setItem("bl_last_email", email);
     } catch {}
     try {
-      if ("credentials" in navigator && window.PasswordCredential) {
+      if (_canUsePasswordCredentialFlow()) {
         const cred = new PasswordCredential({ id: email, password });
         await navigator.credentials.store(cred);
         localStorage.setItem("bl_has_stored_creds", "1");
+      } else {
+        localStorage.removeItem("bl_has_stored_creds");
       }
     } catch {}
   } catch (e) {
@@ -4346,8 +3425,8 @@ async function tryBiometricLogin() {
   try {
     // Android Chrome — PasswordCredential
     if (
-      "credentials" in navigator &&
-      window.PasswordCredential &&
+      localStorage.getItem("bl_has_webauthn") !== "1" &&
+      _canUsePasswordCredentialFlow() &&
       localStorage.getItem("bl_has_stored_creds") === "1"
     ) {
       const cred = await navigator.credentials.get({
@@ -4381,6 +3460,11 @@ async function tryBiometricLogin() {
       const emailEl = document.getElementById("loginEmail");
       if (!emailEl.value) {
         emailEl.value = localStorage.getItem("bl_last_email") || "";
+      }
+      if (!emailEl.value || !emailEl.value.includes("@")) {
+        throw new Error(
+          "No account email is saved for Windows Hello. Log in once with your password, then enable it again.",
+        );
       }
       document.getElementById("loginPassword").value = password;
       await doSignIn();
@@ -4583,8 +3667,7 @@ async function completeCardSetup() {
 
   setTimeout(async () => {
     // Show biometric setup if device supports PasswordCredential (Android) OR WebAuthn (iOS)
-    const canPasswordCred =
-      "credentials" in navigator && !!window.PasswordCredential;
+    const canPasswordCred = _canUsePasswordCredentialFlow();
     let canWebAuthn = false;
     if (window.PublicKeyCredential) {
       try {
@@ -4683,8 +3766,7 @@ async function registerBiometricNow() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac =
       /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const canPasswordCred =
-      "credentials" in navigator && !!window.PasswordCredential;
+    const canPasswordCred = _canUsePasswordCredentialFlow();
     const canWebAuthn = !!window.PublicKeyCredential;
 
     // Only use PasswordCredential on Android (it shows the fingerprint prompt there).
@@ -4695,10 +3777,17 @@ async function registerBiometricNow() {
       localStorage.setItem("bl_has_stored_creds", "1");
       notify("Fingerprint login enabled ✓", "success");
     } else if (canWebAuthn) {
+      if (!email || !email.includes("@")) {
+        notify(
+          "Log in once with your real email before enabling Windows Hello.",
+          "error",
+        );
+        return;
+      }
       await _webAuthnRegister(email);
-      if (password) _webAuthnStorePassword(password);
-      if (email && email !== "blueledger-user")
-        localStorage.setItem("bl_last_email", email);
+      _webAuthnStorePassword(password);
+      localStorage.removeItem("bl_has_stored_creds");
+      localStorage.setItem("bl_last_email", email);
       const isWindows = /Windows/.test(navigator.userAgent);
       notify(
         isIOS || isMac
@@ -4739,8 +3828,8 @@ async function tryLockScreenBiometric() {
   try {
     // Android Chrome — PasswordCredential
     if (
-      "credentials" in navigator &&
-      window.PasswordCredential &&
+      localStorage.getItem("bl_has_webauthn") !== "1" &&
+      _canUsePasswordCredentialFlow() &&
       localStorage.getItem("bl_has_stored_creds") === "1"
     ) {
       const cred = await navigator.credentials.get({
@@ -5212,8 +4301,7 @@ function showLockScreen(subtitle) {
     if (bioBtn) {
       const hasPasswordCred =
         localStorage.getItem("bl_has_stored_creds") === "1" &&
-        "credentials" in navigator &&
-        window.PasswordCredential;
+        _canUsePasswordCredentialFlow();
       const hasWebAuthn =
         localStorage.getItem("bl_has_webauthn") === "1" &&
         !!window.PublicKeyCredential;
@@ -5238,7 +4326,7 @@ function showLockScreen(subtitle) {
           if (labelEl) labelEl.textContent = "Use Fingerprint / Biometric";
           if (iconEl) iconEl.className = "fas fa-fingerprint";
         }
-        setTimeout(tryLockScreenBiometric, 600);
+        if (!isWindows) setTimeout(tryLockScreenBiometric, 600);
       }
     }
     document.getElementById("lockSubtitle").textContent =
@@ -5504,7 +4592,8 @@ async function changePin() {
   // Keep PasswordCredential in sync with new password
   if (
     authMode === "password" &&
-    localStorage.getItem("bl_has_stored_creds") === "1"
+    localStorage.getItem("bl_has_stored_creds") === "1" &&
+    _canUsePasswordCredentialFlow()
   ) {
     try {
       const email = localStorage.getItem("bl_last_email");
@@ -5514,6 +4603,8 @@ async function changePin() {
         );
       }
     } catch {}
+  } else if (!_canUsePasswordCredentialFlow()) {
+    localStorage.removeItem("bl_has_stored_creds");
   }
   notify(
     authMode === "password" ? "Password updated" : "PIN updated",
@@ -7603,6 +6694,7 @@ function openModal(id, options = {}) {
     populateCategorySelects();
     document.getElementById("incomeCategory").value = "";
     resetAiCatBadge("income");
+    resetVoiceUi("income");
     applyTxnDraft("income", options.draft);
   }
   if (id === "expenseModal") {
@@ -7617,6 +6709,7 @@ function openModal(id, options = {}) {
     populateCategorySelects();
     document.getElementById("expenseCategory").value = "";
     resetAiCatBadge("expense");
+    resetVoiceUi("expense");
     applyTxnDraft("expense", options.draft);
   }
   if (id === "syncModal") {
@@ -7630,6 +6723,8 @@ function closeModal(id) {
     const nav = document.querySelector(".summary-month-nav");
     if (nav) nav.style.display = "";
   }
+  if (id === "incomeModal") resetVoiceUi("income");
+  if (id === "expenseModal") resetVoiceUi("expense");
   document.getElementById(id).style.display = "none";
   document.body.style.overflow = "auto";
   syncFabVisibility();
@@ -8662,6 +7757,30 @@ async function doPasswordReset() {
     const client = getBLClient();
     const { error } = await client.auth.updateUser({ password: p1 });
     if (error) throw error;
+    if (localStorage.getItem("bl_has_webauthn") === "1") {
+      try {
+        _webAuthnStorePassword(p1);
+      } catch {
+        _clearWebAuthnState();
+        notify(
+          "Password updated. Re-enable Windows Hello in Settings.",
+          "info",
+        );
+      }
+    }
+    if (
+      localStorage.getItem("bl_has_stored_creds") === "1" &&
+      _canUsePasswordCredentialFlow()
+    ) {
+      const email = localStorage.getItem("bl_last_email");
+      if (email) {
+        await navigator.credentials.store(
+          new PasswordCredential({ id: email, password: p1 }),
+        );
+      }
+    } else if (!_canUsePasswordCredentialFlow()) {
+      localStorage.removeItem("bl_has_stored_creds");
+    }
     document.getElementById("authScreen").innerHTML = "";
     showAuthScreen("login");
     notify("Password updated! Log in with your new password.", "success");
@@ -8676,3 +7795,186 @@ populateCategorySelects();
 setChartPeriod(chartPeriod);
 refreshAll();
 syncFabVisibility();
+
+function _clearAiSuggestion(type) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const state = _getAiCatState(type);
+  state.suggestedCategory = "";
+  state.suggestedDesc = "";
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
+
+function aiAutoCategory(type, value) {
+  clearTimeout(_aiCatTimers[type]);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (!badgeEl) return;
+
+  const trimmed = value ? value.trim() : "";
+  const state = _getAiCatState(type);
+
+  if (state.acceptedDesc !== trimmed) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (!trimmed || trimmed.length < 3) {
+    _aiCatDismissed[type] = "";
+    _clearAiSuggestion(type);
+    return;
+  }
+
+  if (_aiCatDismissed[type] === trimmed) return;
+
+  _clearAiSuggestion(type);
+
+  const localGuess = _localKeywordGuess(type, trimmed);
+  if (localGuess) {
+    _showAiBadge(type, localGuess, trimmed, false);
+  }
+
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  const myGen = _aiCatGeneration[type];
+
+  _aiCatTimers[type] = setTimeout(async () => {
+    if (_aiCatGeneration[type] !== myGen) return;
+    await _runAiCat(type, trimmed, myGen);
+  }, 700);
+}
+
+async function _runAiCat(type, desc, generation) {
+  const cats = _getAiCategories(type);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+
+  try {
+    const system = `You are a financial transaction categorizer for an Indian personal finance app.
+Given a transaction description, return ONLY the single best matching category name from the list.
+Do not explain. Do not add punctuation. Return only the category name exactly as given.
+Categories: ${cats.join(", ")}`;
+    const result = await _callAI([{ role: "user", content: desc }], system, 20);
+
+    if (_aiCatGeneration[type] !== generation) return;
+
+    const suggested = result.trim();
+    const match =
+      cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
+      cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+
+    if (!match) {
+      const localGuess = _localKeywordGuess(type, desc);
+      if (!localGuess) _clearAiSuggestion(type);
+      return;
+    }
+
+    _showAiBadge(type, match, desc, true);
+  } catch (e) {
+    if (_aiCatGeneration[type] !== generation) return;
+    const localGuess = _localKeywordGuess(type, desc);
+    if (!localGuess) _clearAiSuggestion(type);
+    console.warn("AI categorization failed", e);
+  }
+}
+
+function _showAiBadge(type, match, desc, isFinal) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+  const state = _getAiCatState(type);
+
+  if (_aiCatDismissed[type] === desc) return;
+
+  state.suggestedCategory = match;
+  state.suggestedDesc = desc;
+
+  const isApplied =
+    state.acceptedCategory === match && state.acceptedDesc === desc;
+  badgeEl.dataset.lastDesc = desc;
+  badgeEl.dataset.suggestedMatch = match;
+
+  const confidenceIcon = isFinal
+    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
+    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess while AI confirms"></i>`;
+
+  const helperText = isApplied
+    ? "Applied to the category field."
+    : isFinal
+      ? "Review it, then tap Use if it looks right."
+      : "Quick guess while AI confirms the category.";
+
+  badgeEl.style.display = "flex";
+  badgeEl.innerHTML = `
+    <div class="ai-cat-copy">
+      <div class="ai-cat-title-row">
+        ${confidenceIcon}
+        <span class="ai-cat-title">Suggested category</span>
+      </div>
+      <div class="ai-cat-main">
+        <strong>${match}</strong>
+        ${!isFinal ? "<span class='ai-cat-pending'>AI is confirming...</span>" : ""}
+      </div>
+      <div class="ai-cat-help">${helperText}</div>
+    </div>
+    <div class="ai-cat-actions">
+      ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Use</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
+      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+    </div>
+  `;
+}
+
+function aiApplyCategory(type, category) {
+  const selectEl = document.getElementById(`${type}Category`);
+  const descEl = document.getElementById(`${type}Desc`);
+  const state = _getAiCatState(type);
+  if (selectEl) selectEl.value = category;
+  state.acceptedCategory = category;
+  state.acceptedDesc = descEl?.value.trim() || "";
+  _showAiBadge(type, category, state.acceptedDesc, true);
+}
+
+function aiDismissBadge(type) {
+  const descEl = document.getElementById(`${type}Desc`);
+  _aiCatDismissed[type] = descEl?.value.trim() || "";
+  _clearAiSuggestion(type);
+}
+
+function aiCategorySelectionChanged(type) {
+  const descEl = document.getElementById(`${type}Desc`);
+  const selectEl = document.getElementById(`${type}Category`);
+  const state = _getAiCatState(type);
+  const desc = descEl?.value.trim() || "";
+
+  if (
+    state.acceptedCategory &&
+    selectEl &&
+    selectEl.value !== state.acceptedCategory
+  ) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (desc) _aiCatDismissed[type] = desc;
+  _clearAiSuggestion(type);
+}
+
+function resetAiCatBadge(type) {
+  clearTimeout(_aiCatTimers[type]);
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  _aiCatDismissed[type] = "";
+  _aiCatState[type] = {
+    suggestedCategory: "",
+    suggestedDesc: "",
+    acceptedCategory: "",
+    acceptedDesc: "",
+  };
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
