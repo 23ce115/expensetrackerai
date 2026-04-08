@@ -2043,13 +2043,13 @@ function _getBiometricLabel(hasWebAuthn) {
   const isAndroid = /Android/.test(navigator.userAgent);
 
   if (isIOS || isMac) {
-    return hasWebAuthn ? "Manage Face ID" : "Set Up Face ID";
+    return hasWebAuthn ? "Face ID" : "Enable Face ID";
   } else if (isAndroid) {
-    return hasWebAuthn ? "Manage Fingerprint" : "Set Up Fingerprint";
+    return hasWebAuthn ? "Fingerprint" : "Enable Fingerprint";
   } else if (isWindows) {
-    return hasWebAuthn ? "Manage Windows Hello" : "Set Up Windows Hello";
+    return hasWebAuthn ? "Windows Hello" : "Enable Windows Hello";
   } else {
-    return hasWebAuthn ? "Manage Biometric Login" : "Set Up Biometric Login";
+    return hasWebAuthn ? "Biometric Login" : "Enable Biometrics";
   }
 }
 
@@ -2077,6 +2077,20 @@ function _refreshBiometricSettingsRow() {
   });
 }
 
+function _canUsePasswordCredentialFlow() {
+  return (
+    /Android/i.test(navigator.userAgent) &&
+    "credentials" in navigator &&
+    !!window.PasswordCredential
+  );
+}
+
+function _clearUnsupportedPasswordCredentialState() {
+  if (!_canUsePasswordCredentialFlow()) {
+    localStorage.removeItem("bl_has_stored_creds");
+  }
+}
+
 // Show/hide biometric row in settings on load
 _checkBiometricAvailable().then((canBio) => {
   if (canBio || window.PublicKeyCredential) _refreshBiometricSettingsRow();
@@ -2092,8 +2106,7 @@ async function _checkBiometricAvailable() {
   // Android Chrome — PasswordCredential stored
   if (
     localStorage.getItem("bl_has_stored_creds") === "1" &&
-    "credentials" in navigator &&
-    window.PasswordCredential
+    _canUsePasswordCredentialFlow()
   )
     return true;
   // iOS Safari / any platform — WebAuthn: both cred_id AND pwd_vault must exist
@@ -2414,10 +2427,12 @@ async function doSignIn() {
       localStorage.setItem("bl_last_email", email);
     } catch {}
     try {
-      if ("credentials" in navigator && window.PasswordCredential) {
+      if (_canUsePasswordCredentialFlow()) {
         const cred = new PasswordCredential({ id: email, password });
         await navigator.credentials.store(cred);
         localStorage.setItem("bl_has_stored_creds", "1");
+      } else {
+        localStorage.removeItem("bl_has_stored_creds");
       }
     } catch {}
   } catch (e) {
@@ -2485,8 +2500,8 @@ async function tryBiometricLogin() {
   try {
     // Android Chrome — PasswordCredential
     if (
-      "credentials" in navigator &&
-      window.PasswordCredential &&
+      localStorage.getItem("bl_has_webauthn") !== "1" &&
+      _canUsePasswordCredentialFlow() &&
       localStorage.getItem("bl_has_stored_creds") === "1"
     ) {
       const cred = await navigator.credentials.get({
@@ -2727,8 +2742,7 @@ async function completeCardSetup() {
 
   setTimeout(async () => {
     // Show biometric setup if device supports PasswordCredential (Android) OR WebAuthn (iOS)
-    const canPasswordCred =
-      "credentials" in navigator && !!window.PasswordCredential;
+    const canPasswordCred = _canUsePasswordCredentialFlow();
     let canWebAuthn = false;
     if (window.PublicKeyCredential) {
       try {
@@ -2827,8 +2841,7 @@ async function registerBiometricNow() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac =
       /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const canPasswordCred =
-      "credentials" in navigator && !!window.PasswordCredential;
+    const canPasswordCred = _canUsePasswordCredentialFlow();
     const canWebAuthn = !!window.PublicKeyCredential;
 
     // Only use PasswordCredential on Android (it shows the fingerprint prompt there).
@@ -2848,6 +2861,7 @@ async function registerBiometricNow() {
       }
       await _webAuthnRegister(email);
       _webAuthnStorePassword(password);
+      localStorage.removeItem("bl_has_stored_creds");
       localStorage.setItem("bl_last_email", email);
       const isWindows = /Windows/.test(navigator.userAgent);
       notify(
@@ -2889,8 +2903,8 @@ async function tryLockScreenBiometric() {
   try {
     // Android Chrome — PasswordCredential
     if (
-      "credentials" in navigator &&
-      window.PasswordCredential &&
+      localStorage.getItem("bl_has_webauthn") !== "1" &&
+      _canUsePasswordCredentialFlow() &&
       localStorage.getItem("bl_has_stored_creds") === "1"
     ) {
       const cred = await navigator.credentials.get({
@@ -3362,8 +3376,7 @@ function showLockScreen(subtitle) {
     if (bioBtn) {
       const hasPasswordCred =
         localStorage.getItem("bl_has_stored_creds") === "1" &&
-        "credentials" in navigator &&
-        window.PasswordCredential;
+        _canUsePasswordCredentialFlow();
       const hasWebAuthn =
         localStorage.getItem("bl_has_webauthn") === "1" &&
         !!window.PublicKeyCredential;
@@ -3654,7 +3667,8 @@ async function changePin() {
   // Keep PasswordCredential in sync with new password
   if (
     authMode === "password" &&
-    localStorage.getItem("bl_has_stored_creds") === "1"
+    localStorage.getItem("bl_has_stored_creds") === "1" &&
+    _canUsePasswordCredentialFlow()
   ) {
     try {
       const email = localStorage.getItem("bl_last_email");
@@ -3664,6 +3678,8 @@ async function changePin() {
         );
       }
     } catch {}
+  } else if (!_canUsePasswordCredentialFlow()) {
+    localStorage.removeItem("bl_has_stored_creds");
   }
   notify(
     authMode === "password" ? "Password updated" : "PIN updated",
@@ -6825,8 +6841,7 @@ async function doPasswordReset() {
     }
     if (
       localStorage.getItem("bl_has_stored_creds") === "1" &&
-      "credentials" in navigator &&
-      window.PasswordCredential
+      _canUsePasswordCredentialFlow()
     ) {
       const email = localStorage.getItem("bl_last_email");
       if (email) {
@@ -6834,6 +6849,8 @@ async function doPasswordReset() {
           new PasswordCredential({ id: email, password: p1 }),
         );
       }
+    } else if (!_canUsePasswordCredentialFlow()) {
+      localStorage.removeItem("bl_has_stored_creds");
     }
     document.getElementById("authScreen").innerHTML = "";
     showAuthScreen("login");
