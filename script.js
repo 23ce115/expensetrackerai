@@ -2167,7 +2167,7 @@ async function _webAuthnRegister(email) {
       authenticatorSelection: {
         authenticatorAttachment: "platform",
         userVerification: "required",
-        residentKey: "discouraged",
+        residentKey: "preferred",
       },
       timeout: 60000,
       attestation: "none",
