@@ -140,7 +140,8 @@ const TXN_PREVIEW_LIMITS = {
 const AI_MODEL = "claude-sonnet-4-20250514";
 let _aiCatTimers = {};
 let _aiCatGeneration = {}; // generation counter per type — stale responses are ignored
-let _aiCatDismissed = {}; // track if user dismissed badge for current input
+let _aiCatDismissed = {}; // exact description text dismissed by the user
+let _aiCatState = {};
 let _askBlHistory = [];
 let _askBlBusy = false;
 
@@ -212,6 +213,24 @@ const _AI_KEYWORD_MAP = {
     "maggi",
     "rice",
     "dal",
+    "apple",
+    "banana",
+    "orange",
+    "mango",
+    "grapes",
+    "fruit",
+    "vegetable",
+    "tomato",
+    "potato",
+    "onion",
+    "egg",
+    "eggs",
+    "chicken",
+    "paneer",
+    "biscuit",
+    "biscuits",
+    "chips",
+    "chocolate",
   ],
   // Transport
   Transport: [
@@ -430,13 +449,33 @@ const _AI_KEYWORD_MAP = {
   ],
 };
 
-function _localKeywordGuess(desc) {
+function _getAiCategories(type) {
+  return type === "income"
+    ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+    : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+}
+
+function _getAiCatState(type) {
+  if (!_aiCatState[type]) {
+    _aiCatState[type] = {
+      suggestedCategory: "",
+      suggestedDesc: "",
+      acceptedCategory: "",
+      acceptedDesc: "",
+    };
+  }
+  return _aiCatState[type];
+}
+
+function _localKeywordGuess(type, desc) {
   const lower = desc.toLowerCase();
+  const allowed = new Set(_getAiCategories(type));
   const scores = {};
   for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
+    if (!allowed.has(cat)) continue;
     for (const kw of keywords) {
       if (lower.includes(kw)) {
-        scores[cat] = (scores[cat] || 0) + kw.length; // longer matches score higher
+        scores[cat] = (scores[cat] || 0) + kw.length;
       }
     }
   }
@@ -6866,3 +6905,186 @@ populateCategorySelects();
 setChartPeriod(chartPeriod);
 refreshAll();
 syncFabVisibility();
+
+function _clearAiSuggestion(type) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const state = _getAiCatState(type);
+  state.suggestedCategory = "";
+  state.suggestedDesc = "";
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
+
+function aiAutoCategory(type, value) {
+  clearTimeout(_aiCatTimers[type]);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (!badgeEl) return;
+
+  const trimmed = value ? value.trim() : "";
+  const state = _getAiCatState(type);
+
+  if (state.acceptedDesc !== trimmed) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (!trimmed || trimmed.length < 3) {
+    _aiCatDismissed[type] = "";
+    _clearAiSuggestion(type);
+    return;
+  }
+
+  if (_aiCatDismissed[type] === trimmed) return;
+
+  _clearAiSuggestion(type);
+
+  const localGuess = _localKeywordGuess(type, trimmed);
+  if (localGuess) {
+    _showAiBadge(type, localGuess, trimmed, false);
+  }
+
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  const myGen = _aiCatGeneration[type];
+
+  _aiCatTimers[type] = setTimeout(async () => {
+    if (_aiCatGeneration[type] !== myGen) return;
+    await _runAiCat(type, trimmed, myGen);
+  }, 700);
+}
+
+async function _runAiCat(type, desc, generation) {
+  const cats = _getAiCategories(type);
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+
+  try {
+    const system = `You are a financial transaction categorizer for an Indian personal finance app.
+Given a transaction description, return ONLY the single best matching category name from the list.
+Do not explain. Do not add punctuation. Return only the category name exactly as given.
+Categories: ${cats.join(", ")}`;
+    const result = await _callAI([{ role: "user", content: desc }], system, 20);
+
+    if (_aiCatGeneration[type] !== generation) return;
+
+    const suggested = result.trim();
+    const match =
+      cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
+      cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+
+    if (!match) {
+      const localGuess = _localKeywordGuess(type, desc);
+      if (!localGuess) _clearAiSuggestion(type);
+      return;
+    }
+
+    _showAiBadge(type, match, desc, true);
+  } catch (e) {
+    if (_aiCatGeneration[type] !== generation) return;
+    const localGuess = _localKeywordGuess(type, desc);
+    if (!localGuess) _clearAiSuggestion(type);
+    console.warn("AI categorization failed", e);
+  }
+}
+
+function _showAiBadge(type, match, desc, isFinal) {
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  const selectEl = document.getElementById(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+  const state = _getAiCatState(type);
+
+  if (_aiCatDismissed[type] === desc) return;
+
+  state.suggestedCategory = match;
+  state.suggestedDesc = desc;
+
+  const isApplied =
+    state.acceptedCategory === match && state.acceptedDesc === desc;
+  badgeEl.dataset.lastDesc = desc;
+  badgeEl.dataset.suggestedMatch = match;
+
+  const confidenceIcon = isFinal
+    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
+    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess while AI confirms"></i>`;
+
+  const helperText = isApplied
+    ? "Applied to the category field."
+    : isFinal
+      ? "Review it, then tap Use if it looks right."
+      : "Quick guess while AI confirms the category.";
+
+  badgeEl.style.display = "flex";
+  badgeEl.innerHTML = `
+    <div class="ai-cat-copy">
+      <div class="ai-cat-title-row">
+        ${confidenceIcon}
+        <span class="ai-cat-title">Suggested category</span>
+      </div>
+      <div class="ai-cat-main">
+        <strong>${match}</strong>
+        ${!isFinal ? "<span class='ai-cat-pending'>AI is confirming...</span>" : ""}
+      </div>
+      <div class="ai-cat-help">${helperText}</div>
+    </div>
+    <div class="ai-cat-actions">
+      ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Use</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
+      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+    </div>
+  `;
+}
+
+function aiApplyCategory(type, category) {
+  const selectEl = document.getElementById(`${type}Category`);
+  const descEl = document.getElementById(`${type}Desc`);
+  const state = _getAiCatState(type);
+  if (selectEl) selectEl.value = category;
+  state.acceptedCategory = category;
+  state.acceptedDesc = descEl?.value.trim() || "";
+  _showAiBadge(type, category, state.acceptedDesc, true);
+}
+
+function aiDismissBadge(type) {
+  const descEl = document.getElementById(`${type}Desc`);
+  _aiCatDismissed[type] = descEl?.value.trim() || "";
+  _clearAiSuggestion(type);
+}
+
+function aiCategorySelectionChanged(type) {
+  const descEl = document.getElementById(`${type}Desc`);
+  const selectEl = document.getElementById(`${type}Category`);
+  const state = _getAiCatState(type);
+  const desc = descEl?.value.trim() || "";
+
+  if (
+    state.acceptedCategory &&
+    selectEl &&
+    selectEl.value !== state.acceptedCategory
+  ) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (desc) _aiCatDismissed[type] = desc;
+  _clearAiSuggestion(type);
+}
+
+function resetAiCatBadge(type) {
+  clearTimeout(_aiCatTimers[type]);
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  _aiCatDismissed[type] = "";
+  _aiCatState[type] = {
+    suggestedCategory: "",
+    suggestedDesc: "",
+    acceptedCategory: "",
+    acceptedDesc: "",
+  };
+  const badgeEl = document.getElementById(`${type}AiBadge`);
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
