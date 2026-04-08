@@ -231,6 +231,33 @@ const _AI_KEYWORD_MAP = {
     "biscuits",
     "chips",
     "chocolate",
+    "dosa",
+    "masala dosa",
+    "idli",
+    "vada",
+    "sambar",
+    "uttapam",
+    "poha",
+    "upma",
+    "paratha",
+    "roti",
+    "naan",
+    "sabzi",
+    "thali",
+    "sandwich",
+    "shawarma",
+    "wrap",
+    "roll",
+    "momo",
+    "momos",
+    "noodles",
+    "pasta",
+    "ice cream",
+    "kulfi",
+    "mithai",
+    "sweet",
+    "sweets",
+    "lassi",
   ],
   // Transport
   Transport: [
@@ -300,6 +327,17 @@ const _AI_KEYWORD_MAP = {
     "appliance",
     "furniture",
     "decor",
+    "gift",
+    "toys",
+    "toy",
+    "perfume",
+    "soap",
+    "shampoo",
+    "detergent",
+    "bucket",
+    "bottle",
+    "utensils",
+    "kitchen",
   ],
   // Entertainment
   Entertainment: [
@@ -361,6 +399,21 @@ const _AI_KEYWORD_MAP = {
     "therapy",
     "insurance",
     "mediclaim",
+    "condom",
+    "condoms",
+    "sanitary pad",
+    "sanitary pads",
+    "pad",
+    "pads",
+    "tampon",
+    "pregnancy test",
+    "mask",
+    "masks",
+    "first aid",
+    "bandage",
+    "painkiller",
+    "medical",
+    "wellwoman",
   ],
   // Education
   Education: [
@@ -433,6 +486,9 @@ const _AI_KEYWORD_MAP = {
     "office",
     "paycheck",
     "remuneration",
+    "payslip",
+    "salary credit",
+    "monthly salary",
   ],
   // Freelance
   Freelance: [
@@ -450,6 +506,9 @@ const _AI_KEYWORD_MAP = {
     "writing",
     "gig",
     "work from home",
+    "payment received",
+    "milestone",
+    "retainer",
   ],
 };
 
@@ -471,28 +530,94 @@ function _getAiCatState(type) {
   return _aiCatState[type];
 }
 
+function _addAiScore(scores, strongest, cat, score) {
+  if (!cat || !score) return;
+  scores[cat] = (scores[cat] || 0) + score;
+  strongest[cat] = Math.max(strongest[cat] || 0, score);
+}
+
+function _tokenizeAiText(text) {
+  return [
+    ...new Set(
+      (text.toLowerCase().match(/[a-z0-9]+/g) || []).filter(
+        (token) =>
+          token.length >= 3 &&
+          ![
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "this",
+            "that",
+            "your",
+          ].includes(token),
+      ),
+    ),
+  ];
+}
+
 function _localKeywordGuess(type, desc) {
   const lower = desc.toLowerCase();
   const allowed = new Set(_getAiCategories(type));
+  const descTokens = _tokenizeAiText(desc);
   const scores = {};
   const strongest = {};
+
   for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
     if (!allowed.has(cat)) continue;
     for (const kw of keywords) {
       if (lower.includes(kw)) {
         const phraseBonus = kw.includes(" ") ? 8 : 0;
         const score = kw.length + phraseBonus;
-        scores[cat] = (scores[cat] || 0) + score;
-        strongest[cat] = Math.max(strongest[cat] || 0, score);
+        _addAiScore(scores, strongest, cat, score);
       }
     }
   }
+
+  for (const cat of allowed) {
+    const catLower = cat.toLowerCase();
+    if (lower.includes(catLower)) {
+      _addAiScore(scores, strongest, cat, catLower.length + 6);
+    }
+
+    const catTokens = _tokenizeAiText(cat);
+    const overlap = catTokens.filter((token) =>
+      descTokens.includes(token),
+    ).length;
+    if (overlap) {
+      _addAiScore(scores, strongest, cat, overlap * 5);
+    }
+  }
+
+  for (const txn of (transactions || []).slice(0, 300)) {
+    if (txn.type !== type || !allowed.has(txn.category)) continue;
+    const txnDesc = (txn.description || "").trim();
+    if (!txnDesc) continue;
+
+    const txnLower = txnDesc.toLowerCase();
+    const txnTokens = _tokenizeAiText(txnDesc);
+    const overlap = txnTokens.filter((token) =>
+      descTokens.includes(token),
+    ).length;
+
+    if (lower === txnLower) {
+      _addAiScore(scores, strongest, txn.category, 40);
+      continue;
+    }
+    if (lower.includes(txnLower) || txnLower.includes(lower)) {
+      _addAiScore(scores, strongest, txn.category, 20);
+    }
+    if (overlap > 0) {
+      _addAiScore(scores, strongest, txn.category, overlap * 7);
+    }
+  }
+
   if (!Object.keys(scores).length) return null;
-  return Object.entries(scores)
-    .sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
-    })[0][0];
+  return Object.entries(scores).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
+  })[0][0];
 }
 
 /* ──────────────────────────────────────────────
