@@ -58,7 +58,7 @@ let customCategories = [];
 let categoryBudgets = {};
 let recurringTemplates = [];
 
-let currentPeriod = "monthly";
+let currentPeriod = "monthly"; // always monthly
 let chartPeriod = "monthly";
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
@@ -2785,10 +2785,7 @@ async function registerBiometricNow() {
 
     // Guard: if password is unavailable, abort — storing an empty vault breaks auth
     if (!password) {
-      notify(
-        "Please log in first, then enable biometrics from Settings.",
-        "error",
-      );
+      notify("Please log in first, then enable biometrics from Settings.", "error");
       document.getElementById("biometricSetupModal").style.display = "none";
       return;
     }
@@ -4793,6 +4790,8 @@ function togglePeriodMenu() {
   document.getElementById("periodMenu").classList.toggle("open");
 }
 function setPeriod(p) {
+  // Only monthly and picked are supported; daily/weekly are disabled
+  if (p === "daily" || p === "weekly") return;
   currentPeriod = p;
   pickedMonth = null;
   txnExpanded = false;
@@ -5925,11 +5924,14 @@ function setGlassOpacity(val) {
     shadow.toFixed(2),
   );
   localStorage.setItem("bl_glass_opacity", val);
-  const slider = document.getElementById("glassSlider");
-  if (slider) {
-    if (slider.value !== String(val)) slider.value = val;
-    slider.style.setProperty("--val", v + "%");
-  }
+  // Update both sliders (desktop + mobile) so the blue fill line tracks the thumb
+  ["glassSlider", "bnGlassSlider"].forEach((id) => {
+    const slider = document.getElementById(id);
+    if (slider) {
+      if (slider.value !== String(val)) slider.value = val;
+      slider.style.setProperty("--val", v + "%");
+    }
+  });
 }
 
 function loadGlassOpacity() {
@@ -5949,13 +5951,15 @@ function toggleSettingsMenu() {
   menu.classList.toggle("open");
 
   if (!isOpen) {
-    // Sync slider value
+    // Sync both sliders on open
     const saved = localStorage.getItem("bl_glass_opacity") || "50";
-    const slider = document.getElementById("glassSlider");
-    if (slider) {
-      slider.value = saved;
-      slider.style.setProperty("--val", saved + "%");
-    }
+    ["glassSlider", "bnGlassSlider"].forEach((id) => {
+      const slider = document.getElementById(id);
+      if (slider) {
+        slider.value = saved;
+        slider.style.setProperty("--val", saved + "%");
+      }
+    });
 
     // Update sync status row
     const dot = document.getElementById("settingsSyncDot");
