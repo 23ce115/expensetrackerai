@@ -26,7 +26,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style (27).css" />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -259,7 +259,7 @@
 
     <!-- ═══════════════ BIOMETRIC SETUP MODAL ═══════════════ -->
     <div id="biometricSetupModal" class="modal" style="display:none">
-      <div class="modal-content" style="width:380px">
+      <div class="modal-content biometric-setup-content" style="width:380px">
         <div class="modal-header">
           <h2 class="modal-title" id="bioModalTitle">
             <i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login
@@ -274,9 +274,9 @@
             Your password is still required on new devices.
           </p>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="document.getElementById('biometricSetupModal').style.display='none'">Skip</button>
-          <button class="btn btn-primary" id="bioModalEnableBtn" onclick="registerBiometricNow()">
+        <div class="modal-footer biometric-setup-footer">
+          <button class="btn btn-secondary biometric-setup-btn biometric-setup-btn--skip" onclick="document.getElementById('biometricSetupModal').style.display='none'">Skip</button>
+          <button class="btn btn-primary biometric-setup-btn biometric-setup-btn--enable" id="bioModalEnableBtn" onclick="registerBiometricNow()">
             <i class="fas fa-fingerprint"></i> Enable
           </button>
         </div>
@@ -2286,6 +2286,6 @@
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
 
-    <script src="script.js" defer></script>
+    <script src="script (31).js" defer></script>
   </body>
 </html>
