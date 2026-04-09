@@ -453,6 +453,10 @@
               <i class="fas fa-shield-alt"></i> Privacy Policy
             </div>
             <div class="settings-menu-divider"></div>
+            <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();doSignOut()">
+              <i class="fas fa-sign-out-alt"></i> Log Out
+            </div>
+            <div class="settings-menu-divider"></div>
             <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();openResetModal()">
               <i class="fas fa-trash-alt"></i> Reset App
             </div>
@@ -1014,6 +1018,9 @@
       </div>
       <div class="bn-settings-row" onclick="closeBnSettings();openPrivacyModal()">
         <i class="fas fa-shield-alt"></i> Privacy Policy
+      </div>
+      <div class="bn-settings-row bn-settings-danger" onclick="closeBnSettings();doSignOut()">
+        <i class="fas fa-sign-out-alt"></i> Log Out
       </div>
       <div class="bn-settings-row bn-settings-danger" onclick="closeBnSettings();openResetModal()">
         <i class="fas fa-trash-alt"></i> Reset App
