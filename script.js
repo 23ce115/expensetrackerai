@@ -4993,7 +4993,10 @@ function getBounds(period) {
 function getAnalyticsTransactions() {
   if (!cards.length) return [...transactions];
   syncActiveToCards();
-  return cards.flatMap((card) => card?.transactions || []);
+  return cards.reduce((all, card) => {
+    const txns = Array.isArray(card?.transactions) ? card.transactions : [];
+    return all.concat(txns);
+  }, []);
 }
 
 function getTxns(period, sourceTxns = transactions) {
@@ -5175,8 +5178,8 @@ function setChartPeriod(p) {
   renderChart(p);
 }
 
-function renderChart(period) {
-  const data = getChartData(period);
+function renderChart(period, sourceTxns = getAnalyticsTransactions()) {
+  const data = getChartData(period, sourceTxns);
   const container = document.getElementById("chartContainer");
   const labelsDiv = document.getElementById("chartLabels");
   const hasData = data.some((d) => d.income > 0 || d.expense > 0);
@@ -5203,8 +5206,8 @@ function renderChart(period) {
    ALL EXPENSES PANEL
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function renderAllExpenses(period) {
-  const analyticsTxns = getAnalyticsTransactions();
+function renderAllExpenses(period, sourceTxns = getAnalyticsTransactions()) {
+  const analyticsTxns = sourceTxns;
   const { start, end } = getBounds(period);
   document.getElementById("expBadge").textContent =
     `(${period.charAt(0).toUpperCase() + period.slice(1)})`;
@@ -5330,8 +5333,8 @@ function renderChange(elId, cur, prev, label, isGood) {
     "change " + (up ? (isGood ? "up" : "down") : isGood ? "down" : "up");
 }
 
-function renderDashboard(period) {
-  const analyticsTxns = getAnalyticsTransactions();
+function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
+  const analyticsTxns = sourceTxns;
   const txns = getTxns(period, analyticsTxns);
   const inc = sumInc(txns),
     exp = sumExp(txns.filter((t) => t.type === "expense")),
@@ -5530,10 +5533,10 @@ function onSearchInput(val) {
    EXPENSE ANALYSER — INSIGHTS ENGINE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function renderInsights() {
+function renderInsights(sourceTxns = getAnalyticsTransactions()) {
   const section = document.getElementById("insightsSection");
   if (!section) return;
-  const analyticsTxns = getAnalyticsTransactions();
+  const analyticsTxns = sourceTxns;
   const spendingTxns = getSpendingExpenses(analyticsTxns);
   const allExp = spendingTxns;
   if (allExp.length < 3) {
@@ -5768,11 +5771,12 @@ function renderInsights() {
 }
 
 function refreshAll() {
-  renderDashboard(currentPeriod);
-  renderChart(chartPeriod);
-  renderAllExpenses(currentPeriod);
+  const analyticsTxns = getAnalyticsTransactions();
+  renderDashboard(currentPeriod, analyticsTxns);
+  renderChart(chartPeriod, analyticsTxns);
+  renderAllExpenses(currentPeriod, analyticsTxns);
   renderTxns(currentPeriod);
-  renderInsights();
+  renderInsights(analyticsTxns);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
