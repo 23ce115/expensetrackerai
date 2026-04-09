@@ -4990,9 +4990,15 @@ function getBounds(period) {
   };
 }
 
-function getTxns(period) {
+function getAnalyticsTransactions() {
+  if (!cards.length) return [...transactions];
+  syncActiveToCards();
+  return cards.flatMap((card) => card?.transactions || []);
+}
+
+function getTxns(period, sourceTxns = transactions) {
   const { start, end } = getBounds(period);
-  return transactions.filter((t) => {
+  return sourceTxns.filter((t) => {
     const d = toDay(new Date(t.date + "T00:00:00"));
     return d >= start && d <= end;
   });
@@ -5089,7 +5095,7 @@ function populateCategorySelects() {
    CHART
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function getChartData(period) {
+function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
   const now = new Date();
   if (period === "daily") {
     return Array.from({ length: 7 }, (_, i) => {
@@ -5099,7 +5105,7 @@ function getChartData(period) {
         now.getDate() - (6 - i),
       );
       const ds = localDateStr(d);
-      const tx = transactions.filter((t) => t.date === ds);
+      const tx = sourceTxns.filter((t) => t.date === ds);
       return {
         label: d.toLocaleDateString("en-US", { weekday: "short" }),
         income: sumInc(tx),
@@ -5123,7 +5129,7 @@ function getChartData(period) {
         thisMonday.getDate() - (7 - i) * 7,
       );
       const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 6);
-      const tx = transactions.filter((t) => {
+      const tx = sourceTxns.filter((t) => {
         const d = toDay(new Date(t.date + "T00:00:00"));
         return d >= ws && d <= we;
       });
@@ -5151,7 +5157,7 @@ function getChartData(period) {
     "Nov",
     "Dec",
   ].map((lb, mi) => {
-    const tx = transactions.filter((t) => {
+    const tx = sourceTxns.filter((t) => {
       const d = new Date(t.date + "T00:00:00");
       return d.getFullYear() === yr && d.getMonth() === mi;
     });
@@ -5198,10 +5204,11 @@ function renderChart(period) {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function renderAllExpenses(period) {
+  const analyticsTxns = getAnalyticsTransactions();
   const { start, end } = getBounds(period);
   document.getElementById("expBadge").textContent =
     `(${period.charAt(0).toUpperCase() + period.slice(1)})`;
-  const exp = transactions.filter((t) => {
+  const exp = analyticsTxns.filter((t) => {
     if (t.type !== "expense") return false;
     const d = toDay(new Date(t.date + "T00:00:00"));
     return d >= start && d <= end;
@@ -5220,7 +5227,11 @@ function renderAllExpenses(period) {
     const el = document.getElementById("pv" + p);
     if (el)
       el.textContent = fmt(
-        sumExp(getTxns(p.toLowerCase()).filter((t) => t.type === "expense")),
+        sumExp(
+          getTxns(p.toLowerCase(), analyticsTxns).filter(
+            (t) => t.type === "expense",
+          ),
+        ),
       );
   });
 
@@ -5269,7 +5280,7 @@ function renderAllExpenses(period) {
    DASHBOARD CARDS
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function prevPeriodSum(period, type) {
+function prevPeriodSum(period, type, sourceTxns = transactions) {
   const now = new Date();
   let s, e;
   if (period === "daily") {
@@ -5290,7 +5301,7 @@ function prevPeriodSum(period, type) {
     s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     e = new Date(now.getFullYear(), now.getMonth(), 0);
   }
-  const tx = transactions.filter((t) => {
+  const tx = sourceTxns.filter((t) => {
     const d = toDay(new Date(t.date + "T00:00:00"));
     return d >= s && d <= e;
   });
@@ -5320,7 +5331,8 @@ function renderChange(elId, cur, prev, label, isGood) {
 }
 
 function renderDashboard(period) {
-  const txns = getTxns(period);
+  const analyticsTxns = getAnalyticsTransactions();
+  const txns = getTxns(period, analyticsTxns);
   const inc = sumInc(txns),
     exp = sumExp(txns.filter((t) => t.type === "expense")),
     net = inc - exp;
@@ -5338,8 +5350,8 @@ function renderDashboard(period) {
     weekly: "vs Last Week",
     monthly: "vs Last Month",
   }[period];
-  const pInc = prevPeriodSum(period, "income"),
-    pExp = prevPeriodSum(period, "expense");
+  const pInc = prevPeriodSum(period, "income", analyticsTxns),
+    pExp = prevPeriodSum(period, "expense", analyticsTxns);
   renderChange("dashIncomeChange", inc, pInc, compLabel, true);
   renderChange("dashExpenseChange", exp, pExp, compLabel, false);
   renderChange("dashNetChange", net, pInc - pExp, compLabel, true);
@@ -5521,7 +5533,8 @@ function onSearchInput(val) {
 function renderInsights() {
   const section = document.getElementById("insightsSection");
   if (!section) return;
-  const spendingTxns = getSpendingExpenses(transactions);
+  const analyticsTxns = getAnalyticsTransactions();
+  const spendingTxns = getSpendingExpenses(analyticsTxns);
   const allExp = spendingTxns;
   if (allExp.length < 3) {
     section.style.display = "none";
@@ -5611,7 +5624,7 @@ function renderInsights() {
 
   // Savings rate
   const monthInc = sumInc(
-    transactions.filter((t) => {
+    analyticsTxns.filter((t) => {
       const d = new Date(t.date + "T00:00:00");
       return (
         t.type === "income" &&
@@ -6726,7 +6739,7 @@ function closeModal(id) {
   if (id === "incomeModal") resetVoiceUi("income");
   if (id === "expenseModal") resetVoiceUi("expense");
   document.getElementById(id).style.display = "none";
-  document.body.style.overflow = "auto";
+  document.body.style.overflow = "";
   syncFabVisibility();
   // If closing card setup while adding a new card, reset the flag
   if (id === "cardSetupModal" && addingNewCard) {
