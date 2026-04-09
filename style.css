@@ -19,6 +19,11 @@
   --glass-saturate: 180%;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family:
     system-ui,
@@ -31,6 +36,10 @@ body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 body::before {
@@ -202,6 +211,7 @@ body::before {
   padding: 0 2rem;
   position: relative;
   z-index: 998;
+  flex-shrink: 0;
 }
 
 .card-switcher {
@@ -319,10 +329,15 @@ body::before {
 .main-content {
   padding: 1.75rem 2rem;
   padding-bottom: 100px;
+  width: 100%;
   max-width: 1500px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 /* ✦ 4-column grid: income / expense / net / my-card */
