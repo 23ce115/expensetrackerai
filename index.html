@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0f172a" />
     <meta
       name="description"
-      content="BlueLedger — encrypted personal finance dashboard"
+      content="BlueLedger â€” encrypted personal finance dashboard"
     />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
@@ -26,7 +26,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style (27).css" />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -34,7 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body class="modal-open">
-    <!-- ═══════════════ LOCK SCREEN ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOCK SCREEN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="lockScreen" class="lock-screen" style="display: none">
       <div class="lock-card">
         <div class="lock-logo"><img src="logo2.svg" alt="BlueLedger" /></div>
@@ -99,7 +99,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• AUTH SCREEN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="authScreen" class="auth-screen" style="display: none">
       <div class="auth-card">
         <div class="auth-logo">
@@ -120,12 +120,12 @@
 
         <div style="margin-top:1.5rem;font-size:.72rem;color:#475569;text-align:center">
           <i class="fas fa-shield-alt" style="color:#10b981;margin-right:.3rem"></i>
-          AES-256 encrypted · Zero tracking · Your data stays yours
+          AES-256 encrypted Â· Zero tracking Â· Your data stays yours
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════ LOGIN POPUP ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOGIN POPUP â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="loginPopupOverlay" class="auth-popup-overlay" onclick="if(event.target===this)closeAuthPopup('login')">
       <div class="auth-popup">
         <div class="auth-popup-header">
@@ -167,7 +167,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ SIGNUP POPUP ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SIGNUP POPUP â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="signupPopupOverlay" class="auth-popup-overlay" onclick="if(event.target===this)closeAuthPopup('signup')">
       <div class="auth-popup">
         <div class="auth-popup-header">
@@ -206,7 +206,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ CARD SETUP MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD SETUP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="cardSetupModal" class="modal" style="display:none">
       <div class="modal-content" style="width:460px">
         <div class="modal-header">
@@ -242,10 +242,10 @@
             <input type="text" class="form-input" id="cs-card4"
               inputmode="numeric" maxlength="4" placeholder="e.g. 4567"
               pattern="[0-9]{4}" />
-            <div class="form-hint"><i class="fas fa-shield-alt"></i> Only last 4 digits — your full number is never stored</div>
+            <div class="form-hint"><i class="fas fa-shield-alt"></i> Only last 4 digits â€” your full number is never stored</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Monthly Spending Limit (₹)</label>
+            <label class="form-label">Monthly Spending Limit (â‚¹)</label>
             <input type="number" class="form-input" id="cs-limit" placeholder="e.g. 30000" min="1" />
           </div>
         </div>
@@ -257,7 +257,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ BIOMETRIC SETUP MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BIOMETRIC SETUP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="biometricSetupModal" class="modal" style="display:none">
       <div class="modal-content biometric-setup-content" style="width:380px">
         <div class="modal-header">
@@ -283,7 +283,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ MIGRATION MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MIGRATION MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="migrationModal" class="modal" style="display:none">
       <div class="modal-content" style="width:460px">
         <div class="modal-header">
@@ -298,7 +298,7 @@
               <i class="fas fa-info-circle"></i> What's changing
             </div>
             <div style="font-size:.78rem;color:#cbd5e1;line-height:1.7">
-              BlueLedger now uses <strong>email &amp; password</strong> for login — enabling secure cross-device sync and easier recovery.<br>
+              BlueLedger now uses <strong>email &amp; password</strong> for login â€” enabling secure cross-device sync and easier recovery.<br>
               Enter your current PIN below to access your data, then create a free account.
             </div>
           </div>
@@ -318,14 +318,14 @@
       </div>
     </div>
 
-    <!-- ═══════════════ ONBOARDING (hidden, kept for compat) ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ONBOARDING (hidden, kept for compat) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="onboardingModal" class="modal" style="display: none">
       <div class="modal-content onboarding-content" style="display:none"></div>
     </div>
 
 </div>
 
-    <!-- ═══════════════ HEADER ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HEADER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="header">
       <div class="logo-container">
         <img src="BlueLedger Icon.png" alt="BlueLedger" class="header-icon" />
@@ -340,7 +340,7 @@
             class="fas fa-calendar"
             style="color: #6b7280; font-size: 0.8rem"
           ></i>
-          <span id="headerDate">—</span>
+          <span id="headerDate">â€”</span>
         </div>
         <button class="report-btn desktop-only" onclick="openMonthlySummary()">
           <i class="fas fa-chart-pie"></i> Report
@@ -375,7 +375,7 @@
           <i class="fas fa-moon" id="themeIcon"></i>
         </button> -->
 
-        <!-- Settings gear — desktop only -->
+        <!-- Settings gear â€” desktop only -->
         <div class="settings-dropdown" id="settingsDropdown">
           <button
             class="settings-btn"
@@ -419,7 +419,7 @@
               <i class="fas fa-droplet"></i> Glass Transparency
               <i class="fas fa-chevron-down" id="glassChevron" style="font-size:.65rem;margin-left:auto;transition:transform .2s"></i>
             </div>
-            <!-- Slider — hidden by default -->
+            <!-- Slider â€” hidden by default -->
             <div id="glassSliderPanel" style="display:none;padding:.25rem .75rem .6rem">
               <div class="glass-slider-wrap">
                 <i class="fas fa-circle" style="font-size:.5rem;color:#64748b"></i>
@@ -429,7 +429,7 @@
               </div>
             </div>
 
-            <!-- Recent Transactions → opens full transactions page -->
+            <!-- Recent Transactions â†’ opens full transactions page -->
             <div class="settings-menu-item" onclick="closeSettingsMenu();openTxnFullPage()">
               <i class="fas fa-list-ul"></i> Recent Transactions
               <i class="fas fa-arrow-up-right-from-square" style="font-size:.6rem;margin-left:auto;color:#64748b"></i>
@@ -458,19 +458,19 @@
             </div>
             <div class="settings-menu-divider"></div>
             <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();openResetModal()">
-              <i class="fas fa-trash-alt"></i> Reset App
+              <i class="fas fa-user-slash"></i> Sign Out &amp; Delete Data
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════ CARD SWITCHER ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD SWITCHER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="card-switcher-bar">
       <div id="cardSwitcher" class="card-switcher"></div>
     </div>
 
-    <!-- ═══════════════ MAIN ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="main-content">
       <div class="dashboard-grid">
         <!-- Income Card -->
@@ -496,7 +496,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount income-amount" id="dashIncome">₹0.00</div>
+          <div class="amount income-amount" id="dashIncome">â‚¹0.00</div>
           <div class="change" id="dashIncomeChange">
             <i class="fas fa-minus"></i>&nbsp;No transactions yet
           </div>
@@ -525,7 +525,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount expense-amount" id="dashExpense">₹0.00</div>
+          <div class="amount expense-amount" id="dashExpense">â‚¹0.00</div>
           <div class="change" id="dashExpenseChange">
             <i class="fas fa-minus"></i>&nbsp;No transactions yet
           </div>
@@ -554,7 +554,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount net-positive" id="dashNet">₹0.00</div>
+          <div class="amount net-positive" id="dashNet">â‚¹0.00</div>
           <div
             style="font-size: 0.72rem; color: #64748b; margin-bottom: 0.25rem"
             id="dashNetSign"
@@ -583,7 +583,7 @@
           </div>
           <div class="card-chip"></div>
           <div class="card-number" id="cardNumberDisplay">
-            •••• •••• •••• ••••
+            â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢
           </div>
           <div class="card-holder-name" id="cardHolderDisplay">YOUR NAME</div>
           <button class="my-card-dots" onclick="openCardOptionsMenu(event)">
@@ -591,8 +591,8 @@
           </button>
           <div class="spending-section">
             <div class="spending-label">Spending Limit</div>
-            <div class="spending-limit-val" id="spendLimitVal">₹0</div>
-            <div class="spending-used-val" id="spendUsedVal">Used: ₹0</div>
+            <div class="spending-limit-val" id="spendLimitVal">â‚¹0</div>
+            <div class="spending-used-val" id="spendUsedVal">Used: â‚¹0</div>
             <div class="progress-bar">
               <div class="progress-fill" id="progressFill"></div>
             </div>
@@ -649,19 +649,19 @@
           >
             Breakdown by category
           </div>
-          <div class="total-expenses" id="allExpTotal">₹0</div>
+          <div class="total-expenses" id="allExpTotal">â‚¹0</div>
           <div class="period-values-row">
             <div class="period-val-item">
               <div class="pv-label">Daily</div>
-              <div class="pv-value" id="pvDaily">₹0</div>
+              <div class="pv-value" id="pvDaily">â‚¹0</div>
             </div>
             <div class="period-val-item">
               <div class="pv-label">Weekly</div>
-              <div class="pv-value" id="pvWeekly">₹0</div>
+              <div class="pv-value" id="pvWeekly">â‚¹0</div>
             </div>
             <div class="period-val-item">
               <div class="pv-label">Monthly</div>
-              <div class="pv-value" id="pvMonthly">₹0</div>
+              <div class="pv-value" id="pvMonthly">â‚¹0</div>
             </div>
           </div>
           <div class="color-bar"></div>
@@ -704,7 +704,7 @@
               type="text"
               class="search-input"
               id="txnSearch"
-              placeholder="Search by description or category…"
+              placeholder="Search by description or categoryâ€¦"
               oninput="onSearchInput(this.value)"
             />
           </div>
@@ -729,7 +729,7 @@
         <div class="txn-list-footer" id="txnListFooter"></div>
       </div>
 
-      <!-- ═══════════════ INSIGHTS ═══════════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INSIGHTS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
       <div
         class="card insights-card"
         id="insightsSection"
@@ -750,7 +750,7 @@
             <span class="insights-badge" id="insightsBadge">This month</span>
           </div>
         </div>
-        <!-- AI Advice panel — hidden until triggered -->
+        <!-- AI Advice panel â€” hidden until triggered -->
         <div id="aiInsightsPanel" class="ai-insights-panel" style="display:none"></div>
         <div id="anomalyAlerts"></div>
         <div class="insights-grid" id="insightsGrid"></div>
@@ -772,7 +772,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ 5-TAB BOTTOM NAV (mobile) ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• 5-TAB BOTTOM NAV (mobile) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <nav class="bottom-nav" id="bottomNav" style="display: none">
       <button
         class="bn-tab bn-tab--active"
@@ -821,7 +821,7 @@
         >
           <div class="bn-ring-icon"><i class="fas fa-arrow-down"></i></div>
           <div class="bn-ring-label">Income</div>
-          <div class="bn-ring-sub">Salary, gifts…</div>
+          <div class="bn-ring-sub">Salary, giftsâ€¦</div>
         </button>
         <button
           class="bn-ring-card bn-ring-expense"
@@ -829,7 +829,7 @@
         >
           <div class="bn-ring-icon"><i class="fas fa-arrow-up"></i></div>
           <div class="bn-ring-label">Expense</div>
-          <div class="bn-ring-sub">Food, bills…</div>
+          <div class="bn-ring-sub">Food, billsâ€¦</div>
         </button>
       </div>
     </div>
@@ -1023,11 +1023,11 @@
         <i class="fas fa-sign-out-alt"></i> Log Out
       </div>
       <div class="bn-settings-row bn-settings-danger" onclick="closeBnSettings();openResetModal()">
-        <i class="fas fa-trash-alt"></i> Reset App
+        <i class="fas fa-user-slash"></i> Sign Out &amp; Delete Data
       </div>
     </div>
 
-    <!-- ═══════════════ MONTH PICKER MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MONTH PICKER MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="monthPickerModal" class="modal">
       <div class="modal-content" style="width: 400px">
         <div class="modal-header">
@@ -1106,7 +1106,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ INCOME MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INCOME MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="incomeModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -1138,7 +1138,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (₹)</label>
+              <label class="form-label">Amount (â‚¹)</label>
               <input
                 type="number"
                 class="form-input"
@@ -1212,7 +1212,7 @@
             <textarea
               class="form-input"
               id="incomeNotes"
-              placeholder="e.g. Splitting with Raj, bonus from Q3…"
+              placeholder="e.g. Splitting with Raj, bonus from Q3â€¦"
               rows="2"
               style="resize: vertical; min-height: 52px"
             ></textarea>
@@ -1248,7 +1248,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ EXPENSE MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXPENSE MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="expenseModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -1280,7 +1280,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (₹)</label>
+              <label class="form-label">Amount (â‚¹)</label>
               <input
                 type="number"
                 class="form-input"
@@ -1354,7 +1354,7 @@
             <textarea
               class="form-input"
               id="expenseNotes"
-              placeholder="e.g. Splitting with Raj, receipt #2847…"
+              placeholder="e.g. Splitting with Raj, receipt #2847â€¦"
               rows="2"
               style="resize: vertical; min-height: 52px"
             ></textarea>
@@ -1393,7 +1393,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ EDIT MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EDIT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="editModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -1409,7 +1409,7 @@
           />
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (₹)</label>
+              <label class="form-label">Amount (â‚¹)</label>
               <input type="number" class="form-input" id="editAmount" min="1" />
             </div>
             <div class="form-group">
@@ -1446,7 +1446,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ SORT MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SORT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="sortModal" class="modal">
       <div class="modal-content" style="width: 320px">
         <div class="modal-header">
@@ -1493,7 +1493,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ FILTER MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FILTER MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="filterModal" class="modal">
       <div class="modal-content" style="width: 340px">
         <div class="modal-header">
@@ -1534,7 +1534,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ DELETE CONFIRM MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DELETE CONFIRM MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="deleteModal" class="modal">
       <div class="modal-content" style="width: 360px">
         <div class="modal-header">
@@ -1566,7 +1566,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ MANAGE CATEGORIES MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MANAGE CATEGORIES MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="categoryModal" class="modal">
       <div class="modal-content" style="width: 400px">
         <div class="modal-header">
@@ -1584,7 +1584,7 @@
               type="text"
               class="form-input"
               id="newCatInput"
-              placeholder="e.g. Gym, Travel, Pet care…"
+              placeholder="e.g. Gym, Travel, Pet careâ€¦"
               style="flex: 1"
               onkeydown="if (event.key === 'Enter') addCustomCategory();"
             />
@@ -1648,7 +1648,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ SET BUDGETS MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SET BUDGETS MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="budgetModal" class="modal">
       <div class="modal-content" style="width: 420px">
         <div class="modal-header">
@@ -1674,7 +1674,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ MONTHLY SUMMARY MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MONTHLY SUMMARY MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="summaryModal" class="modal">
       <div class="modal-content" style="width: 520px">
         <div class="modal-header">
@@ -1698,15 +1698,15 @@
           <div class="summary-grid">
             <div class="summary-stat">
               <div class="summary-label">Total Income</div>
-              <div class="summary-value positive" id="summaryInc">₹0</div>
+              <div class="summary-value positive" id="summaryInc">â‚¹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Total Expenses</div>
-              <div class="summary-value negative" id="summaryExp">₹0</div>
+              <div class="summary-value negative" id="summaryExp">â‚¹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Net Balance</div>
-              <div class="summary-value positive" id="summaryNet">₹0</div>
+              <div class="summary-value positive" id="summaryNet">â‚¹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Savings Rate</div>
@@ -1726,7 +1726,7 @@
                 id="summaryTopCat"
                 class="summary-detail"
               >
-                —
+                â€”
               </div>
             </div>
             <div class="summary-stat">
@@ -1741,7 +1741,7 @@
                 id="summaryBiggest"
                 class="summary-detail"
               >
-                —
+                â€”
               </div>
             </div>
           </div>
@@ -1765,7 +1765,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ DELETE CARD MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DELETE CARD MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="deleteCardModal" class="modal">
       <div class="modal-content" style="width: 360px">
         <div class="modal-header">
@@ -1802,7 +1802,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ CHANGE PIN MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CHANGE PIN MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="changePinModal" class="modal">
       <div class="modal-content" style="width: 360px">
         <div class="modal-header">
@@ -1833,7 +1833,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ CARD OPTIONS MENU ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD OPTIONS MENU â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="syncModal" class="modal">
       <div class="modal-content" style="width: 500px">
         <div class="modal-header">
@@ -1915,7 +1915,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ EDIT SPENDING LIMIT MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EDIT SPENDING LIMIT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="editLimitModal" class="modal">
       <div class="modal-content" style="width: 360px">
         <div class="modal-header">
@@ -1932,7 +1932,7 @@
         </div>
         <div class="modal-body" style="padding: 1.25rem 1.5rem">
           <div class="form-group">
-            <label class="form-label">New Monthly Spending Limit (₹)</label>
+            <label class="form-label">New Monthly Spending Limit (â‚¹)</label>
             <input
               type="number"
               class="form-input"
@@ -1956,7 +1956,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ IMPORT CSV MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• IMPORT CSV MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="importModal" class="modal">
       <div class="modal-content" style="width: 460px">
         <div class="modal-header">
@@ -2106,7 +2106,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════ RESET CONFIRM MODAL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RESET CONFIRM MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="resetModal" class="modal">
       <div class="modal-content" style="width: 420px">
         <div class="modal-header">
@@ -2115,7 +2115,7 @@
               class="fas fa-exclamation-triangle"
               style="color: #f59e0b; margin-right: 0.5rem"
             ></i
-            >Reset App
+            >Sign Out &amp; Delete Data
           </h2>
           <button class="close-btn" onclick="closeModal('resetModal')">
             &times;
@@ -2134,8 +2134,8 @@
                 margin-bottom: 0.75rem;
               "
             >
-              This will permanently delete
-              <strong>all your cards, transactions, and settings.</strong>
+              This will sign you out and permanently delete
+              <strong>all your cards, transactions, and local settings on this device.</strong>
             </p>
             <p style="color: #ef4444; font-size: 0.82rem">
               This cannot be undone.
@@ -2157,12 +2157,11 @@
                 margin-bottom: 0.5rem;
               "
             >
-              <i class="fas fa-lightbulb"></i> Before you reset
+              <i class="fas fa-lightbulb"></i> Before you start fresh
             </div>
             <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.7">
-              1. Export your data first so you can re-import it later<br />
-              2. Make sure you remember your PIN — you'll set a new one after
-              reset
+              1. Export your data first if you may want it again later<br />
+              2. After this, BlueLedger will return to the fresh start screen
             </div>
             <button
               class="btn btn-secondary"
@@ -2190,13 +2189,13 @@
             Cancel
           </button>
           <button class="btn btn-danger" onclick="confirmReset()">
-            <i class="fas fa-trash-alt"></i> Yes, Reset Everything
+            <i class="fas fa-user-slash"></i> Yes, Sign Out &amp; Delete Data
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════ PRIVACY POLICY ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PRIVACY POLICY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="privacyModal" class="modal">
       <div
         class="modal-content"
@@ -2232,7 +2231,7 @@
           </p>
           <p>
             BlueLedger stores your financial data locally on your device, encrypted with your password.
-            If you use cloud sync, an encrypted blob is stored on our Supabase server — we cannot read it without your password.
+            If you use cloud sync, an encrypted blob is stored on our Supabase server â€” we cannot read it without your password.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
@@ -2248,7 +2247,7 @@
           </p>
           <p>
             Your email is used to create an account via Supabase Auth. We do not sell or share your email.
-            Your password is never sent to any server — only a derived encryption key is used locally.
+            Your password is never sent to any server â€” only a derived encryption key is used locally.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
@@ -2277,7 +2276,7 @@
             7. Data deletion
           </p>
           <p>
-            Use Settings → Reset App to permanently delete all your local data.
+            Use Settings -> Sign Out &amp; Delete Data to permanently delete all your local data.
             To delete your cloud account and data, contact us or use the Supabase auth deletion flow.
           </p>
 
@@ -2294,12 +2293,12 @@
       </div>
     </div>
 
-    <!-- ═══════════════ FULL TRANSACTIONS PAGE ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FULL TRANSACTIONS PAGE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="txnFullPage">
       <div class="txn-page-header">
         <div>
           <div class="txn-page-title"><i class="fas fa-list-ul" style="color:#3b82f6;margin-right:.5rem"></i>All Transactions</div>
-          <div style="font-size:.75rem;color:#64748b;margin-top:.15rem" id="txnPageSubtitle">Loading…</div>
+          <div style="font-size:.75rem;color:#64748b;margin-top:.15rem" id="txnPageSubtitle">Loadingâ€¦</div>
         </div>
         <button class="txn-page-close" onclick="closeTxnFullPage()">
           <i class="fas fa-times"></i>
@@ -2308,12 +2307,12 @@
       <div class="txn-page-body" id="txnPageBody">
         <div style="text-align:center;padding:3rem;color:#475569">
           <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:.75rem;display:block"></i>
-          Loading transactions…
+          Loading transactionsâ€¦
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════ ASK BLUELEDGER PANEL ═══════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ASK BLUELEDGER PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="askBlOverlay" class="ask-bl-overlay" onclick="if(event.target===this)closeAskBl()"></div>
     <div id="askBlPanel" class="ask-bl-panel">
       <div class="ask-bl-header">
@@ -2351,6 +2350,7 @@
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
 
-    <script src="script.js" defer></script>
+    <script src="script (31).js" defer></script>
   </body>
 </html>
+
