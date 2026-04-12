@@ -2415,7 +2415,7 @@ body::before {
   min-height: 3px;
   transition: height 0.4s ease;
   flex: 1;
-  width: 0;
+  /* FIX 2: Removed width:0 — it was collapsing all bars to zero width */
 }
 .income-bar {
   background: #10b981;
