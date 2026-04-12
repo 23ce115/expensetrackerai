@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0f172a" />
     <meta
       name="description"
-      content="BlueLedger â€” encrypted personal finance dashboard"
+      content="BlueLedger — encrypted personal finance dashboard"
     />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
@@ -120,7 +120,7 @@
 
         <div style="margin-top:1.5rem;font-size:.72rem;color:#475569;text-align:center">
           <i class="fas fa-shield-alt" style="color:#10b981;margin-right:.3rem"></i>
-          AES-256 encrypted Â· Zero tracking Â· Your data stays yours
+          AES-256 encrypted · Zero tracking · Your data stays yours
         </div>
       </div>
     </div>
@@ -242,10 +242,10 @@
             <input type="text" class="form-input" id="cs-card4"
               inputmode="numeric" maxlength="4" placeholder="e.g. 4567"
               pattern="[0-9]{4}" />
-            <div class="form-hint"><i class="fas fa-shield-alt"></i> Only last 4 digits â€” your full number is never stored</div>
+            <div class="form-hint"><i class="fas fa-shield-alt"></i> Only last 4 digits — your full number is never stored</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Monthly Spending Limit (â‚¹)</label>
+            <label class="form-label">Monthly Spending Limit (₹)</label>
             <input type="number" class="form-input" id="cs-limit" placeholder="e.g. 30000" min="1" />
           </div>
         </div>
@@ -298,7 +298,7 @@
               <i class="fas fa-info-circle"></i> What's changing
             </div>
             <div style="font-size:.78rem;color:#cbd5e1;line-height:1.7">
-              BlueLedger now uses <strong>email &amp; password</strong> for login â€” enabling secure cross-device sync and easier recovery.<br>
+              BlueLedger now uses <strong>email &amp; password</strong> for login — enabling secure cross-device sync and easier recovery.<br>
               Enter your current PIN below to access your data, then create a free account.
             </div>
           </div>
@@ -340,7 +340,7 @@
             class="fas fa-calendar"
             style="color: #6b7280; font-size: 0.8rem"
           ></i>
-          <span id="headerDate">â€”</span>
+          <span id="headerDate">—</span>
         </div>
         <button class="report-btn desktop-only" onclick="openMonthlySummary()">
           <i class="fas fa-chart-pie"></i> Report
@@ -375,7 +375,7 @@
           <i class="fas fa-moon" id="themeIcon"></i>
         </button> -->
 
-        <!-- Settings gear â€” desktop only -->
+        <!-- Settings gear — desktop only -->
         <div class="settings-dropdown" id="settingsDropdown">
           <button
             class="settings-btn"
@@ -419,7 +419,7 @@
               <i class="fas fa-droplet"></i> Glass Transparency
               <i class="fas fa-chevron-down" id="glassChevron" style="font-size:.65rem;margin-left:auto;transition:transform .2s"></i>
             </div>
-            <!-- Slider â€” hidden by default -->
+            <!-- Slider — hidden by default -->
             <div id="glassSliderPanel" style="display:none;padding:.25rem .75rem .6rem">
               <div class="glass-slider-wrap">
                 <i class="fas fa-circle" style="font-size:.5rem;color:#64748b"></i>
@@ -496,7 +496,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount income-amount" id="dashIncome">â‚¹0.00</div>
+          <div class="amount income-amount" id="dashIncome">₹0.00</div>
           <div class="change" id="dashIncomeChange">
             <i class="fas fa-minus"></i>&nbsp;No transactions yet
           </div>
@@ -525,7 +525,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount expense-amount" id="dashExpense">â‚¹0.00</div>
+          <div class="amount expense-amount" id="dashExpense">₹0.00</div>
           <div class="change" id="dashExpenseChange">
             <i class="fas fa-minus"></i>&nbsp;No transactions yet
           </div>
@@ -554,7 +554,7 @@
               <!-- <i class="fas fa-ellipsis-h"></i> -->
             </button>
           </div>
-          <div class="amount net-positive" id="dashNet">â‚¹0.00</div>
+          <div class="amount net-positive" id="dashNet">₹0.00</div>
           <div
             style="font-size: 0.72rem; color: #64748b; margin-bottom: 0.25rem"
             id="dashNetSign"
@@ -583,7 +583,7 @@
           </div>
           <div class="card-chip"></div>
           <div class="card-number" id="cardNumberDisplay">
-            â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢
+            •••• •••• •••• ••••
           </div>
           <div class="card-holder-name" id="cardHolderDisplay">YOUR NAME</div>
           <button class="my-card-dots" onclick="openCardOptionsMenu(event)">
@@ -591,8 +591,8 @@
           </button>
           <div class="spending-section">
             <div class="spending-label">Spending Limit</div>
-            <div class="spending-limit-val" id="spendLimitVal">â‚¹0</div>
-            <div class="spending-used-val" id="spendUsedVal">Used: â‚¹0</div>
+            <div class="spending-limit-val" id="spendLimitVal">₹0</div>
+            <div class="spending-used-val" id="spendUsedVal">Used: ₹0</div>
             <div class="progress-bar">
               <div class="progress-fill" id="progressFill"></div>
             </div>
@@ -649,19 +649,19 @@
           >
             Breakdown by category
           </div>
-          <div class="total-expenses" id="allExpTotal">â‚¹0</div>
+          <div class="total-expenses" id="allExpTotal">₹0</div>
           <div class="period-values-row">
             <div class="period-val-item">
               <div class="pv-label">Daily</div>
-              <div class="pv-value" id="pvDaily">â‚¹0</div>
+              <div class="pv-value" id="pvDaily">₹0</div>
             </div>
             <div class="period-val-item">
               <div class="pv-label">Weekly</div>
-              <div class="pv-value" id="pvWeekly">â‚¹0</div>
+              <div class="pv-value" id="pvWeekly">₹0</div>
             </div>
             <div class="period-val-item">
               <div class="pv-label">Monthly</div>
-              <div class="pv-value" id="pvMonthly">â‚¹0</div>
+              <div class="pv-value" id="pvMonthly">₹0</div>
             </div>
           </div>
           <div class="color-bar"></div>
@@ -704,7 +704,7 @@
               type="text"
               class="search-input"
               id="txnSearch"
-              placeholder="Search by description or categoryâ€¦"
+              placeholder="Search by description or category…"
               oninput="onSearchInput(this.value)"
             />
           </div>
@@ -750,7 +750,7 @@
             <span class="insights-badge" id="insightsBadge">This month</span>
           </div>
         </div>
-        <!-- AI Advice panel â€” hidden until triggered -->
+        <!-- AI Advice panel — hidden until triggered -->
         <div id="aiInsightsPanel" class="ai-insights-panel" style="display:none"></div>
         <div id="anomalyAlerts"></div>
         <div class="insights-grid" id="insightsGrid"></div>
@@ -821,7 +821,7 @@
         >
           <div class="bn-ring-icon"><i class="fas fa-arrow-down"></i></div>
           <div class="bn-ring-label">Income</div>
-          <div class="bn-ring-sub">Salary, giftsâ€¦</div>
+          <div class="bn-ring-sub">Salary, gifts…</div>
         </button>
         <button
           class="bn-ring-card bn-ring-expense"
@@ -829,7 +829,7 @@
         >
           <div class="bn-ring-icon"><i class="fas fa-arrow-up"></i></div>
           <div class="bn-ring-label">Expense</div>
-          <div class="bn-ring-sub">Food, billsâ€¦</div>
+          <div class="bn-ring-sub">Food, bills…</div>
         </button>
       </div>
     </div>
@@ -1138,7 +1138,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (â‚¹)</label>
+              <label class="form-label">Amount (₹)</label>
               <input
                 type="number"
                 class="form-input"
@@ -1212,7 +1212,7 @@
             <textarea
               class="form-input"
               id="incomeNotes"
-              placeholder="e.g. Splitting with Raj, bonus from Q3â€¦"
+              placeholder="e.g. Splitting with Raj, bonus from Q3…"
               rows="2"
               style="resize: vertical; min-height: 52px"
             ></textarea>
@@ -1280,7 +1280,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (â‚¹)</label>
+              <label class="form-label">Amount (₹)</label>
               <input
                 type="number"
                 class="form-input"
@@ -1354,7 +1354,7 @@
             <textarea
               class="form-input"
               id="expenseNotes"
-              placeholder="e.g. Splitting with Raj, receipt #2847â€¦"
+              placeholder="e.g. Splitting with Raj, receipt #2847…"
               rows="2"
               style="resize: vertical; min-height: 52px"
             ></textarea>
@@ -1409,7 +1409,7 @@
           />
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Amount (â‚¹)</label>
+              <label class="form-label">Amount (₹)</label>
               <input type="number" class="form-input" id="editAmount" min="1" />
             </div>
             <div class="form-group">
@@ -1584,7 +1584,7 @@
               type="text"
               class="form-input"
               id="newCatInput"
-              placeholder="e.g. Gym, Travel, Pet careâ€¦"
+              placeholder="e.g. Gym, Travel, Pet care…"
               style="flex: 1"
               onkeydown="if (event.key === 'Enter') addCustomCategory();"
             />
@@ -1698,15 +1698,15 @@
           <div class="summary-grid">
             <div class="summary-stat">
               <div class="summary-label">Total Income</div>
-              <div class="summary-value positive" id="summaryInc">â‚¹0</div>
+              <div class="summary-value positive" id="summaryInc">₹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Total Expenses</div>
-              <div class="summary-value negative" id="summaryExp">â‚¹0</div>
+              <div class="summary-value negative" id="summaryExp">₹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Net Balance</div>
-              <div class="summary-value positive" id="summaryNet">â‚¹0</div>
+              <div class="summary-value positive" id="summaryNet">₹0</div>
             </div>
             <div class="summary-stat">
               <div class="summary-label">Savings Rate</div>
@@ -1726,7 +1726,7 @@
                 id="summaryTopCat"
                 class="summary-detail"
               >
-                â€”
+                —
               </div>
             </div>
             <div class="summary-stat">
@@ -1741,7 +1741,7 @@
                 id="summaryBiggest"
                 class="summary-detail"
               >
-                â€”
+                —
               </div>
             </div>
           </div>
@@ -1932,7 +1932,7 @@
         </div>
         <div class="modal-body" style="padding: 1.25rem 1.5rem">
           <div class="form-group">
-            <label class="form-label">New Monthly Spending Limit (â‚¹)</label>
+            <label class="form-label">New Monthly Spending Limit (₹)</label>
             <input
               type="number"
               class="form-input"
@@ -2231,7 +2231,7 @@
           </p>
           <p>
             BlueLedger stores your financial data locally on your device, encrypted with your password.
-            If you use cloud sync, an encrypted blob is stored on our Supabase server â€” we cannot read it without your password.
+            If you use cloud sync, an encrypted blob is stored on our Supabase server — we cannot read it without your password.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
@@ -2247,7 +2247,7 @@
           </p>
           <p>
             Your email is used to create an account via Supabase Auth. We do not sell or share your email.
-            Your password is never sent to any server â€” only a derived encryption key is used locally.
+            Your password is never sent to any server — only a derived encryption key is used locally.
           </p>
 
           <p style="font-weight: 600; color: #e2e8f0; margin-top: 1rem">
@@ -2298,7 +2298,7 @@
       <div class="txn-page-header">
         <div>
           <div class="txn-page-title"><i class="fas fa-list-ul" style="color:#3b82f6;margin-right:.5rem"></i>All Transactions</div>
-          <div style="font-size:.75rem;color:#64748b;margin-top:.15rem" id="txnPageSubtitle">Loadingâ€¦</div>
+          <div style="font-size:.75rem;color:#64748b;margin-top:.15rem" id="txnPageSubtitle">Loading…</div>
         </div>
         <button class="txn-page-close" onclick="closeTxnFullPage()">
           <i class="fas fa-times"></i>
@@ -2307,7 +2307,7 @@
       <div class="txn-page-body" id="txnPageBody">
         <div style="text-align:center;padding:3rem;color:#475569">
           <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:.75rem;display:block"></i>
-          Loading transactionsâ€¦
+          Loading transactions…
         </div>
       </div>
     </div>
