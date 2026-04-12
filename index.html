@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0"
     />
     <meta name="theme-color" content="#0f172a" />
     <meta
@@ -208,7 +208,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD SETUP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="cardSetupModal" class="modal" style="display:none">
-      <div class="modal-content" style="width:460px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">
             <i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>
@@ -259,7 +259,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BIOMETRIC SETUP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="biometricSetupModal" class="modal" style="display:none">
-      <div class="modal-content biometric-setup-content" style="width:380px">
+      <div class="modal-content biometric-setup-content">
         <div class="modal-header">
           <h2 class="modal-title" id="bioModalTitle">
             <i class="fas fa-fingerprint" style="color:#3b82f6;margin-right:.5rem"></i>Enable Biometric Login
@@ -285,7 +285,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MIGRATION MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="migrationModal" class="modal" style="display:none">
-      <div class="modal-content" style="width:460px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">
             <i class="fas fa-shield-alt" style="color:#3b82f6;margin-right:.5rem"></i>
@@ -323,7 +323,7 @@
       <div class="modal-content onboarding-content" style="display:none"></div>
     </div>
 
-
+</div>
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HEADER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div class="header">
@@ -1029,7 +1029,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MONTH PICKER MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="monthPickerModal" class="modal">
-      <div class="modal-content" style="width: 400px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">
             <i
@@ -1440,7 +1440,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SORT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="sortModal" class="modal">
-      <div class="modal-content" style="width: 320px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">Sort Transactions</h2>
           <button class="close-btn" onclick="closeModal('sortModal')">
@@ -1487,7 +1487,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FILTER MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="filterModal" class="modal">
-      <div class="modal-content" style="width: 340px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">Filter Transactions</h2>
           <button class="close-btn" onclick="closeModal('filterModal')">
@@ -1528,7 +1528,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DELETE CONFIRM MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="deleteModal" class="modal">
-      <div class="modal-content" style="width: 360px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">Delete Transaction</h2>
           <button class="close-btn" onclick="closeModal('deleteModal')">
@@ -1560,7 +1560,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MANAGE CATEGORIES MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="categoryModal" class="modal">
-      <div class="modal-content" style="width: 400px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">Manage Categories</h2>
           <button class="close-btn" onclick="closeModal('categoryModal')">
@@ -1642,7 +1642,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SET BUDGETS MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="budgetModal" class="modal">
-      <div class="modal-content" style="width: 420px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">Set Category Budgets</h2>
           <button class="close-btn" onclick="closeModal('budgetModal')">
@@ -1668,7 +1668,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MONTHLY SUMMARY MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="summaryModal" class="modal">
-      <div class="modal-content" style="width: 520px">
+      <div class="modal-content modal-content--lg">
         <div class="modal-header">
           <h2 class="modal-title" id="summaryModalTitle">Monthly Report</h2>
           <button class="close-btn" onclick="closeModal('summaryModal')">
@@ -1759,7 +1759,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DELETE CARD MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="deleteCardModal" class="modal">
-      <div class="modal-content" style="width: 360px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">Remove Card</h2>
           <button class="close-btn" onclick="closeModal('deleteCardModal')">
@@ -1796,7 +1796,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CHANGE PIN MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="changePinModal" class="modal">
-      <div class="modal-content" style="width: 360px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">
             <i class="fas fa-key" style="color: #f59e0b; margin-right: 0.5rem"></i>
@@ -1827,7 +1827,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD OPTIONS MENU â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="syncModal" class="modal">
-      <div class="modal-content" style="width: 500px">
+      <div class="modal-content modal-content--lg">
         <div class="modal-header">
           <h2 class="modal-title">
             <i class="fas fa-cloud" style="color: #60a5fa; margin-right: 0.5rem"></i>
@@ -1909,7 +1909,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EDIT SPENDING LIMIT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="editLimitModal" class="modal">
-      <div class="modal-content" style="width: 360px">
+      <div class="modal-content modal-content--sm">
         <div class="modal-header">
           <h2 class="modal-title">
             <i
@@ -1950,7 +1950,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• IMPORT CSV MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="importModal" class="modal">
-      <div class="modal-content" style="width: 460px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">
             <i
@@ -2100,7 +2100,7 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RESET CONFIRM MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="resetModal" class="modal">
-      <div class="modal-content" style="width: 420px">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">
             <i
@@ -2190,8 +2190,7 @@
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PRIVACY POLICY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="privacyModal" class="modal">
       <div
-        class="modal-content"
-        style="width: 560px; max-height: 85vh; overflow-y: auto"
+        class="modal-content modal-content--xl"
       >
         <div class="modal-header">
           <h2 class="modal-title">
