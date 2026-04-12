@@ -7518,7 +7518,7 @@ function parseCSVFile(file) {
     const sourceType = detected.looksLikeHeader
       ? "Mapped from your headers"
       : "Used BlueLedger default column order";
-    summary.textContent += ` â€¢ ${sourceType}`;
+    summary.textContent += ` • ${sourceType}`;
     preview.style.display = "block";
     confirmBtn.style.display = "inline-flex";
   };
@@ -7550,12 +7550,23 @@ function confirmImport() {
   importedRows = [];
 }
 
-function confirmReset() {
-  stopCloudSync();
-  localStorage.clear();
-  closeModal("resetModal");
-  notify("App reset. Reloading...", "info");
-  setTimeout(() => location.reload(), 1000);
+async function confirmReset() {
+  try {
+    stopCloudSync();
+    try {
+      const client = getBLClient();
+      await client.auth.signOut();
+    } catch (e) {
+      console.warn("Sign out during reset failed", e);
+    }
+    localStorage.clear();
+    closeModal("resetModal");
+    notify("Signed out and deleted local data. Reloading...", "info");
+    setTimeout(() => location.reload(), 900);
+  } catch (e) {
+    console.warn("confirmReset failed", e);
+    notify("Could not complete sign out. Please try again.", "error");
+  }
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
