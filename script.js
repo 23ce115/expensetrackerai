@@ -5386,7 +5386,7 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
   const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
   ["badge1", "badge2", "badge3", "txnBadge"].forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = "(" + pLabel + ")";
+    if (el) el.textContent = "";
   });
   // sync period menu active state
   document.querySelectorAll(".period-menu-item").forEach((el) => {
