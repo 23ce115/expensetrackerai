@@ -413,10 +413,7 @@ body::before {
   border-color: rgba(96, 165, 250, 0.38);
 }
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.9rem;
+  display: none;
 }
 .card-title {
   font-weight: 700;
@@ -1301,9 +1298,17 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 /* Size modifier classes — replaces inline style="width:Xpx" */
-.modal-content--sm  { width: 360px; }
-.modal-content--lg  { width: 520px; }
-.modal-content--xl  { width: 560px; max-height: 85vh; overflow-y: auto; }
+.modal-content--sm {
+  width: 360px;
+}
+.modal-content--lg {
+  width: 520px;
+}
+.modal-content--xl {
+  width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
 .modal-header {
   padding: 1.3rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
