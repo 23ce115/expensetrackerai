@@ -477,7 +477,7 @@
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">
-              Income<span
+              Income &nbsp;<span
                 id="badge1"
                 style="
                   text-transform: none;
@@ -485,8 +485,8 @@
                   color: #94a3b8;
                   font-weight: 400;
                 "
-                ></span>
-              
+                ></span
+              >
             </h3>
             <button
               class="card-menu-btn"
@@ -506,7 +506,7 @@
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">
-              Expenses <span
+              Expenses &nbsp;<span
                 id="badge2"
                 style="
                   text-transform: none;
@@ -514,8 +514,8 @@
                   color: #94a3b8;
                   font-weight: 400;
                 "
-                ></span>
-              
+                ></span
+              >
             </h3>
             <button
               class="card-menu-btn"
@@ -535,7 +535,7 @@
         <div class="card">
           <div class="card-header">
             <h3 class="card-title">
-              Net Balance <span
+              Net Balance &nbsp;<span
                 id="badge3"
                 style="
                   text-transform: none;
@@ -772,7 +772,29 @@
       </div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• 5-TAB BOTTOM NAV (mobile) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- Income Card -->
+    <div class="card-header">
+      <h3 class="card-title">Income</h3>
+      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('income')">
+        <!-- <i class="fas fa-ellipsis-h"></i> -->
+      </button>
+    </div>
+
+    <!-- Expense Card -->
+    <div class="card-header">
+      <h3 class="card-title">Expenses</h3>
+      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('expense')">
+        <!-- <i class="fas fa-ellipsis-h"></i> -->
+      </button>
+    </div>
+
+    <!-- Net Balance Card -->
+    <div class="card-header">
+      <h3 class="card-title">Net Balance</h3>
+      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('net')">
+        <!-- <i class="fas fa-ellipsis-h"></i> -->
+      </button>
+    </div>
     <nav class="bottom-nav" id="bottomNav" style="display: none">
       <button
         class="bn-tab bn-tab--active"
@@ -2341,7 +2363,7 @@
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
 
-    <script src="script.js" defer></script>
+    <script src="script (33).js" defer></script>
   </body>
 </html>
 
