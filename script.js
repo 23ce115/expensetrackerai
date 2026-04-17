@@ -3216,25 +3216,6 @@ async function doSignUp() {
     if (error) throw error;
 
     if (data.user && !data.session) {
-      // FIX 4: Supabase silently returns a non-null user with an EMPTY
-      // identities array when the email is already registered and email
-      // confirmation is enabled. This is their documented "stealth dupe"
-      // behaviour — detect it and show a clear error immediately.
-      if (
-        Array.isArray(data.user.identities) &&
-        data.user.identities.length === 0
-      ) {
-        errEl.innerHTML = `Account already exists for <strong>${email}</strong>.
-          <a href="#" onclick="
-            document.getElementById('loginEmail').value='${email}';
-            closeAuthPopup('signup');
-            openAuthPopup('login');
-            return false"
-            style="color:#3b82f6;text-decoration:underline;margin-left:4px">
-            Log in instead →</a>`;
-        return;
-      }
-
       // Store pending credentials so we can sign in after confirmation
       localStorage.setItem(
         "bl_pending_signup",
@@ -5164,9 +5145,8 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
       };
     });
   }
-  // FIX 2: Show last 6 months instead of all 12 so bars are
-  // visible and the active month is always in view at the right.
-  const monthLabels = [
+  const yr = now.getFullYear();
+  return [
     "Jan",
     "Feb",
     "Mar",
@@ -5179,21 +5159,16 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
     "Oct",
     "Nov",
     "Dec",
-  ];
-  return Array.from({ length: 6 }, (_, i) => {
-    const offset = 5 - i; // 5 months ago → now
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    const yr2 = d.getFullYear(),
-      mi = d.getMonth();
+  ].map((lb, mi) => {
     const tx = sourceTxns.filter((t) => {
-      const td = new Date(t.date + "T00:00:00");
-      return td.getFullYear() === yr2 && td.getMonth() === mi;
+      const d = new Date(t.date + "T00:00:00");
+      return d.getFullYear() === yr && d.getMonth() === mi;
     });
     return {
-      label: monthLabels[mi],
+      label: lb,
       income: sumInc(tx),
       expense: sumExp(tx),
-      active: offset === 0,
+      active: mi === now.getMonth(),
     };
   });
 }
@@ -5904,9 +5879,6 @@ function addIncome() {
     notify("Please fill all required fields", "error");
     return;
   }
-  // FIX 1: Flush any pending card state BEFORE mutating transactions,
-  // preventing stale card data from overwriting the new entry on re-sync.
-  syncActiveToCards();
   transactions.unshift({
     id: Date.now(),
     date,
@@ -5916,9 +5888,6 @@ function addIncome() {
     notes,
     type: "income",
   });
-  // Immediately push the new transaction into the cards array so that
-  // getAnalyticsTransactions() in refreshAll() sees it right away.
-  syncActiveToCards();
   if (recurring) {
     const nd = new Date(date + "T00:00:00");
     if (frequency === "weekly") nd.setDate(nd.getDate() + 7);
@@ -5954,8 +5923,6 @@ function addExpense() {
     notify("Please fill all required fields", "error");
     return;
   }
-  // FIX 1: Flush any pending card state BEFORE mutating transactions.
-  syncActiveToCards();
   transactions.unshift({
     id: Date.now(),
     date,
@@ -5965,9 +5932,6 @@ function addExpense() {
     notes,
     type: "expense",
   });
-  // Immediately push the new transaction into the cards array so that
-  // getAnalyticsTransactions() in refreshAll() sees it right away.
-  syncActiveToCards();
   if (recurring) {
     const nd = new Date(date + "T00:00:00");
     if (frequency === "weekly") nd.setDate(nd.getDate() + 7);
@@ -7589,50 +7553,15 @@ function confirmImport() {
 async function confirmReset() {
   try {
     stopCloudSync();
-
-    const client = getBLClient();
-
-    // FIX 5a: Delete the encrypted vault row from the cloud database
-    // so no ciphertext remains on the server for this account.
     try {
-      const {
-        data: { user },
-      } = await client.auth.getUser();
-      if (user?.id) {
-        await client
-          .from(SYNC_TABLE) // "encrypted_vaults"
-          .delete()
-          .eq("user_id", user.id);
-      }
-    } catch (e) {
-      // Non-fatal — vault may not exist in cloud (local-only user)
-      console.warn("Cloud vault deletion failed (non-fatal):", e);
-    }
-
-    // FIX 5b: Sign out from Supabase auth session
-    try {
+      const client = getBLClient();
       await client.auth.signOut();
     } catch (e) {
-      console.warn("Sign out during reset failed:", e);
+      console.warn("Sign out during reset failed", e);
     }
-
-    // FIX 5c: Wipe ALL sensitive in-RAM state so no data leaks
-    // if the page doesn't fully reload (e.g. back/forward cache)
-    sessionPin = null;
-    cards = [];
-    activeCardIdx = 0;
-    userData = null;
-    transactions = [];
-    customCategories = [];
-    categoryBudgets = {};
-    recurringTemplates = [];
-    syncConfig = defaultSyncConfig();
-
-    // FIX 5d: Clear ALL localStorage keys — not just the vault
     localStorage.clear();
-
     closeModal("resetModal");
-    notify("Signed out and all data deleted. Reloading...", "info");
+    notify("Signed out and deleted local data. Reloading...", "info");
     setTimeout(() => location.reload(), 900);
   } catch (e) {
     console.warn("confirmReset failed", e);
