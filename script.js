@@ -114,7 +114,24 @@ const BASE_EXPENSE_CATS = [
   "Health",
   "Investment",
 ];
-// MONTH_NAMES removed — use window.MONTH_NAMES (set by main.js bootstrap)
+// FIX: Define MONTH_NAMES here as fallback; main.js will re-use this via window.MONTH_NAMES
+if (!window.MONTH_NAMES) {
+  window.MONTH_NAMES = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+}
+const MONTH_NAMES = window.MONTH_NAMES;
 
 const CAT_COLORS = {
   Food: "#f97316",
@@ -4775,7 +4792,7 @@ document.addEventListener("mousemove", (e) => {
   document.body.style.setProperty("--y", e.clientY + "px");
 });
 
-const fmt = (n) => "₹" + n.toLocaleString("en-IN");
+const fmt = (n) => "₹" + safeNumber(n).toLocaleString("en-IN"); // FIX: guard undefined/null
 const toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const localDateStr = (d) => {
   const y = d.getFullYear();
@@ -8078,3 +8095,111 @@ function _clearAiSuggestion(type) {
 // setChartPeriod() owned by charts.js — removed duplicate #2
 
 // updateOverviewChart triggered by main.js _bootApp after DOM ready
+
+/* ═══════════════════════════════════════════════════════════════
+   WINDOW EXPORTS — script.js
+   All functions called from HTML onclick handlers MUST be on
+   window. In non-module strict-mode scripts, top-level `function`
+   declarations are globals, but an early crash (e.g. duplicate
+   CDN) can prevent registration. This block guarantees they exist.
+   ═══════════════════════════════════════════════════════════════ */
+(function _exportScriptGlobals() {
+  const _toExport = [
+    // ── UI / modal controls ──────────────────────────────────
+    "addCustomCategory",
+    "addExpense",
+    "addIncome",
+    "applyFilter",
+    "applyPickedMonth",
+    "applySort",
+    "bnSwitch",
+    "changePin",
+    "closeAddTargetSheet",
+    "closeAuthPopup",
+    "closeBnReport",
+    "closeBnSettings",
+    "closeBnSheet",
+    "closeModal",
+    "closeSettingsMenu",
+    "closeTxnFullPage",
+    "closeTxnDetails",
+    "completeCardSetup",
+    "confirmDelete",
+    "confirmImport",
+    "confirmReset",
+    "doDeleteCard",
+    "doSignIn",
+    "doSignOut",
+    "doSignUp",
+    "downloadImportTemplate",
+    "exportBLFile",
+    "exportMonthCSV",
+    "exportQRCode",
+    "exportCSV",
+    "forgotPassword",
+    "handleCtxDelete",
+    "handleCtxEdit",
+    "importBLFileClick",
+    "lockApp",
+    "openAddTargetPicker",
+    "openAuthPopup",
+    "openBudgetModal",
+    "openCardOptionsMenu",
+    "openCategoryManager",
+    "openFilterModal",
+    "openModal",
+    "openMonthlySummary",
+    "openSortModal",
+    "openImportModal",
+    "openResetModal",
+    "openSyncModal",
+    "openTxnFullPage",
+    "openChangePinModal",
+    "openPrivacyModal",
+    "openMonthPicker",
+    "openBiometricSetup",
+    "pinBackspace",
+    "pinPress",
+    "registerBiometricNow",
+    "resendConfirmationEmail",
+    "resetFilter",
+    "saveBudgets",
+    "saveEdit",
+    "saveSpendingLimit",
+    "shiftPickerYear",
+    "shiftSummaryMonth",
+    "showCardInfo",
+    "startMigration",
+    "syncNow",
+    "toggleBnGlassSlider",
+    "toggleGlassSlider",
+    "toggleSettingsMenu",
+    "toggleTheme",
+    "togglePeriodMenu",
+    "setPeriod",
+    "tryBiometricLogin",
+    "tryLockScreenBiometric",
+    "unlockWithLockPassword",
+    // ── Cross-module references needed by charts.js / ai.js ──
+    "getChartData",
+    "refreshAll",
+    "getAnalyticsTransactions",
+    "getCatColor",
+    "notify",
+    // ── PIN / auth ────────────────────────────────────────────
+    "applyVaultPayload",
+    "attemptUnlock",
+  ];
+
+  _toExport.forEach(function (name) {
+    if (typeof window[name] === "undefined") {
+      try {
+        // eslint-disable-next-line no-eval
+        var fn = eval(name); // resolves to the top-level function
+        if (typeof fn === "function") window[name] = fn;
+      } catch (e) {
+        // function not yet defined — safe to skip
+      }
+    }
+  });
+})();
