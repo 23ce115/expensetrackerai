@@ -1,3 +1,18 @@
+/* ═══════════════════════════════════════════════════════════════
+   script.js — BlueLedger Core App Logic
+   OWNS: PIN/auth, vault encryption, transactions CRUD, UI rendering,
+         modals, sync, settings, imports/exports.
+
+   DOES NOT OWN (delegated to other files):
+     _overviewChart / chart state  → charts.js
+     setChartPeriod()              → charts.js
+     MONTH_NAMES const             → window.MONTH_NAMES (main.js)
+     chartPeriod variable          → main.js (global)
+     todayStr()                    → utils.js
+     safeNumber()                  → utils.js
+     openReceiptScanner()          → receipt.js
+   ═══════════════════════════════════════════════════════════════ */
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    SECURITY — AES-256 PIN ENCRYPTION
    sessionPin lives ONLY in RAM. localStorage holds
@@ -20,9 +35,7 @@ const SYNC_DEVICE_KEY = "bl_sync_device_v1";
 const SYNC_TABLE = "encrypted_vaults";
 const SYNC_POLL_MS = 30 * 1000;
 
-function safeNumber(n) {
-  return typeof n === "number" && !isNaN(n) ? n : 0;
-}
+// REMOVED: safeNumber() is defined in utils.js — do not redeclare here
 
 // function safeGet(id) {
 //   return document.getElementById(id);
@@ -82,7 +95,7 @@ let categoryBudgets = {};
 let recurringTemplates = [];
 
 let currentPeriod = "monthly"; // always monthly
-// let chartPeriod = "monthly";
+// chartPeriod is declared in main.js — read/write it as a global here
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
 let ctxId = null;
@@ -116,20 +129,7 @@ const BASE_EXPENSE_CATS = [
   "Health",
   "Investment",
 ];
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+// REMOVED: MONTH_NAMES const — use window.MONTH_NAMES set by main.js
 
 const CAT_COLORS = {
   Food: "#f97316",
@@ -2079,19 +2079,7 @@ function resetAiCatBadge(type) {
    User uploads a receipt photo → base64 → Claude vision
    → extracts amount, date, description, category → pre-fills form.
 ────────────────────────────────────────────── */
-function openReceiptScanner(type) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.capture = "environment";
-
-  input.onchange = (e) => {
-    const file = e?.target?.files?.[0];
-    if (file) _processReceiptImage(type, file);
-  };
-
-  input.click();
-}
+// REMOVED: openReceiptScanner() duplicate — defined in receipt.js
 
 async function _processReceiptImage(type, file) {
   const btn = safeGet(`${type}ReceiptBtn`);
@@ -5286,13 +5274,8 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
   });
 }
 
-function setChartPeriod(p) {
-  chartPeriod = p;
-  // Delegate to Chart.js system
-  if (typeof updateOverviewChart === "function") {
-    updateOverviewChart(p);
-  }
-}
+// setChartPeriod() is owned by charts.js and exposed on window.
+// Call window.setChartPeriod(period) or just setChartPeriod(period) — it resolves to charts.js.
 
 function renderChart(period, sourceTxns) {
   // Kept for backward-compat; delegates to Chart.js
@@ -7803,9 +7786,11 @@ document.getElementById("headerDate").textContent =
 loadTheme();
 loadGlassOpacity();
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
-}
+// SERVICE WORKER — registered via main.js with safe fallback.
+// If sw.js exists, it must include a fetch event handler that uses
+// event.respondWith(fetch(event.request).catch(() => new Response('')))
+// to prevent "Failed to convert value to Response" errors for
+// third-party requests (ads, analytics, etc.) it cannot intercept.
 
 (async function initApp() {
   const authMode = localStorage.getItem(AUTH_MODE_KEY);
@@ -8240,16 +8225,6 @@ window.addEventListener("load", () => {
   }
 });
 
-function setChartPeriod(period) {
-  chartPeriod = period;
+// REMOVED: second setChartPeriod() definition — charts.js owns this function
 
-  if (typeof updateOverviewChart === "function") {
-    updateOverviewChart(period);
-  } else {
-    console.error("updateOverviewChart not found");
-  }
-}
-
-if (typeof updateOverviewChart === "function") {
-  updateOverviewChart(chartPeriod);
-}
+// REMOVED: bare updateOverviewChart call — handled by main.js window load listener
