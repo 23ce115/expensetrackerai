@@ -3,18 +3,5 @@
     "api/ai.js": {
       "maxDuration": 30
     }
-  },
-  {
-  "functions": {
-    "api/ai.js": {
-      "maxDuration": 30
-    }
-  },
-  {
-  "functions": {
-    "api/ai.js": {
-      "maxDuration": 30
-    }
   }
 }
-  
