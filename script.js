@@ -80,7 +80,7 @@ let categoryBudgets = {};
 let recurringTemplates = [];
 
 let currentPeriod = "monthly"; // always monthly
-let chartPeriod = "monthly";   // FIXED: was commented out, now declared here
+let chartPeriod = "monthly"; // FIXED: was commented out, now declared here
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
 let ctxId = null;
@@ -2066,12 +2066,11 @@ function resetAiCatBadge(type) {
 ────────────────────────────────────────────── */
 // openReceiptScanner() lives in receipt.js — removed duplicate
 
-
 // _processReceiptImage() lives in receipt.js — removed duplicate with broken ANTHROPIC_API_KEY reference
 // Receipt scanning handled by receipt.js
 
-  }
-}
+//   }
+// }
 
 function defaultSyncConfig() {
   return {
