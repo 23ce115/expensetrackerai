@@ -159,13 +159,9 @@ const TXN_PREVIEW_LIMITS = {
    AI FEATURES — AUTO-CATEGORIZATION & ASK BLUELEDGER
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-const AI_MODEL = "claude-sonnet-4-20250514";
-let _aiCatTimers = {};
-let _aiCatGeneration = {}; // generation counter per type — stale responses are ignored
-let _aiCatDismissed = {}; // exact description text dismissed by the user
-let _aiCatState = {};
-let _askBlHistory = [];
-let _askBlBusy = false;
+// AI_MODEL, _aiCatTimers, _aiCatGeneration, _aiCatDismissed,
+// _aiCatState, _askBlHistory, _askBlBusy — all declared in ai.js.
+// DO NOT redeclare here: causes "already declared" SyntaxError in strict mode.
 
 // /* ── Shared Anthropic API call ── */
 // async function _callAI(messages, systemPrompt, maxTokens = 300) {
@@ -5159,6 +5155,14 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
 
 // setChartPeriod() owned by charts.js — removed duplicate #1
 
+/* FIX: Export chart-facing functions to window IMMEDIATELY after definition.
+   charts.js calls getChartData() and getCatColor() at init time (before the
+   _exportScriptGlobals IIFE at the bottom runs). Direct assignment here
+   guarantees they are available the moment script.js finishes parsing. */
+window.getChartData = getChartData;
+window.getAnalyticsTransactions = getAnalyticsTransactions;
+window.getCatColor = getCatColor;
+
 function renderChart(period, sourceTxns) {
   // Kept for backward-compat; delegates to Chart.js
   if (typeof updateOverviewChart === "function") {
@@ -5761,6 +5765,7 @@ function refreshAll() {
   renderTxns(currentPeriod);
   renderInsights(analyticsTxns);
 }
+window.refreshAll = refreshAll; // FIX: export immediately for cross-module access
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    PERIOD / CONTEXT MENU
