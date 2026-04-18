@@ -39,7 +39,7 @@ export default async function handler(req, res) {
           "X-Title": "BlueLedger",
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.2-3b-instruct:free",
+          model: "google/gemma-3-4b-it:free",          
           messages: formattedMessages,
           max_tokens: 1000,
         }),
