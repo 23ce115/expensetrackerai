@@ -5387,8 +5387,10 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
     const txt = el.textContent.trim().toLowerCase();
     el.classList.toggle("active", txt === period);
   });
-  document.getElementById("periodLabel").textContent = pLabel;
-  document
+const periodEl = document.getElementById("periodLabel");
+if (periodEl) {
+  periodEl.textContent = pLabel;
+}  document
     .querySelectorAll(".period-menu-item")
     .forEach((el) =>
       el.classList.toggle(
