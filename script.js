@@ -3586,7 +3586,6 @@ async function _afterUnlock(password, userId) {
   }
   populateCategorySelects();
   updateAddAccountUI();
-  setChartPeriod(chartPeriod); // set chart period AFTER vault loads so buttons + chart render correctly
   refreshAll();
   populateSyncModal();
   initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
@@ -5138,25 +5137,30 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
     });
   }
   if (period === "weekly") {
-    // Show W1/W2/W3/W4 of the current month (matches reference design)
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-    return Array.from({ length: 4 }, (_, i) => {
-      const startDay = 1 + i * 7;
-      const endDay = Math.min(startDay + 6, lastDayOfMonth);
-      const ws = new Date(year, month, startDay);
-      const we = new Date(year, month, endDay);
+    const dow = now.getDay();
+    const daysToMon = dow === 0 ? -6 : 1 - dow;
+    const thisMonday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + daysToMon,
+    );
+    return Array.from({ length: 8 }, (_, i) => {
+      const ws = new Date(
+        thisMonday.getFullYear(),
+        thisMonday.getMonth(),
+        thisMonday.getDate() - (7 - i) * 7,
+      );
+      const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 6);
       const tx = sourceTxns.filter((t) => {
         const d = toDay(new Date(t.date + "T00:00:00"));
         return d >= ws && d <= we;
       });
-      const todayInWeek = now >= ws && now <= we;
       return {
-        label: `W${i + 1}`,
+        label:
+          ws.getDate() + " " + ws.toLocaleString("en-IN", { month: "short" }),
         income: sumInc(tx),
-        expense: sumExp(tx.filter((t) => t.type === "expense")),
-        active: todayInWeek,
+        expense: sumExp(tx),
+        active: i === 7,
       };
     });
   }
@@ -5196,31 +5200,17 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
 
 function setChartPeriod(p) {
   chartPeriod = p;
-  renderChart(p);
+  // Delegate to Chart.js system
+  if (typeof updateOverviewChart === "function") {
+    updateOverviewChart(p);
+  }
 }
 
-function renderChart(period, sourceTxns = getAnalyticsTransactions()) {
-  const data = getChartData(period, sourceTxns);
-  const container = document.getElementById("chartContainer");
-  const labelsDiv = document.getElementById("chartLabels");
-  const hasData = data.some((d) => d.income > 0 || d.expense > 0);
-  if (!hasData) {
-    container.innerHTML = `<div class="chart-empty"><i class="fas fa-chart-bar"></i><p>Add transactions to see your overview</p></div>`;
-    labelsDiv.innerHTML = "";
-    return;
+function renderChart(period, sourceTxns) {
+  // Kept for backward-compat; delegates to Chart.js
+  if (typeof updateOverviewChart === "function") {
+    updateOverviewChart(period || chartPeriod);
   }
-  const max = Math.max(...data.map((d) => Math.max(d.income, d.expense)), 1);
-  container.innerHTML = data
-    .map((d) => {
-      const ih = Math.round((d.income / max) * 100),
-        eh = Math.round((d.expense / max) * 100);
-      return `<div class="bar-group${d.active ? " active" : ""}">
-      <div class="bar income-bar" style="height:${ih}%" title="Income: ${fmt(d.income)}"></div>
-      <div class="bar expense-bar" style="height:${eh}%" title="Expense: ${fmt(d.expense)}"></div>
-    </div>`;
-    })
-    .join("");
-  labelsDiv.innerHTML = data.map((d) => `<span>${d.label}</span>`).join("");
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -5259,16 +5249,21 @@ function renderAllExpenses(period, sourceTxns = getAnalyticsTransactions()) {
       );
   });
 
-  const colorBar = document.querySelector(".color-bar");
-  if (colorBar && sorted.length > 0) {
-    colorBar.innerHTML = sorted
-      .map(
-        ([c, a]) =>
-          `<div style="flex:${a};background:${getCatColor(c)};height:100%;border-radius:3px;" title="${c}: ${fmt(a)}"></div>`,
-      )
-      .join("");
-    colorBar.style.display = "flex";
-    colorBar.style.gap = "2px";
+  // Delegate category bar to Chart.js system
+  if (typeof renderCategoryChartJS === "function") {
+    renderCategoryChartJS(sorted);
+  } else {
+    const colorBar = document.querySelector(".color-bar");
+    if (colorBar && sorted.length > 0) {
+      colorBar.innerHTML = sorted
+        .map(
+          ([c, a]) =>
+            `<div style="flex:${a};background:${getCatColor(c)};height:100%;border-radius:3px;" title="${c}: ${fmt(a)}"></div>`,
+        )
+        .join("");
+      colorBar.style.display = "flex";
+      colorBar.style.gap = "2px";
+    }
   }
 
   const list = document.getElementById("categoryList");
@@ -5808,6 +5803,8 @@ function togglePeriodMenu() {
   document.getElementById("periodMenu").classList.toggle("open");
 }
 function setPeriod(p) {
+  // Only monthly and picked are supported; daily/weekly are disabled
+  if (p === "daily" || p === "weekly") return;
   currentPeriod = p;
   pickedMonth = null;
   txnExpanded = false;
@@ -7885,11 +7882,11 @@ async function doPasswordReset() {
 
 renderCardSwitcher();
 populateCategorySelects();
-// NOTE: setChartPeriod() and refreshAll() are intentionally NOT called here.
-// The vault is encrypted — transactions don't exist yet at this point.
-// Both are called inside _afterUnlock() once the vault is decrypted and
-// loadActiveCard() has populated `transactions`. Calling them here would
-// always render empty charts on every page load.
+// Init Chart.js charts before first render
+if (typeof initOverviewChart === "function") initOverviewChart();
+if (typeof initCategoryChart === "function") initCategoryChart();
+setChartPeriod(chartPeriod);
+refreshAll();
 syncFabVisibility();
 
 function _clearAiSuggestion(type) {
