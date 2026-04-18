@@ -20,21 +20,25 @@ const SYNC_DEVICE_KEY = "bl_sync_device_v1";
 const SYNC_TABLE = "encrypted_vaults";
 const SYNC_POLL_MS = 30 * 1000;
 
-function safeGet(id) {
-  return document.getElementById(id);
+function safeNumber(n) {
+  return typeof n === "number" && !isNaN(n) ? n : 0;
 }
 
-function safeAddClass(el, className) {
-  if (el) el.classList.add(className);
-}
+// function safeGet(id) {
+//   return document.getElementById(id);
+// }
 
-function safeRemoveClass(el, className) {
-  if (el) el.classList.remove(className);
-}
+// function safeAddClass(el, className) {
+//   if (el) el.classList.add(className);
+// }
 
-function safeToggleClass(el, className, condition) {
-  if (el) el.classList.toggle(className, condition);
-}
+// function safeRemoveClass(el, className) {
+//   if (el) el.classList.remove(className);
+// }
+
+// function safeToggleClass(el, className, condition) {
+//   if (el) el.classList.toggle(className, condition);
+// }
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
 const BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
@@ -162,21 +166,21 @@ let _askBlHistory = [];
 let _askBlBusy = false;
 
 /* ── Shared Anthropic API call ── */
-async function _callAI(messages, systemPrompt, maxTokens = 300) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages,
-    }),
-  });
-  if (!res.ok) throw new Error(`AI API error ${res.status}`);
-  const data = await res.json();
-  return data.content?.map((b) => b.text || "").join("") || "";
-}
+// async function _callAI(messages, systemPrompt, maxTokens = 300) {
+//   const res = await fetch("https://api.anthropic.com/v1/messages", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       model: AI_MODEL,
+//       max_tokens: maxTokens,
+//       system: systemPrompt,
+//       messages,
+//     }),
+//   });
+//   if (!res.ok) throw new Error(`AI API error ${res.status}`);
+//   const data = await res.json();
+//   return data.content?.map((b) => b.text || "").join("") || "";
+// }
 
 /* ──────────────────────────────────────────────
    LOCAL KEYWORD CLASSIFIER
@@ -770,49 +774,49 @@ function _localKeywordGuess(type, desc) {
       never overwrite a newer result
    4. Badge persists — only hides on dismiss or modal close
 ────────────────────────────────────────────── */
-function aiAutoCategory(type, value) {
-  clearTimeout(_aiCatTimers[type]);
-  const badgeEl = document.getElementById(`${type}AiBadge`);
-  if (!badgeEl) return;
+// function aiAutoCategory(type, value) {
+//   clearTimeout(_aiCatTimers[type]);
+//   const badgeEl = document.getElementById(`${type}AiBadge`);
+//   if (!badgeEl) return;
 
-  const trimmed = value ? value.trim() : "";
+//   const trimmed = value ? value.trim() : "";
 
-  // Reset dismissed state when user changes text significantly
-  if (!trimmed || trimmed.length < 3) {
-    // Only hide if user hasn't already seen + kept a good suggestion
-    const currentlyApplied = badgeEl.dataset.appliedMatch;
-    if (!currentlyApplied) {
-      badgeEl.style.display = "none";
-      badgeEl.dataset.appliedMatch = "";
-    }
-    _aiCatDismissed[type] = false;
-    return;
-  }
+//   // Reset dismissed state when user changes text significantly
+//   if (!trimmed || trimmed.length < 3) {
+//     // Only hide if user hasn't already seen + kept a good suggestion
+//     const currentlyApplied = badgeEl.dataset.appliedMatch;
+//     if (!currentlyApplied) {
+//       badgeEl.style.display = "none";
+//       badgeEl.dataset.appliedMatch = "";
+//     }
+//     _aiCatDismissed[type] = false;
+//     return;
+//   }
 
-  // If user dismissed the badge for this exact text, don't re-show
-  if (_aiCatDismissed[type] && badgeEl.dataset.lastDesc === trimmed) return;
-  _aiCatDismissed[type] = false;
+//   // If user dismissed the badge for this exact text, don't re-show
+//   if (_aiCatDismissed[type] && badgeEl.dataset.lastDesc === trimmed) return;
+//   _aiCatDismissed[type] = false;
 
-  // ── Step 1: Instant local guess ──
-  const localGuess = _localKeywordGuess(trimmed);
-  if (localGuess) {
-    _showAiBadge(type, localGuess, trimmed, false /* not final yet */);
-  } else if (badgeEl.style.display === "none") {
-    // Show "thinking" only if badge isn't already showing a good result
-    badgeEl.style.display = "flex";
-    badgeEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#a78bfa"></i><span style="color:#94a3b8">Thinking…</span>`;
-  }
+//   // ── Step 1: Instant local guess ──
+//   const localGuess = _localKeywordGuess(trimmed);
+//   if (localGuess) {
+//     _showAiBadge(type, localGuess, trimmed, false /* not final yet */);
+//   } else if (badgeEl.style.display === "none") {
+//     // Show "thinking" only if badge isn't already showing a good result
+//     badgeEl.style.display = "flex";
+//     badgeEl.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#a78bfa"></i><span style="color:#94a3b8">Thinking…</span>`;
+//   }
 
-  // ── Step 2: Debounced Claude API call for accuracy ──
-  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
-  const myGen = _aiCatGeneration[type];
+//   // ── Step 2: Debounced Claude API call for accuracy ──
+//   _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+//   const myGen = _aiCatGeneration[type];
 
-  _aiCatTimers[type] = setTimeout(async () => {
-    // If a newer call has been scheduled, bail out
-    if (_aiCatGeneration[type] !== myGen) return;
-    await _runAiCat(type, trimmed, myGen);
-  }, 700);
-}
+//   _aiCatTimers[type] = setTimeout(async () => {
+//     // If a newer call has been scheduled, bail out
+//     if (_aiCatGeneration[type] !== myGen) return;
+//     await _runAiCat(type, trimmed, myGen);
+//   }, 700);
+// }
 
 async function _runAiCat(type, desc, generation) {
   const cats =
@@ -927,396 +931,396 @@ function resetAiCatBadge(type) {
    Opens a slide-up panel. Passes transaction
    summary to Claude and answers in plain English.
 ────────────────────────────────────────────── */
-function openAskBl() {
-  safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-  safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
-  setTimeout(() => safeGet("askBlInput")?.focus(), 300);
-}
+// function openAskBl() {
+//   safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+//   safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+//   setTimeout(() => safeGet("askBlInput")?.focus(), 300);
+// }
 
-function closeAskBl() {
-  safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-  safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
-}
+// function closeAskBl() {
+//   safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+//   safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+// }
 
-function _buildFinanceSummary() {
-  // Build a compact but rich summary of the user's data to pass to the AI
-  const allTxns = transactions.slice(0, 300); // cap to avoid token overflow
-  const now = new Date();
-  const thisMonth = allTxns.filter((t) => {
-    const d = new Date(t.date);
-    return (
-      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-    );
-  });
+// function _buildFinanceSummary() {
+//   // Build a compact but rich summary of the user's data to pass to the AI
+//   const allTxns = transactions.slice(0, 300); // cap to avoid token overflow
+//   const now = new Date();
+//   const thisMonth = allTxns.filter((t) => {
+//     const d = new Date(t.date);
+//     return (
+//       d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+//     );
+//   });
 
-  const fmt = (n) =>
-    `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
-  const totalIncome = allTxns
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + t.amount, 0);
-  const totalExpense = allTxns
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
+//   const fmt = (n) =>
+//     `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+//   const totalIncome = allTxns
+//     .filter((t) => t.type === "income")
+//     .reduce((s, t) => s + t.amount, 0);
+//   const totalExpense = allTxns
+//     .filter((t) => t.type === "expense")
+//     .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-  // Per-category breakdown
-  const catMap = {};
-  allTxns.forEach((t) => {
-    if (t.type !== "expense") return;
-    catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount);
-  });
-  const catLines = Object.entries(catMap)
-    .sort((a, b) => b[1] - a[1])
-    .map(([c, v]) => `  ${c}: ${fmt(v)}`)
-    .join("\n");
+//   // Per-category breakdown
+//   const catMap = {};
+//   allTxns.forEach((t) => {
+//     if (t.type !== "expense") return;
+//     catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount);
+//   });
+//   const catLines = Object.entries(catMap)
+//     .sort((a, b) => b[1] - a[1])
+//     .map(([c, v]) => `  ${c}: ${fmt(v)}`)
+//     .join("\n");
 
-  // Last 30 transactions (compact)
-  const recent = allTxns
-    .slice(0, 30)
-    .map(
-      (t) =>
-        `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmt(t.amount)}`,
-    )
-    .join("\n");
+//   // Last 30 transactions (compact)
+//   const recent = allTxns
+//     .slice(0, 30)
+//     .map(
+//       (t) =>
+//         `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmt(t.amount)}`,
+//     )
+//     .join("\n");
 
-  const monthIncome = thisMonth
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + t.amount, 0);
-  const monthExpense = thisMonth
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
+//   const monthIncome = thisMonth
+//     .filter((t) => t.type === "income")
+//     .reduce((s, t) => s + t.amount, 0);
+//   const monthExpense = thisMonth
+//     .filter((t) => t.type === "expense")
+//     .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-  return `User financial data (BlueLedger app):
-Currency: Indian Rupees (₹)
-Total transactions available: ${allTxns.length}
-Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })}
-This month income: ${fmt(monthIncome)} | This month expenses: ${fmt(monthExpense)}
-All-time income: ${fmt(totalIncome)} | All-time expenses: ${fmt(totalExpense)}
+//   return `User financial data (BlueLedger app):
+// Currency: Indian Rupees (₹)
+// Total transactions available: ${allTxns.length}
+// Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })}
+// This month income: ${fmt(monthIncome)} | This month expenses: ${fmt(monthExpense)}
+// All-time income: ${fmt(totalIncome)} | All-time expenses: ${fmt(totalExpense)}
 
-Spending by category (all time):
-${catLines || "  No expense data yet"}
+// Spending by category (all time):
+// ${catLines || "  No expense data yet"}
 
-Recent transactions (up to 30):
-Date | Type | Category | Description | Amount
-${recent || "  No transactions yet"}`;
-}
+// Recent transactions (up to 30):
+// Date | Type | Category | Description | Amount
+// ${recent || "  No transactions yet"}`;
+// }
 
-async function askBlSend(prefill) {
-  if (_askBlBusy) return;
-  const inputEl = document.getElementById("askBlInput");
-  const question = (prefill || inputEl?.value || "").trim();
-  if (!question) return;
-  if (inputEl) inputEl.value = "";
+// async function askBlSend(prefill) {
+//   if (_askBlBusy) return;
+//   const inputEl = document.getElementById("askBlInput");
+//   const question = (prefill || inputEl?.value || "").trim();
+//   if (!question) return;
+//   if (inputEl) inputEl.value = "";
 
-  // Append user message
-  _appendAskBlMsg("user", question);
-  _askBlHistory.push({ role: "user", content: question });
+//   // Append user message
+//   _appendAskBlMsg("user", question);
+//   _askBlHistory.push({ role: "user", content: question });
 
-  // Typing indicator
-  const typingId = "askbl-typing-" + Date.now();
-  _appendAskBlMsg(
-    "assistant",
-    `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`,
-  );
+//   // Typing indicator
+//   const typingId = "askbl-typing-" + Date.now();
+//   _appendAskBlMsg(
+//     "assistant",
+//     `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`,
+//   );
 
-  _askBlBusy = true;
-  document.getElementById("askBlSendBtn").disabled = true;
+//   _askBlBusy = true;
+//   document.getElementById("askBlSendBtn").disabled = true;
 
-  try {
-    const system = `You are BlueLedger AI, a friendly and concise personal finance assistant built into the BlueLedger app.
-The user's financial data is provided below. Answer their question directly using the data.
-Be concise, warm, and use ₹ for amounts. Use emojis sparingly. 
-If the data is insufficient to answer, say so honestly.
-Never make up transactions. Format numbers in Indian style (lakhs/crores if large).
+//   try {
+//     const system = `You are BlueLedger AI, a friendly and concise personal finance assistant built into the BlueLedger app.
+// The user's financial data is provided below. Answer their question directly using the data.
+// Be concise, warm, and use ₹ for amounts. Use emojis sparingly. 
+// If the data is insufficient to answer, say so honestly.
+// Never make up transactions. Format numbers in Indian style (lakhs/crores if large).
 
-${_buildFinanceSummary()}`;
+// ${_buildFinanceSummary()}`;
 
-    const reply = await _callAI(_askBlHistory, system, 400);
+//     const reply = await _callAI(_askBlHistory, system, 400);
 
-    // Replace typing indicator
-    const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
-    if (typingEl) typingEl.remove();
+//     // Replace typing indicator
+//     const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
+//     if (typingEl) typingEl.remove();
 
-    _askBlHistory.push({ role: "assistant", content: reply });
-    // Keep history manageable (last 10 turns)
-    if (_askBlHistory.length > 20) _askBlHistory = _askBlHistory.slice(-20);
+//     _askBlHistory.push({ role: "assistant", content: reply });
+//     // Keep history manageable (last 10 turns)
+//     if (_askBlHistory.length > 20) _askBlHistory = _askBlHistory.slice(-20);
 
-    _appendAskBlMsg("assistant", _markdownToHtml(reply));
-  } catch (e) {
-    const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
-    if (typingEl) typingEl.remove();
-    _appendAskBlMsg(
-      "assistant",
-      "Sorry, I couldn't connect to the AI right now. Please try again.",
-    );
-    console.warn("Ask BlueLedger failed", e);
-  } finally {
-    _askBlBusy = false;
-    const btn = document.getElementById("askBlSendBtn");
-    if (btn) btn.disabled = false;
-  }
-}
+//     _appendAskBlMsg("assistant", _markdownToHtml(reply));
+//   } catch (e) {
+//     const typingEl = document.getElementById(typingId)?.closest(".ask-bl-msg");
+//     if (typingEl) typingEl.remove();
+//     _appendAskBlMsg(
+//       "assistant",
+//       "Sorry, I couldn't connect to the AI right now. Please try again.",
+//     );
+//     console.warn("Ask BlueLedger failed", e);
+//   } finally {
+//     _askBlBusy = false;
+//     const btn = document.getElementById("askBlSendBtn");
+//     if (btn) btn.disabled = false;
+//   }
+// }
 
-function _appendAskBlMsg(role, html) {
-  const container = document.getElementById("askBlMessages");
-  if (!container) return;
-  // Hide welcome screen on first message
-  const welcome = container.querySelector(".ask-bl-welcome");
-  if (welcome) welcome.style.display = "none";
+// function _appendAskBlMsg(role, html) {
+//   const container = document.getElementById("askBlMessages");
+//   if (!container) return;
+//   // Hide welcome screen on first message
+//   const welcome = container.querySelector(".ask-bl-welcome");
+//   if (welcome) welcome.style.display = "none";
 
-  const div = document.createElement("div");
-  div.className = `ask-bl-msg ask-bl-msg--${role}`;
-  div.innerHTML =
-    role === "assistant"
-      ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
-      : `<div class="ask-bl-bubble">${html}</div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
+//   const div = document.createElement("div");
+//   div.className = `ask-bl-msg ask-bl-msg--${role}`;
+//   div.innerHTML =
+//     role === "assistant"
+//       ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
+//       : `<div class="ask-bl-bubble">${html}</div>`;
+//   container.appendChild(div);
+//   container.scrollTop = container.scrollHeight;
+// }
 
-function _markdownToHtml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code>$1</code>")
-    .replace(/\n/g, "<br>");
-}
+// function _markdownToHtml(text) {
+//   return text
+//     .replace(/&/g, "&amp;")
+//     .replace(/</g, "&lt;")
+//     .replace(/>/g, "&gt;")
+//     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+//     .replace(/\*(.+?)\*/g, "<em>$1</em>")
+//     .replace(/`(.+?)`/g, "<code>$1</code>")
+//     .replace(/\n/g, "<br>");
+// }
 
-/* ──────────────────────────────────────────────
-   FEATURE 3 & 4: AI SPENDING INSIGHTS + PREDICTIVE BUDGETING
-   Button in the Insights card header triggers this.
-   Sends full transaction history → Claude gives:
-   - Personalised anomaly explanations
-   - Spending tips
-   - AI month-end prediction with seasonal reasoning
-────────────────────────────────────────────── */
-let _aiInsightsBusy = false;
+// /* ──────────────────────────────────────────────
+//    FEATURE 3 & 4: AI SPENDING INSIGHTS + PREDICTIVE BUDGETING
+//    Button in the Insights card header triggers this.
+//    Sends full transaction history → Claude gives:
+//    - Personalised anomaly explanations
+//    - Spending tips
+//    - AI month-end prediction with seasonal reasoning
+// ────────────────────────────────────────────── */
+// let _aiInsightsBusy = false;
 
-async function runAiInsights() {
-  if (_aiInsightsBusy) return;
-  _aiInsightsBusy = true;
+// async function runAiInsights() {
+//   if (_aiInsightsBusy) return;
+//   _aiInsightsBusy = true;
 
-  const btn = document.getElementById("aiInsightsBtn");
-  const panel = document.getElementById("aiInsightsPanel");
-  if (!panel) return;
+//   const btn = document.getElementById("aiInsightsBtn");
+//   const panel = document.getElementById("aiInsightsPanel");
+//   if (!panel) return;
 
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analysing…';
-  }
-  panel.style.display = "block";
-  panel.innerHTML = `
-    <div class="ai-insights-loading">
-      <i class="fas fa-brain" style="color:#a78bfa;font-size:1.4rem"></i>
-      <div>
-        <div style="font-weight:700;color:#e2e8f0;font-size:.88rem">AI is analysing your spending…</div>
-        <div style="color:#64748b;font-size:.78rem;margin-top:.2rem">Looking for patterns, anomalies &amp; opportunities</div>
-      </div>
-    </div>`;
+//   if (btn) {
+//     btn.disabled = true;
+//     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analysing…';
+//   }
+//   panel.style.display = "block";
+//   panel.innerHTML = `
+//     <div class="ai-insights-loading">
+//       <i class="fas fa-brain" style="color:#a78bfa;font-size:1.4rem"></i>
+//       <div>
+//         <div style="font-weight:700;color:#e2e8f0;font-size:.88rem">AI is analysing your spending…</div>
+//         <div style="color:#64748b;font-size:.78rem;margin-top:.2rem">Looking for patterns, anomalies &amp; opportunities</div>
+//       </div>
+//     </div>`;
 
-  try {
-    const now = new Date();
-    const thisMonth = transactions.filter((t) => {
-      const d = new Date(t.date + "T00:00:00");
-      return (
-        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-      );
-    });
-    const lastMonth = transactions.filter((t) => {
-      const d = new Date(t.date + "T00:00:00");
-      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      return (
-        d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth()
-      );
-    });
+//   try {
+//     const now = new Date();
+//     const thisMonth = transactions.filter((t) => {
+//       const d = new Date(t.date + "T00:00:00");
+//       return (
+//         d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+//       );
+//     });
+//     const lastMonth = transactions.filter((t) => {
+//       const d = new Date(t.date + "T00:00:00");
+//       const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+//       return (
+//         d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth()
+//       );
+//     });
 
-    // Build a detailed summary for the AI
-    const fmtAmt = (n) =>
-      `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
-    const catTotals = {};
-    transactions
-      .slice(0, 200)
-      .filter((t) => t.type === "expense")
-      .forEach((t) => {
-        catTotals[t.category] =
-          (catTotals[t.category] || 0) + Math.abs(t.amount);
-      });
-    const thisMonthCats = {};
-    thisMonth
-      .filter((t) => t.type === "expense")
-      .forEach((t) => {
-        thisMonthCats[t.category] =
-          (thisMonthCats[t.category] || 0) + Math.abs(t.amount);
-      });
-    const lastMonthCats = {};
-    lastMonth
-      .filter((t) => t.type === "expense")
-      .forEach((t) => {
-        lastMonthCats[t.category] =
-          (lastMonthCats[t.category] || 0) + Math.abs(t.amount);
-      });
+//     // Build a detailed summary for the AI
+//     const fmtAmt = (n) =>
+//       `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+//     const catTotals = {};
+//     transactions
+//       .slice(0, 200)
+//       .filter((t) => t.type === "expense")
+//       .forEach((t) => {
+//         catTotals[t.category] =
+//           (catTotals[t.category] || 0) + Math.abs(t.amount);
+//       });
+//     const thisMonthCats = {};
+//     thisMonth
+//       .filter((t) => t.type === "expense")
+//       .forEach((t) => {
+//         thisMonthCats[t.category] =
+//           (thisMonthCats[t.category] || 0) + Math.abs(t.amount);
+//       });
+//     const lastMonthCats = {};
+//     lastMonth
+//       .filter((t) => t.type === "expense")
+//       .forEach((t) => {
+//         lastMonthCats[t.category] =
+//           (lastMonthCats[t.category] || 0) + Math.abs(t.amount);
+//       });
 
-    const thisMonthIncome = thisMonth
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const thisMonthExpense = thisMonth
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Math.abs(t.amount), 0);
-    const lastMonthExpense = lastMonth
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Math.abs(t.amount), 0);
+//     const thisMonthIncome = thisMonth
+//       .filter((t) => t.type === "income")
+//       .reduce((s, t) => s + t.amount, 0);
+//     const thisMonthExpense = thisMonth
+//       .filter((t) => t.type === "expense")
+//       .reduce((s, t) => s + Math.abs(t.amount), 0);
+//     const lastMonthExpense = lastMonth
+//       .filter((t) => t.type === "expense")
+//       .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-    const dayOfMonth = now.getDate();
-    const daysInMonth = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-    ).getDate();
-    const daysLeft = daysInMonth - dayOfMonth;
-    const spendingLimit = userData?.spendingLimit || 0;
+//     const dayOfMonth = now.getDate();
+//     const daysInMonth = new Date(
+//       now.getFullYear(),
+//       now.getMonth() + 1,
+//       0,
+//     ).getDate();
+//     const daysLeft = daysInMonth - dayOfMonth;
+//     const spendingLimit = userData?.spendingLimit || 0;
 
-    const catCompare = Object.keys({ ...thisMonthCats, ...lastMonthCats })
-      .map((cat) => {
-        const cur = thisMonthCats[cat] || 0;
-        const prev = lastMonthCats[cat] || 0;
-        const diff = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
-        return `  ${cat}: this month ${fmtAmt(cur)}${prev > 0 ? `, last month ${fmtAmt(prev)}${diff !== null ? ` (${diff > 0 ? "+" : ""}${diff}%)` : ""}` : ""}`;
-      })
-      .join("\n");
+//     const catCompare = Object.keys({ ...thisMonthCats, ...lastMonthCats })
+//       .map((cat) => {
+//         const cur = thisMonthCats[cat] || 0;
+//         const prev = lastMonthCats[cat] || 0;
+//         const diff = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+//         return `  ${cat}: this month ${fmtAmt(cur)}${prev > 0 ? `, last month ${fmtAmt(prev)}${diff !== null ? ` (${diff > 0 ? "+" : ""}${diff}%)` : ""}` : ""}`;
+//       })
+//       .join("\n");
 
-    const recentTxns = transactions
-      .slice(0, 20)
-      .map(
-        (t) =>
-          `  ${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmtAmt(t.amount)}`,
-      )
-      .join("\n");
+//     const recentTxns = transactions
+//       .slice(0, 20)
+//       .map(
+//         (t) =>
+//           `  ${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${fmtAmt(t.amount)}`,
+//       )
+//       .join("\n");
 
-    const dataContext = `Financial snapshot:
-Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })} (day ${dayOfMonth} of ${daysInMonth}, ${daysLeft} days left)
-This month income: ${fmtAmt(thisMonthIncome)} | expenses: ${fmtAmt(thisMonthExpense)}
-Last month expenses: ${fmtAmt(lastMonthExpense)}
-${spendingLimit > 0 ? `Monthly spending limit: ${fmtAmt(spendingLimit)} (${Math.round((thisMonthExpense / spendingLimit) * 100)}% used)` : "No spending limit set"}
-Total transactions: ${transactions.length}
+//     const dataContext = `Financial snapshot:
+// Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })} (day ${dayOfMonth} of ${daysInMonth}, ${daysLeft} days left)
+// This month income: ${fmtAmt(thisMonthIncome)} | expenses: ${fmtAmt(thisMonthExpense)}
+// Last month expenses: ${fmtAmt(lastMonthExpense)}
+// ${spendingLimit > 0 ? `Monthly spending limit: ${fmtAmt(spendingLimit)} (${Math.round((thisMonthExpense / spendingLimit) * 100)}% used)` : "No spending limit set"}
+// Total transactions: ${transactions.length}
 
-Category comparison (this month vs last month):
-${catCompare || "  Not enough data"}
+// Category comparison (this month vs last month):
+// ${catCompare || "  Not enough data"}
 
-Recent 20 transactions:
-${recentTxns || "  None yet"}`;
+// Recent 20 transactions:
+// ${recentTxns || "  None yet"}`;
 
-    const system = `You are BlueLedger AI, an expert personal finance advisor for an Indian user.
-Analyse the spending data and provide a concise, actionable, warm financial advice report.
+//     const system = `You are BlueLedger AI, an expert personal finance advisor for an Indian user.
+// Analyse the spending data and provide a concise, actionable, warm financial advice report.
 
-Structure your response EXACTLY as valid JSON (no markdown fences) with this shape:
-{
-  "summary": "One sentence overall assessment",
-  "prediction": {
-    "amount": 12500,
-    "reasoning": "Brief reason for the prediction"
-  },
-  "tips": [
-    { "icon": "fa-fire", "color": "#ef4444", "title": "Short title", "body": "Specific actionable advice" },
-    { "icon": "fa-piggy-bank", "color": "#10b981", "title": "Short title", "body": "Specific actionable advice" }
-  ],
-  "alerts": [
-    { "title": "Anomaly title", "body": "Explanation of why this is unusual and what to do" }
-  ]
-}
+// Structure your response EXACTLY as valid JSON (no markdown fences) with this shape:
+// {
+//   "summary": "One sentence overall assessment",
+//   "prediction": {
+//     "amount": 12500,
+//     "reasoning": "Brief reason for the prediction"
+//   },
+//   "tips": [
+//     { "icon": "fa-fire", "color": "#ef4444", "title": "Short title", "body": "Specific actionable advice" },
+//     { "icon": "fa-piggy-bank", "color": "#10b981", "title": "Short title", "body": "Specific actionable advice" }
+//   ],
+//   "alerts": [
+//     { "title": "Anomaly title", "body": "Explanation of why this is unusual and what to do" }
+//   ]
+// }
 
-Rules:
-- prediction.amount is an integer in rupees representing your AI-estimated month-end total expense
-- Generate 2-4 tips, each specific to this user's actual data (not generic advice)
-- Generate 0-3 alerts only for genuinely unusual patterns
-- Use ₹ for amounts, Indian number formatting (lakhs/crores if applicable)
-- Be warm, specific, non-judgmental. Reference real categories and amounts from the data.
-- Return ONLY the JSON object, nothing else.`;
+// Rules:
+// - prediction.amount is an integer in rupees representing your AI-estimated month-end total expense
+// - Generate 2-4 tips, each specific to this user's actual data (not generic advice)
+// - Generate 0-3 alerts only for genuinely unusual patterns
+// - Use ₹ for amounts, Indian number formatting (lakhs/crores if applicable)
+// - Be warm, specific, non-judgmental. Reference real categories and amounts from the data.
+// - Return ONLY the JSON object, nothing else.`;
 
-    const raw = await _callAI(
-      [{ role: "user", content: dataContext }],
-      system,
-      800,
-    );
+//     const raw = await _callAI(
+//       [{ role: "user", content: dataContext }],
+//       system,
+//       800,
+//     );
 
-    let parsed;
-    try {
-      const clean = raw.replace(/```json|```/g, "").trim();
-      parsed = JSON.parse(clean);
-    } catch {
-      throw new Error("Could not parse AI response");
-    }
+//     let parsed;
+//     try {
+//       const clean = raw.replace(/```json|```/g, "").trim();
+//       parsed = JSON.parse(clean);
+//     } catch {
+//       throw new Error("Could not parse AI response");
+//     }
 
-    // Render the AI advice panel
-    const alertsHtml = (parsed.alerts || [])
-      .map(
-        (a) => `
-      <div class="ai-alert-item">
-        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;flex-shrink:0;margin-top:.15rem"></i>
-        <div><div class="ai-alert-title">${_safeText(a.title)}</div><div class="ai-alert-body">${_safeText(a.body)}</div></div>
-      </div>`,
-      )
-      .join("");
+//     // Render the AI advice panel
+//     const alertsHtml = (parsed.alerts || [])
+//       .map(
+//         (a) => `
+//       <div class="ai-alert-item">
+//         <i class="fas fa-exclamation-triangle" style="color:#f59e0b;flex-shrink:0;margin-top:.15rem"></i>
+//         <div><div class="ai-alert-title">${_safeText(a.title)}</div><div class="ai-alert-body">${_safeText(a.body)}</div></div>
+//       </div>`,
+//       )
+//       .join("");
 
-    const tipsHtml = (parsed.tips || [])
-      .map(
-        (t) => `
-      <div class="ai-tip-card">
-        <div class="ai-tip-icon" style="background:${t.color}22;color:${t.color}"><i class="fas ${t.icon}"></i></div>
-        <div><div class="ai-tip-title">${_safeText(t.title)}</div><div class="ai-tip-body">${_safeText(t.body)}</div></div>
-      </div>`,
-      )
-      .join("");
+//     const tipsHtml = (parsed.tips || [])
+//       .map(
+//         (t) => `
+//       <div class="ai-tip-card">
+//         <div class="ai-tip-icon" style="background:${t.color}22;color:${t.color}"><i class="fas ${t.icon}"></i></div>
+//         <div><div class="ai-tip-title">${_safeText(t.title)}</div><div class="ai-tip-body">${_safeText(t.body)}</div></div>
+//       </div>`,
+//       )
+//       .join("");
 
-    const predAmt = parsed.prediction?.amount;
-    const predOver = spendingLimit > 0 && predAmt > spendingLimit;
-    const predColor = predOver
-      ? "#ef4444"
-      : predAmt > thisMonthExpense * 1.2
-        ? "#f59e0b"
-        : "#10b981";
-    const predHtml = predAmt
-      ? `
-      <div class="ai-prediction-row">
-        <div class="ai-prediction-label"><i class="fas fa-chart-line" style="color:${predColor}"></i> AI Month-end Prediction</div>
-        <div class="ai-prediction-amount" style="color:${predColor}">${fmtAmt(predAmt)}</div>
-        <div class="ai-prediction-reason">${_safeText(parsed.prediction.reasoning)}</div>
-      </div>`
-      : "";
+//     const predAmt = parsed.prediction?.amount;
+//     const predOver = spendingLimit > 0 && predAmt > spendingLimit;
+//     const predColor = predOver
+//       ? "#ef4444"
+//       : predAmt > thisMonthExpense * 1.2
+//         ? "#f59e0b"
+//         : "#10b981";
+//     const predHtml = predAmt
+//       ? `
+//       <div class="ai-prediction-row">
+//         <div class="ai-prediction-label"><i class="fas fa-chart-line" style="color:${predColor}"></i> AI Month-end Prediction</div>
+//         <div class="ai-prediction-amount" style="color:${predColor}">${fmtAmt(predAmt)}</div>
+//         <div class="ai-prediction-reason">${_safeText(parsed.prediction.reasoning)}</div>
+//       </div>`
+//       : "";
 
-    panel.innerHTML = `
-      <div class="ai-insights-result">
-        <div class="ai-insights-summary">
-          <i class="fas fa-robot" style="color:#a78bfa;flex-shrink:0"></i>
-          <span>${_safeText(parsed.summary)}</span>
-        </div>
-        ${predHtml}
-        ${alertsHtml ? `<div class="ai-alerts-section">${alertsHtml}</div>` : ""}
-        <div class="ai-tips-grid">${tipsHtml}</div>
-        <div class="ai-insights-footer">
-          <button class="ai-refresh-btn" onclick="runAiInsights()"><i class="fas fa-rotate-right"></i> Refresh</button>
-          <button class="ai-dismiss-btn" onclick="document.getElementById('aiInsightsPanel').style.display='none'"><i class="fas fa-times"></i> Dismiss</button>
-        </div>
-      </div>`;
-  } catch (e) {
-    panel.innerHTML = `<div class="ai-insights-error"><i class="fas fa-circle-exclamation" style="color:#ef4444"></i> Could not load AI insights. Check your connection and try again.</div>`;
-    console.warn("AI insights failed", e);
-  } finally {
-    _aiInsightsBusy = false;
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI Advice';
-    }
-  }
-}
+//     panel.innerHTML = `
+//       <div class="ai-insights-result">
+//         <div class="ai-insights-summary">
+//           <i class="fas fa-robot" style="color:#a78bfa;flex-shrink:0"></i>
+//           <span>${_safeText(parsed.summary)}</span>
+//         </div>
+//         ${predHtml}
+//         ${alertsHtml ? `<div class="ai-alerts-section">${alertsHtml}</div>` : ""}
+//         <div class="ai-tips-grid">${tipsHtml}</div>
+//         <div class="ai-insights-footer">
+//           <button class="ai-refresh-btn" onclick="runAiInsights()"><i class="fas fa-rotate-right"></i> Refresh</button>
+//           <button class="ai-dismiss-btn" onclick="document.getElementById('aiInsightsPanel').style.display='none'"><i class="fas fa-times"></i> Dismiss</button>
+//         </div>
+//       </div>`;
+//   } catch (e) {
+//     panel.innerHTML = `<div class="ai-insights-error"><i class="fas fa-circle-exclamation" style="color:#ef4444"></i> Could not load AI insights. Check your connection and try again.</div>`;
+//     console.warn("AI insights failed", e);
+//   } finally {
+//     _aiInsightsBusy = false;
+//     if (btn) {
+//       btn.disabled = false;
+//       btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI Advice';
+//     }
+//   }
+// }
 
-function _safeText(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+// function _safeText(str) {
+//   return String(str || "")
+//     .replace(/&/g, "&amp;")
+//     .replace(/</g, "&lt;")
+//     .replace(/>/g, "&gt;");
+// }
 
 /* ──────────────────────────────────────────────
    FEATURE 5: VOICE LOGGING
@@ -2137,8 +2141,7 @@ Rules:
 - notes: any useful extra detail (items, GST, etc.) or empty string.
 - Return ONLY the JSON, no explanation or markdown.`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
+throw new Error("AI disabled (requires backend)");      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": ANTHROPIC_API_KEY, // ✅ IMPORTANT
@@ -8052,176 +8055,176 @@ function _clearAiSuggestion(type) {
   }
 }
 
-function aiAutoCategory(type, value) {
-  clearTimeout(_aiCatTimers[type]);
-  const badgeEl = document.getElementById(`${type}AiBadge`);
-  if (!badgeEl) return;
+// function aiAutoCategory(type, value) {
+//   clearTimeout(_aiCatTimers[type]);
+//   const badgeEl = document.getElementById(`${type}AiBadge`);
+//   if (!badgeEl) return;
 
-  const trimmed = value ? value.trim() : "";
-  const state = _getAiCatState(type);
+//   const trimmed = value ? value.trim() : "";
+//   const state = _getAiCatState(type);
 
-  if (state.acceptedDesc !== trimmed) {
-    state.acceptedCategory = "";
-    state.acceptedDesc = "";
-  }
+//   if (state.acceptedDesc !== trimmed) {
+//     state.acceptedCategory = "";
+//     state.acceptedDesc = "";
+//   }
 
-  if (!trimmed || trimmed.length < 3) {
-    _aiCatDismissed[type] = "";
-    _clearAiSuggestion(type);
-    return;
-  }
+//   if (!trimmed || trimmed.length < 3) {
+//     _aiCatDismissed[type] = "";
+//     _clearAiSuggestion(type);
+//     return;
+//   }
 
-  if (_aiCatDismissed[type] === trimmed) return;
+//   if (_aiCatDismissed[type] === trimmed) return;
 
-  _clearAiSuggestion(type);
+//   _clearAiSuggestion(type);
 
-  const localGuess = _localKeywordGuess(type, trimmed);
-  if (localGuess) {
-    _showAiBadge(type, localGuess, trimmed, false);
-  }
+//   const localGuess = _localKeywordGuess(type, trimmed);
+//   if (localGuess) {
+//     _showAiBadge(type, localGuess, trimmed, false);
+//   }
 
-  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
-  const myGen = _aiCatGeneration[type];
+//   _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+//   const myGen = _aiCatGeneration[type];
 
-  _aiCatTimers[type] = setTimeout(async () => {
-    if (_aiCatGeneration[type] !== myGen) return;
-    await _runAiCat(type, trimmed, myGen);
-  }, 700);
-}
+//   _aiCatTimers[type] = setTimeout(async () => {
+//     if (_aiCatGeneration[type] !== myGen) return;
+//     await _runAiCat(type, trimmed, myGen);
+//   }, 700);
+// }
 
-async function _runAiCat(type, desc, generation) {
-  const cats = _getAiCategories(type);
-  const badgeEl = document.getElementById(`${type}AiBadge`);
-  const selectEl = document.getElementById(`${type}Category`);
-  if (!badgeEl || !selectEl) return;
+// async function _runAiCat(type, desc, generation) {
+//   const cats = _getAiCategories(type);
+//   const badgeEl = document.getElementById(`${type}AiBadge`);
+//   const selectEl = document.getElementById(`${type}Category`);
+//   if (!badgeEl || !selectEl) return;
 
-  try {
-    const system = `You are a financial transaction categorizer for an Indian personal finance app.
-Given a transaction description, return ONLY the single best matching category name from the list.
-Do not explain. Do not add punctuation. Return only the category name exactly as given.
-Categories: ${cats.join(", ")}`;
-    const result = await _callAI([{ role: "user", content: desc }], system, 20);
+//   try {
+//     const system = `You are a financial transaction categorizer for an Indian personal finance app.
+// Given a transaction description, return ONLY the single best matching category name from the list.
+// Do not explain. Do not add punctuation. Return only the category name exactly as given.
+// Categories: ${cats.join(", ")}`;
+//     const result = await _callAI([{ role: "user", content: desc }], system, 20);
 
-    if (_aiCatGeneration[type] !== generation) return;
+//     if (_aiCatGeneration[type] !== generation) return;
 
-    const suggested = result.trim();
-    const match =
-      cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
-      cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+//     const suggested = result.trim();
+//     const match =
+//       cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
+//       cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
 
-    if (!match) {
-      const localGuess = _localKeywordGuess(type, desc);
-      if (!localGuess) _clearAiSuggestion(type);
-      return;
-    }
+//     if (!match) {
+//       const localGuess = _localKeywordGuess(type, desc);
+//       if (!localGuess) _clearAiSuggestion(type);
+//       return;
+//     }
 
-    _showAiBadge(type, match, desc, true);
-  } catch (e) {
-    if (_aiCatGeneration[type] !== generation) return;
-    const localGuess = _localKeywordGuess(type, desc);
-    if (!localGuess) _clearAiSuggestion(type);
-    console.warn("AI categorization failed", e);
-  }
-}
+//     _showAiBadge(type, match, desc, true);
+//   } catch (e) {
+//     if (_aiCatGeneration[type] !== generation) return;
+//     const localGuess = _localKeywordGuess(type, desc);
+//     if (!localGuess) _clearAiSuggestion(type);
+//     console.warn("AI categorization failed", e);
+//   }
+// }
 
-function _showAiBadge(type, match, desc, isFinal) {
-  const badgeEl = document.getElementById(`${type}AiBadge`);
-  const selectEl = document.getElementById(`${type}Category`);
-  if (!badgeEl || !selectEl) return;
-  const state = _getAiCatState(type);
+// function _showAiBadge(type, match, desc, isFinal) {
+//   const badgeEl = document.getElementById(`${type}AiBadge`);
+//   const selectEl = document.getElementById(`${type}Category`);
+//   if (!badgeEl || !selectEl) return;
+//   const state = _getAiCatState(type);
 
-  if (_aiCatDismissed[type] === desc) return;
+//   if (_aiCatDismissed[type] === desc) return;
 
-  state.suggestedCategory = match;
-  state.suggestedDesc = desc;
+//   state.suggestedCategory = match;
+//   state.suggestedDesc = desc;
 
-  const isApplied =
-    state.acceptedCategory === match && state.acceptedDesc === desc;
-  badgeEl.dataset.lastDesc = desc;
-  badgeEl.dataset.suggestedMatch = match;
+//   const isApplied =
+//     state.acceptedCategory === match && state.acceptedDesc === desc;
+//   badgeEl.dataset.lastDesc = desc;
+//   badgeEl.dataset.suggestedMatch = match;
 
-  const confidenceIcon = isFinal
-    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
-    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess while AI confirms"></i>`;
+//   const confidenceIcon = isFinal
+//     ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
+//     : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess while AI confirms"></i>`;
 
-  const helperText = isApplied
-    ? "Applied to the category field."
-    : isFinal
-      ? "Review it, then tap Use if it looks right."
-      : "Quick guess while AI confirms the category.";
+//   const helperText = isApplied
+//     ? "Applied to the category field."
+//     : isFinal
+//       ? "Review it, then tap Use if it looks right."
+//       : "Quick guess while AI confirms the category.";
 
-  badgeEl.style.display = "flex";
-  badgeEl.innerHTML = `
-    <div class="ai-cat-copy">
-      <div class="ai-cat-title-row">
-        ${confidenceIcon}
-        <span class="ai-cat-title">Suggested category</span>
-      </div>
-      <div class="ai-cat-main">
-        <strong>${match}</strong>
-        ${!isFinal ? "<span class='ai-cat-pending'>AI is confirming...</span>" : ""}
-      </div>
-      <div class="ai-cat-help">${helperText}</div>
-    </div>
-    <div class="ai-cat-actions">
-      ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Use</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
-      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
-    </div>
-  `;
-}
+//   badgeEl.style.display = "flex";
+//   badgeEl.innerHTML = `
+//     <div class="ai-cat-copy">
+//       <div class="ai-cat-title-row">
+//         ${confidenceIcon}
+//         <span class="ai-cat-title">Suggested category</span>
+//       </div>
+//       <div class="ai-cat-main">
+//         <strong>${match}</strong>
+//         ${!isFinal ? "<span class='ai-cat-pending'>AI is confirming...</span>" : ""}
+//       </div>
+//       <div class="ai-cat-help">${helperText}</div>
+//     </div>
+//     <div class="ai-cat-actions">
+//       ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Use</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
+//       <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+//     </div>
+//   `;
+// }
 
-function aiApplyCategory(type, category) {
-  const selectEl = document.getElementById(`${type}Category`);
-  const descEl = document.getElementById(`${type}Desc`);
-  const state = _getAiCatState(type);
-  if (selectEl) selectEl.value = category;
-  state.acceptedCategory = category;
-  state.acceptedDesc = descEl?.value.trim() || "";
-  _showAiBadge(type, category, state.acceptedDesc, true);
-}
+// function aiApplyCategory(type, category) {
+//   const selectEl = document.getElementById(`${type}Category`);
+//   const descEl = document.getElementById(`${type}Desc`);
+//   const state = _getAiCatState(type);
+//   if (selectEl) selectEl.value = category;
+//   state.acceptedCategory = category;
+//   state.acceptedDesc = descEl?.value.trim() || "";
+//   _showAiBadge(type, category, state.acceptedDesc, true);
+// }
 
-function aiDismissBadge(type) {
-  const descEl = document.getElementById(`${type}Desc`);
-  _aiCatDismissed[type] = descEl?.value.trim() || "";
-  _clearAiSuggestion(type);
-}
+// function aiDismissBadge(type) {
+//   const descEl = document.getElementById(`${type}Desc`);
+//   _aiCatDismissed[type] = descEl?.value.trim() || "";
+//   _clearAiSuggestion(type);
+// }
 
-function aiCategorySelectionChanged(type) {
-  const descEl = document.getElementById(`${type}Desc`);
-  const selectEl = document.getElementById(`${type}Category`);
-  const state = _getAiCatState(type);
-  const desc = descEl?.value.trim() || "";
+// function aiCategorySelectionChanged(type) {
+//   const descEl = document.getElementById(`${type}Desc`);
+//   const selectEl = document.getElementById(`${type}Category`);
+//   const state = _getAiCatState(type);
+//   const desc = descEl?.value.trim() || "";
 
-  if (
-    state.acceptedCategory &&
-    selectEl &&
-    selectEl.value !== state.acceptedCategory
-  ) {
-    state.acceptedCategory = "";
-    state.acceptedDesc = "";
-  }
+//   if (
+//     state.acceptedCategory &&
+//     selectEl &&
+//     selectEl.value !== state.acceptedCategory
+//   ) {
+//     state.acceptedCategory = "";
+//     state.acceptedDesc = "";
+//   }
 
-  if (desc) _aiCatDismissed[type] = desc;
-  _clearAiSuggestion(type);
-}
+//   if (desc) _aiCatDismissed[type] = desc;
+//   _clearAiSuggestion(type);
+// }
 
-function resetAiCatBadge(type) {
-  clearTimeout(_aiCatTimers[type]);
-  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
-  _aiCatDismissed[type] = "";
-  _aiCatState[type] = {
-    suggestedCategory: "",
-    suggestedDesc: "",
-    acceptedCategory: "",
-    acceptedDesc: "",
-  };
-  const badgeEl = document.getElementById(`${type}AiBadge`);
-  if (badgeEl) {
-    badgeEl.style.display = "none";
-    badgeEl.dataset.lastDesc = "";
-    badgeEl.dataset.suggestedMatch = "";
-  }
-}
+// function resetAiCatBadge(type) {
+//   clearTimeout(_aiCatTimers[type]);
+//   _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+//   _aiCatDismissed[type] = "";
+//   _aiCatState[type] = {
+//     suggestedCategory: "",
+//     suggestedDesc: "",
+//     acceptedCategory: "",
+//     acceptedDesc: "",
+//   };
+//   const badgeEl = document.getElementById(`${type}AiBadge`);
+//   if (badgeEl) {
+//     badgeEl.style.display = "none";
+//     badgeEl.dataset.lastDesc = "";
+//     badgeEl.dataset.suggestedMatch = "";
+//   }
+// }
 
 window.addEventListener("load", () => {
   try {
