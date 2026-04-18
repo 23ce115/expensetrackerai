@@ -1,224 +1,265 @@
 /* ═══════════════════════════════════════════════════════════════
    receipt.js — BlueLedger Receipt Scanner Module
-   Handles: file input, base64 encode, AI vision parse, form fill.
-   Depends on: utils.js, ai.js (must load first)
+
+   OWNS:
+     openReceiptScanner(type)   — called from HTML onclick
+     _processReceiptImage()     — internal Claude vision call
+
+   DEPENDS ON (loaded before this file):
+     ai.js  → window._callAI, window._getAiCategories
+     utils.js → safeGet, safeNumber, notify/toast
+
+   FIX APPLIED: _getAiCategories aliased from window._getAiCategories
+   (ai.js exports it; receipt.js cannot use bare name across files)
+
+   Load order:  utils.js → ai.js → voice.js → receipt.js → charts.js
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
+/* ── Alias _getAiCategories from ai.js ───────────────────────────
+   FIX: receipt.js previously called _getAiCategories() as a bare
+   name, but that function lives in ai.js. In strict-mode scripts
+   loaded as separate files, bare names don't cross file boundaries.
+   We resolve it via window._getAiCategories (set by ai.js line 1214).
+   ─────────────────────────────────────────────────────────────── */
+function _getAiCategories(type) {
+  // Prefer the live version from ai.js if available
+  if (
+    typeof window._getAiCategories === "function" &&
+    window._getAiCategories !== _getAiCategories
+  ) {
+    return window._getAiCategories(type);
+  }
+  // Fallback: build from base category arrays
+  const custom =
+    typeof customCategories !== "undefined" && Array.isArray(customCategories)
+      ? customCategories
+      : window.customCategories || [];
+  if (type === "income") {
+    return [
+      ...(window.BASE_INCOME_CATS || [
+        "Salary",
+        "Freelance",
+        "Business",
+        "Investment",
+        "Insurance",
+      ]),
+      ...custom,
+      "Other",
+    ];
+  }
+  return [
+    ...(window.BASE_EXPENSE_CATS || [
+      "Food",
+      "Entertainment",
+      "Shopping",
+      "Transport",
+      "Health",
+      "Investment",
+    ]),
+    ...custom,
+    "Other",
+  ];
+}
+
+/* ── Module state ─────────────────────────────────────────────── */
+let _receiptScanType = "expense"; // "income" | "expense"
+let _receiptScanning = false;
+
 /* ══════════════════════════════════════════════════════════════
-   PUBLIC ENTRY POINT
+   PUBLIC: openReceiptScanner
+   Called from HTML: onclick="openReceiptScanner('expense')"
    ══════════════════════════════════════════════════════════════ */
-
-/**
- * Open the file picker and kick off receipt scanning.
- * @param {"income"|"expense"} type
- */
 function openReceiptScanner(type) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.capture = "environment";
+  _receiptScanType = type || "expense";
 
-  input.onchange = (e) => {
-    const file = e?.target?.files?.[0];
-    if (file) _processReceiptImage(type, file);
-  };
+  // Reuse the hidden file input if it exists, else create one
+  let fileInput = document.getElementById("receiptFileInput");
+  if (!fileInput) {
+    fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.id = "receiptFileInput";
+    fileInput.accept = "image/*";
+    fileInput.capture = "environment"; // prefer rear camera on mobile
+    fileInput.style.display = "none";
+    document.body.appendChild(fileInput);
 
-  input.click();
+    fileInput.addEventListener("change", function () {
+      const file = fileInput.files && fileInput.files[0];
+      if (file) _processReceiptImage(file, _receiptScanType);
+      // Reset so same file can be re-selected
+      fileInput.value = "";
+    });
+  }
+
+  fileInput.click();
 }
 
 /* ══════════════════════════════════════════════════════════════
-   IMAGE PROCESSING PIPELINE
+   INTERNAL: _processReceiptImage
+   Converts image to base64 → sends to Claude vision API →
+   auto-fills the transaction form fields.
    ══════════════════════════════════════════════════════════════ */
+async function _processReceiptImage(file, type) {
+  if (_receiptScanning) return;
+  _receiptScanning = true;
 
-async function _processReceiptImage(type, file) {
-  // Guard: file must be an image
-  if (!file || !file.type.startsWith("image/")) {
-    toast("Please select a valid image file.", "error");
-    return;
-  }
-
-  const btn = safeGet(`${type}ReceiptBtn`);
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  }
-
-  toast("Scanning receipt…", "info");
+  // Show scanning indicator
+  const btnId = type === "income" ? "incomeReceiptBtn" : "expenseReceiptBtn";
+  const btnEl = safeGet(btnId);
+  const origHTML = btnEl ? btnEl.innerHTML : "";
+  if (btnEl) btnEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
 
   try {
-    /* ── Step 1: Convert to base64 ── */
+    // 1. Convert file to base64
     const base64 = await _fileToBase64(file);
     const mediaType = file.type || "image/jpeg";
 
-    /* ── Step 2: Build category list ── */
-    const cats = _getAiCategories(type);
+    // 2. Build allowed categories list
+    const allowedCats = _getAiCategories(type);
 
-    /* ── Step 3: Build prompt ── */
-    const system =
-      `You are a receipt scanner for an Indian personal finance app.\n` +
-      `Extract transaction data from this receipt image and return ONLY valid JSON:\n` +
-      `{"amount":450,"description":"Coffee and snacks","category":"Food","date":"2025-04-03","notes":"Any relevant extra detail"}\n` +
-      `Rules:\n` +
-      `- amount is total paid in rupees as a number (no symbol). If unclear, use null.\n` +
-      `- description: concise merchant + item summary.\n` +
-      `- category must be exactly one from: ${cats.join(", ")}\n` +
-      `- date: ISO format YYYY-MM-DD if visible, otherwise null.\n` +
-      `- notes: any useful extra detail (items, GST, etc.) or empty string.\n` +
-      `- Return ONLY the JSON, no explanation or markdown.`;
+    // 3. Call Claude vision via the shared _callAI helper in ai.js
+    const callAI = window._callAI;
+    if (typeof callAI !== "function") {
+      _receiptNotify("AI module not loaded. Please refresh the page.", "error");
+      return;
+    }
 
-    /* ── Step 4: Call AI vision API ── */
-    throw new Error("AI disabled: backend required", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: window.AI_MODEL || "claude-sonnet-4-20250514",
-        max_tokens: 300,
-        system,
-        messages: [
+    const systemPrompt = `You are a receipt parser for a personal finance app.
+Extract transaction details from the receipt image and return ONLY a JSON object with these fields:
+{
+  "amount": <number, positive, no currency symbol>,
+  "description": "<merchant name or item description, max 40 chars>",
+  "category": "<one of: ${allowedCats.join(", ")}>",
+  "date": "<YYYY-MM-DD format, today if unclear>"
+}
+Rules:
+- amount must be a positive number (the total paid)
+- category must be exactly one value from the list above
+- date must be YYYY-MM-DD
+- Return ONLY the JSON object, no explanation, no markdown fences`;
+
+    const messages = [
+      {
+        role: "user",
+        content: [
           {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: { type: "base64", media_type: mediaType, data: base64 },
-              },
-              {
-                type: "text",
-                text: "Extract the transaction details from this receipt.",
-              },
-            ],
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: base64 },
+          },
+          {
+            type: "text",
+            text: "Parse this receipt and return the JSON object.",
           },
         ],
-      }),
-    });
+      },
+    ];
 
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    // Use the extended vision call (max 500 tokens is plenty for JSON)
+    const raw = await callAI(messages, systemPrompt, 500);
 
-    const data = await response.json();
-    const text = data?.content?.[0]?.text;
-    if (!text) throw new Error("Invalid AI response — no text returned");
+    // 4. Parse the response
+    const parsed =
+      typeof extractJsonFromText === "function"
+        ? extractJsonFromText(raw)
+        : _safeParseReceiptJson(raw);
 
-    /* ── Step 5: Parse response (with fallback extraction) ── */
-    const parsed = extractJsonFromText(text);
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("Could not parse receipt data from AI response");
+    if (!parsed || typeof parsed.amount !== "number") {
+      _receiptNotify(
+        "Couldn't read the receipt. Please fill in manually.",
+        "warn",
+      );
+      return;
     }
 
-    /* ── Step 6: Validate parsed object ── */
-    _validateReceiptData(parsed);
-
-    /* ── Step 7: Populate form fields safely ── */
-    _applyReceiptToForm(type, parsed);
-
-    toast("Receipt scanned successfully!", "success");
+    // 5. Fill the form
+    _fillTransactionForm(type, parsed);
+    _receiptNotify(
+      `Receipt scanned! ₹${safeNumber(parsed.amount).toLocaleString("en-IN")} — ${parsed.description || ""}`,
+      "success",
+    );
   } catch (err) {
-    console.error("Receipt scan error:", err);
-    toast(`Failed to scan receipt: ${err.message || "Unknown error"}`, "error");
+    console.error("receipt.js: scan failed", err);
+    _receiptNotify("Receipt scan failed. Please try again.", "error");
   } finally {
-    // Always restore button state
-    const restoreBtn = safeGet(`${type}ReceiptBtn`);
-    if (restoreBtn) {
-      restoreBtn.disabled = false;
-      restoreBtn.innerHTML = '<i class="fas fa-camera"></i>';
-    }
+    _receiptScanning = false;
+    if (btnEl) btnEl.innerHTML = origHTML;
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   HELPERS
-   ══════════════════════════════════════════════════════════════ */
+/* ── Helpers ─────────────────────────────────────────────────── */
 
-/**
- * Convert a File object to a base64 string (data portion only).
- * @param {File} file
- * @returns {Promise<string>}
- */
 function _fileToBase64(file) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function (resolve, reject) {
     const reader = new FileReader();
-
-    reader.onload = () => {
-      const result = reader.result;
-      if (!result || typeof result !== "string") {
-        reject(new Error("Empty file result"));
-        return;
-      }
-      // Strip the data URI prefix "data:<mime>;base64,"
-      const commaIdx = result.indexOf(",");
-      if (commaIdx === -1) {
-        reject(new Error("Malformed data URI"));
-        return;
-      }
-      resolve(result.slice(commaIdx + 1));
+    reader.onload = function () {
+      resolve(reader.result.split(",")[1]);
     };
-
-    reader.onerror = () => reject(new Error("File read failed"));
+    reader.onerror = function () {
+      reject(new Error("File read failed"));
+    };
     reader.readAsDataURL(file);
   });
 }
 
-/**
- * Basic validation of AI-parsed receipt object.
- * Throws if the object is clearly invalid.
- * @param {object} parsed
- */
-function _validateReceiptData(parsed) {
-  if (parsed.amount !== null && parsed.amount !== undefined) {
-    const num = Number(parsed.amount);
-    if (!Number.isFinite(num) || num < 0) {
-      parsed.amount = null; // Reset invalid amount rather than crashing
-    } else {
-      parsed.amount = num;
-    }
-  }
-
-  if (parsed.date) {
-    // Validate ISO date format
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(parsed.date)) {
-      parsed.date = null; // Silently discard malformed dates
-    }
-  }
-
-  parsed.description = String(parsed.description || "").trim();
-  parsed.category = String(parsed.category || "").trim();
-  parsed.notes = String(parsed.notes || "").trim();
-}
-
-/**
- * Apply parsed receipt data to the transaction form.
- * @param {"income"|"expense"} type
- * @param {object} parsed
- */
-function _applyReceiptToForm(type, parsed) {
-  const amtEl = safeGet(`${type}Amount`);
-  const descEl = safeGet(`${type}Desc`);
-  const notesEl = safeGet(`${type}Notes`);
-  const catEl = safeGet(`${type}Category`);
-  const dateEl = safeGet(`${type}Date`);
-
-  if (amtEl && parsed.amount != null) safeSetValue(amtEl, parsed.amount);
-  if (descEl) safeSetValue(descEl, parsed.description || "");
-  if (notesEl) safeSetValue(notesEl, parsed.notes || "");
-  if (dateEl && parsed.date) safeSetValue(dateEl, parsed.date);
-
-  if (catEl && parsed.category) {
-    // Only apply if the category exists in the select options
-    const options = Array.from(catEl.options || []).map((o) => o.value);
-    if (options.includes(parsed.category)) {
-      safeSetValue(catEl, parsed.category);
-    }
-  }
-
-  // Trigger AI auto-category if description available but category not set
-  if (parsed.description && (!parsed.category || !catEl?.value)) {
-    if (typeof aiAutoCategory === "function") {
-      aiAutoCategory(type, parsed.description);
+function _safeParseReceiptJson(raw) {
+  try {
+    const clean = String(raw || "")
+      .replace(/```json|```/g, "")
+      .trim();
+    return JSON.parse(clean);
+  } catch {
+    try {
+      const match = String(raw || "").match(/\{[\s\S]*\}/);
+      return match ? JSON.parse(match[0]) : null;
+    } catch {
+      return null;
     }
   }
 }
 
-/* ── Expose to global scope ──────────────────────────────────── */
+function _fillTransactionForm(type, data) {
+  // amount
+  const amtEl = document.getElementById(type + "Amount");
+  if (amtEl && data.amount) amtEl.value = Math.abs(data.amount);
+
+  // description
+  const descEl = document.getElementById(type + "Desc");
+  if (descEl && data.description) descEl.value = data.description;
+
+  // category
+  const catEl = document.getElementById(type + "Category");
+  if (catEl && data.category) {
+    // Only set if option exists in the <select>
+    const opts = Array.from(catEl.options).map((o) => o.value);
+    if (opts.includes(data.category)) catEl.value = data.category;
+  }
+
+  // date
+  const dateEl = document.getElementById(type + "Date");
+  if (dateEl && data.date && /^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
+    dateEl.value = data.date;
+  }
+
+  // Trigger AI auto-category in case description changed
+  if (typeof aiAutoCategory === "function" && descEl) {
+    aiAutoCategory(type, descEl.value);
+  }
+}
+
+function _receiptNotify(msg, type) {
+  if (typeof notify === "function") {
+    notify(msg, type);
+    return;
+  }
+  if (typeof toast === "function") {
+    toast(msg, type);
+    return;
+  }
+  console.info("[receipt]", msg);
+}
+
+/* ── Global exposure ─────────────────────────────────────────── */
 window.openReceiptScanner = openReceiptScanner;
+window._getAiCategories = window._getAiCategories || _getAiCategories; // don't overwrite ai.js version
