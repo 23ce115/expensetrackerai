@@ -82,7 +82,7 @@ let categoryBudgets = {};
 let recurringTemplates = [];
 
 let currentPeriod = "monthly"; // always monthly
-let chartPeriod = "monthly";
+// let chartPeriod = "monthly";
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
 let ctxId = null;
@@ -166,605 +166,605 @@ let _askBlHistory = [];
 let _askBlBusy = false;
 
 // /* ── Shared Anthropic API call ── */
-async function _callAI(messages, systemPrompt, maxTokens = 300) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages,
-    }),
-  });
-  if (!res.ok) throw new Error(`AI API error ${res.status}`);
-  const data = await res.json();
-  return data.content?.map((b) => b.text || "").join("") || "";
-}
+// async function _callAI(messages, systemPrompt, maxTokens = 300) {
+//   const res = await fetch("https://api.anthropic.com/v1/messages", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       model: AI_MODEL,
+//       max_tokens: maxTokens,
+//       system: systemPrompt,
+//       messages,
+//     }),
+//   });
+//   if (!res.ok) throw new Error(`AI API error ${res.status}`);
+//   const data = await res.json();
+//   return data.content?.map((b) => b.text || "").join("") || "";
+// }
 
-/* ──────────────────────────────────────────────
-   LOCAL KEYWORD CLASSIFIER
-   Runs instantly on every keystroke for immediate
-   feedback. Falls back to Claude API for ambiguous
-   cases after a debounce delay.
-────────────────────────────────────────────── */
-const _AI_KEYWORD_MAP = {
-  // Food & Dining
-  Food: [
-    "starbucks",
-    "coffee",
-    "cafe",
-    "restaurant",
-    "lunch",
-    "dinner",
-    "breakfast",
-    "zomato",
-    "swiggy",
-    "dominos",
-    "pizza",
-    "burger",
-    "biryani",
-    "food",
-    "grocery",
-    "supermarket",
-    "vegetables",
-    "fruits",
-    "milk",
-    "bread",
-    "chai",
-    "tea",
-    "snack",
-    "meal",
-    "eat",
-    "dunkin",
-    "mcdonalds",
-    "kfc",
-    "subway",
-    "barbeque",
-    "bakery",
-    "hotel",
-    "canteen",
-    "tiffin",
-    "dine",
-    "dining",
-    "juice",
-    "coca",
-    "pepsi",
-    "maggi",
-    "rice",
-    "dal",
-    "apple",
-    "banana",
-    "orange",
-    "mango",
-    "grapes",
-    "fruit",
-    "vegetable",
-    "tomato",
-    "potato",
-    "onion",
-    "egg",
-    "eggs",
-    "chicken",
-    "paneer",
-    "biscuit",
-    "biscuits",
-    "chips",
-    "chocolate",
-    "dosa",
-    "masala dosa",
-    "idli",
-    "vada",
-    "sambar",
-    "uttapam",
-    "poha",
-    "upma",
-    "paratha",
-    "roti",
-    "naan",
-    "sabzi",
-    "thali",
-    "sandwich",
-    "shawarma",
-    "wrap",
-    "roll",
-    "momo",
-    "momos",
-    "noodles",
-    "pasta",
-    "ice cream",
-    "kulfi",
-    "mithai",
-    "sweet",
-    "sweets",
-    "lassi",
-  ],
-  // Transport
-  Transport: [
-    "uber",
-    "ola",
-    "rapido",
-    "auto",
-    "taxi",
-    "cab",
-    "petrol",
-    "diesel",
-    "fuel",
-    "metro",
-    "bus",
-    "train",
-    "flight",
-    "airways",
-    "airline",
-    "travel",
-    "transport",
-    "toll",
-    "parking",
-    "irctc",
-    "indigo",
-    "spicejet",
-    "air india",
-    "vistara",
-    "redbus",
-    "rickshaw",
-    "bike",
-    "carpool",
-    "share",
-    "commute",
-    "railway",
-    "station",
-  ],
-  // Shopping
-  Shopping: [
-    "amazon",
-    "flipkart",
-    "myntra",
-    "ajio",
-    "nykaa",
-    "meesho",
-    "zepto",
-    "blinkit",
-    "bigbasket",
-    "reliance",
-    "dmart",
-    "mall",
-    "shopping",
-    "clothes",
-    "shirt",
-    "shoes",
-    "fashion",
-    "apparel",
-    "dress",
-    "watch",
-    "bag",
-    "accessories",
-    "cosmetics",
-    "beauty",
-    "electronics",
-    "mobile",
-    "laptop",
-    "gadget",
-    "appliance",
-    "furniture",
-    "decor",
-    "gift",
-    "toys",
-    "toy",
-    "perfume",
-    "soap",
-    "shampoo",
-    "detergent",
-    "bucket",
-    "bottle",
-    "utensils",
-    "kitchen",
-  ],
-  // Entertainment
-  Entertainment: [
-    "netflix",
-    "hotstar",
-    "prime",
-    "disney",
-    "apple music",
-    "youtube music",
-    "amazon prime",
-    "prime video",
-    "spotify",
-    "youtube",
-    "gaming",
-    "game",
-    "movie",
-    "cinema",
-    "pvr",
-    "inox",
-    "concert",
-    "event",
-    "ticket",
-    "show",
-    "play",
-    "netflix",
-    "hbo",
-    "apple tv",
-    "jio",
-    "sonyliv",
-    "zee",
-    "music",
-    "stream",
-  ],
-  // Health
-  Health: [
-    "pharmacy",
-    "medicine",
-    "doctor",
-    "hospital",
-    "clinic",
-    "apollo",
-    "medplus",
-    "health",
-    "gym",
-    "fitness",
-    "yoga",
-    "physiotherapy",
-    "dental",
-    "optician",
-    "lab",
-    "test",
-    "pathology",
-    "prescription",
-    "tablet",
-    "capsule",
-    "syrup",
-    "ayurvedic",
-    "wellness",
-    "therapy",
-    "insurance",
-    "mediclaim",
-    "condom",
-    "condoms",
-    "sanitary pad",
-    "sanitary pads",
-    "pad",
-    "pads",
-    "tampon",
-    "pregnancy test",
-    "mask",
-    "masks",
-    "first aid",
-    "bandage",
-    "painkiller",
-    "medical",
-    "wellwoman",
-  ],
-  // Education
-  Education: [
-    "udemy",
-    "coursera",
-    "school",
-    "college",
-    "university",
-    "fees",
-    "course",
-    "book",
-    "stationery",
-    "tuition",
-    "coaching",
-    "class",
-    "exam",
-    "study",
-    "subscription",
-    "skill",
-    "certificate",
-    "degree",
-    "notes",
-    "pen",
-    "pencil",
-  ],
-  // Utilities
-  Utilities: [
-    "electricity",
-    "water",
-    "gas",
-    "broadband",
-    "wifi",
-    "internet",
-    "mobile recharge",
-    "recharge",
-    "dth",
-    "cable",
-    "postpaid",
-    "prepaid",
-    "rent",
-    "maintenance",
-    "society",
-    "bsnl",
-    "airtel",
-    "jio",
-    "vi",
-    "vodafone",
-    "idea",
-    "tata",
-    "dish",
-    "tatasky",
-    "telephone",
-    "bill",
-    "utility",
-    "municipal",
-  ],
-  // Salary / Income
-  Salary: [
-    "salary",
-    "payroll",
-    "wage",
-    "stipend",
-    "ctc",
-    "increment",
-    "hike",
-    "bonus",
-    "appraisal",
-    "employer",
-    "company",
-    "office",
-    "paycheck",
-    "remuneration",
-    "payslip",
-    "salary credit",
-    "monthly salary",
-  ],
-  // Freelance
-  Freelance: [
-    "freelance",
-    "client",
-    "project",
-    "invoice",
-    "contract",
-    "consulting",
-    "upwork",
-    "fiverr",
-    "toptal",
-    "design",
-    "development",
-    "writing",
-    "gig",
-    "work from home",
-    "payment received",
-    "milestone",
-    "retainer",
-  ],
-};
+// /* ──────────────────────────────────────────────
+//    LOCAL KEYWORD CLASSIFIER
+//    Runs instantly on every keystroke for immediate
+//    feedback. Falls back to Claude API for ambiguous
+//    cases after a debounce delay.
+// ────────────────────────────────────────────── */
+// const _AI_KEYWORD_MAP = {
+//   // Food & Dining
+//   Food: [
+//     "starbucks",
+//     "coffee",
+//     "cafe",
+//     "restaurant",
+//     "lunch",
+//     "dinner",
+//     "breakfast",
+//     "zomato",
+//     "swiggy",
+//     "dominos",
+//     "pizza",
+//     "burger",
+//     "biryani",
+//     "food",
+//     "grocery",
+//     "supermarket",
+//     "vegetables",
+//     "fruits",
+//     "milk",
+//     "bread",
+//     "chai",
+//     "tea",
+//     "snack",
+//     "meal",
+//     "eat",
+//     "dunkin",
+//     "mcdonalds",
+//     "kfc",
+//     "subway",
+//     "barbeque",
+//     "bakery",
+//     "hotel",
+//     "canteen",
+//     "tiffin",
+//     "dine",
+//     "dining",
+//     "juice",
+//     "coca",
+//     "pepsi",
+//     "maggi",
+//     "rice",
+//     "dal",
+//     "apple",
+//     "banana",
+//     "orange",
+//     "mango",
+//     "grapes",
+//     "fruit",
+//     "vegetable",
+//     "tomato",
+//     "potato",
+//     "onion",
+//     "egg",
+//     "eggs",
+//     "chicken",
+//     "paneer",
+//     "biscuit",
+//     "biscuits",
+//     "chips",
+//     "chocolate",
+//     "dosa",
+//     "masala dosa",
+//     "idli",
+//     "vada",
+//     "sambar",
+//     "uttapam",
+//     "poha",
+//     "upma",
+//     "paratha",
+//     "roti",
+//     "naan",
+//     "sabzi",
+//     "thali",
+//     "sandwich",
+//     "shawarma",
+//     "wrap",
+//     "roll",
+//     "momo",
+//     "momos",
+//     "noodles",
+//     "pasta",
+//     "ice cream",
+//     "kulfi",
+//     "mithai",
+//     "sweet",
+//     "sweets",
+//     "lassi",
+//   ],
+//   // Transport
+//   Transport: [
+//     "uber",
+//     "ola",
+//     "rapido",
+//     "auto",
+//     "taxi",
+//     "cab",
+//     "petrol",
+//     "diesel",
+//     "fuel",
+//     "metro",
+//     "bus",
+//     "train",
+//     "flight",
+//     "airways",
+//     "airline",
+//     "travel",
+//     "transport",
+//     "toll",
+//     "parking",
+//     "irctc",
+//     "indigo",
+//     "spicejet",
+//     "air india",
+//     "vistara",
+//     "redbus",
+//     "rickshaw",
+//     "bike",
+//     "carpool",
+//     "share",
+//     "commute",
+//     "railway",
+//     "station",
+//   ],
+//   // Shopping
+//   Shopping: [
+//     "amazon",
+//     "flipkart",
+//     "myntra",
+//     "ajio",
+//     "nykaa",
+//     "meesho",
+//     "zepto",
+//     "blinkit",
+//     "bigbasket",
+//     "reliance",
+//     "dmart",
+//     "mall",
+//     "shopping",
+//     "clothes",
+//     "shirt",
+//     "shoes",
+//     "fashion",
+//     "apparel",
+//     "dress",
+//     "watch",
+//     "bag",
+//     "accessories",
+//     "cosmetics",
+//     "beauty",
+//     "electronics",
+//     "mobile",
+//     "laptop",
+//     "gadget",
+//     "appliance",
+//     "furniture",
+//     "decor",
+//     "gift",
+//     "toys",
+//     "toy",
+//     "perfume",
+//     "soap",
+//     "shampoo",
+//     "detergent",
+//     "bucket",
+//     "bottle",
+//     "utensils",
+//     "kitchen",
+//   ],
+//   // Entertainment
+//   Entertainment: [
+//     "netflix",
+//     "hotstar",
+//     "prime",
+//     "disney",
+//     "apple music",
+//     "youtube music",
+//     "amazon prime",
+//     "prime video",
+//     "spotify",
+//     "youtube",
+//     "gaming",
+//     "game",
+//     "movie",
+//     "cinema",
+//     "pvr",
+//     "inox",
+//     "concert",
+//     "event",
+//     "ticket",
+//     "show",
+//     "play",
+//     "netflix",
+//     "hbo",
+//     "apple tv",
+//     "jio",
+//     "sonyliv",
+//     "zee",
+//     "music",
+//     "stream",
+//   ],
+//   // Health
+//   Health: [
+//     "pharmacy",
+//     "medicine",
+//     "doctor",
+//     "hospital",
+//     "clinic",
+//     "apollo",
+//     "medplus",
+//     "health",
+//     "gym",
+//     "fitness",
+//     "yoga",
+//     "physiotherapy",
+//     "dental",
+//     "optician",
+//     "lab",
+//     "test",
+//     "pathology",
+//     "prescription",
+//     "tablet",
+//     "capsule",
+//     "syrup",
+//     "ayurvedic",
+//     "wellness",
+//     "therapy",
+//     "insurance",
+//     "mediclaim",
+//     "condom",
+//     "condoms",
+//     "sanitary pad",
+//     "sanitary pads",
+//     "pad",
+//     "pads",
+//     "tampon",
+//     "pregnancy test",
+//     "mask",
+//     "masks",
+//     "first aid",
+//     "bandage",
+//     "painkiller",
+//     "medical",
+//     "wellwoman",
+//   ],
+//   // Education
+//   Education: [
+//     "udemy",
+//     "coursera",
+//     "school",
+//     "college",
+//     "university",
+//     "fees",
+//     "course",
+//     "book",
+//     "stationery",
+//     "tuition",
+//     "coaching",
+//     "class",
+//     "exam",
+//     "study",
+//     "subscription",
+//     "skill",
+//     "certificate",
+//     "degree",
+//     "notes",
+//     "pen",
+//     "pencil",
+//   ],
+//   // Utilities
+//   Utilities: [
+//     "electricity",
+//     "water",
+//     "gas",
+//     "broadband",
+//     "wifi",
+//     "internet",
+//     "mobile recharge",
+//     "recharge",
+//     "dth",
+//     "cable",
+//     "postpaid",
+//     "prepaid",
+//     "rent",
+//     "maintenance",
+//     "society",
+//     "bsnl",
+//     "airtel",
+//     "jio",
+//     "vi",
+//     "vodafone",
+//     "idea",
+//     "tata",
+//     "dish",
+//     "tatasky",
+//     "telephone",
+//     "bill",
+//     "utility",
+//     "municipal",
+//   ],
+//   // Salary / Income
+//   Salary: [
+//     "salary",
+//     "payroll",
+//     "wage",
+//     "stipend",
+//     "ctc",
+//     "increment",
+//     "hike",
+//     "bonus",
+//     "appraisal",
+//     "employer",
+//     "company",
+//     "office",
+//     "paycheck",
+//     "remuneration",
+//     "payslip",
+//     "salary credit",
+//     "monthly salary",
+//   ],
+//   // Freelance
+//   Freelance: [
+//     "freelance",
+//     "client",
+//     "project",
+//     "invoice",
+//     "contract",
+//     "consulting",
+//     "upwork",
+//     "fiverr",
+//     "toptal",
+//     "design",
+//     "development",
+//     "writing",
+//     "gig",
+//     "work from home",
+//     "payment received",
+//     "milestone",
+//     "retainer",
+//   ],
+// };
 
-const _AI_CATEGORY_SEEDS = {
-  Food: [
-    "coffee",
-    "tea",
-    "snack",
-    "meal",
-    "restaurant",
-    "breakfast",
-    "lunch",
-    "dinner",
-    "grocery",
-  ],
-  Entertainment: [
-    "music",
-    "movie",
-    "game",
-    "concert",
-    "show",
-    "ott",
-    "streaming",
-  ],
-  Shopping: [
-    "shopping",
-    "clothes",
-    "shoes",
-    "gift",
-    "accessory",
-    "cosmetic",
-    "bag",
-  ],
-  Transport: [
-    "uber",
-    "ola",
-    "taxi",
-    "metro",
-    "bus",
-    "fuel",
-    "petrol",
-    "diesel",
-  ],
-  Health: [
-    "medicine",
-    "pharmacy",
-    "doctor",
-    "clinic",
-    "hospital",
-    "condom",
-    "sanitary",
-    "medical",
-  ],
-  Investment: ["sip", "mutual fund", "stock", "shares", "investment", "fd"],
-  Salary: ["salary", "payroll", "payslip", "salary credit"],
-  Freelance: ["client", "invoice", "project", "gig", "retainer"],
-  Business: ["business", "vendor", "gst", "shop", "inventory"],
-  Insurance: ["insurance", "premium", "policy", "mediclaim"],
-  Furniture: [
-    "bed",
-    "mattress",
-    "sofa",
-    "couch",
-    "chair",
-    "table",
-    "desk",
-    "wardrobe",
-    "cupboard",
-    "shelf",
-    "pillow",
-    "blanket",
-    "lamp",
-    "furniture",
-  ],
-  Electronics: [
-    "mobile",
-    "phone",
-    "laptop",
-    "charger",
-    "headphones",
-    "earbuds",
-    "tv",
-    "monitor",
-  ],
-  Groceries: [
-    "grocery",
-    "vegetable",
-    "fruit",
-    "milk",
-    "bread",
-    "rice",
-    "dal",
-    "egg",
-  ],
-  Utilities: [
-    "electricity",
-    "water",
-    "wifi",
-    "internet",
-    "recharge",
-    "rent",
-    "maintenance",
-    "bill",
-  ],
-  Education: ["course", "fees", "book", "exam", "tuition", "class", "study"],
-  Travel: ["flight", "hotel", "trip", "booking", "train", "bus", "travel"],
-  Fitness: ["gym", "protein", "workout", "yoga", "fitness"],
-  Beauty: ["salon", "spa", "makeup", "cosmetic", "skincare", "perfume"],
-  Pets: ["dog", "cat", "pet", "vet", "pet food", "litter"],
-  Kids: ["toy", "school", "diaper", "baby", "formula", "stroller"],
-};
+// const _AI_CATEGORY_SEEDS = {
+//   Food: [
+//     "coffee",
+//     "tea",
+//     "snack",
+//     "meal",
+//     "restaurant",
+//     "breakfast",
+//     "lunch",
+//     "dinner",
+//     "grocery",
+//   ],
+//   Entertainment: [
+//     "music",
+//     "movie",
+//     "game",
+//     "concert",
+//     "show",
+//     "ott",
+//     "streaming",
+//   ],
+//   Shopping: [
+//     "shopping",
+//     "clothes",
+//     "shoes",
+//     "gift",
+//     "accessory",
+//     "cosmetic",
+//     "bag",
+//   ],
+//   Transport: [
+//     "uber",
+//     "ola",
+//     "taxi",
+//     "metro",
+//     "bus",
+//     "fuel",
+//     "petrol",
+//     "diesel",
+//   ],
+//   Health: [
+//     "medicine",
+//     "pharmacy",
+//     "doctor",
+//     "clinic",
+//     "hospital",
+//     "condom",
+//     "sanitary",
+//     "medical",
+//   ],
+//   Investment: ["sip", "mutual fund", "stock", "shares", "investment", "fd"],
+//   Salary: ["salary", "payroll", "payslip", "salary credit"],
+//   Freelance: ["client", "invoice", "project", "gig", "retainer"],
+//   Business: ["business", "vendor", "gst", "shop", "inventory"],
+//   Insurance: ["insurance", "premium", "policy", "mediclaim"],
+//   Furniture: [
+//     "bed",
+//     "mattress",
+//     "sofa",
+//     "couch",
+//     "chair",
+//     "table",
+//     "desk",
+//     "wardrobe",
+//     "cupboard",
+//     "shelf",
+//     "pillow",
+//     "blanket",
+//     "lamp",
+//     "furniture",
+//   ],
+//   Electronics: [
+//     "mobile",
+//     "phone",
+//     "laptop",
+//     "charger",
+//     "headphones",
+//     "earbuds",
+//     "tv",
+//     "monitor",
+//   ],
+//   Groceries: [
+//     "grocery",
+//     "vegetable",
+//     "fruit",
+//     "milk",
+//     "bread",
+//     "rice",
+//     "dal",
+//     "egg",
+//   ],
+//   Utilities: [
+//     "electricity",
+//     "water",
+//     "wifi",
+//     "internet",
+//     "recharge",
+//     "rent",
+//     "maintenance",
+//     "bill",
+//   ],
+//   Education: ["course", "fees", "book", "exam", "tuition", "class", "study"],
+//   Travel: ["flight", "hotel", "trip", "booking", "train", "bus", "travel"],
+//   Fitness: ["gym", "protein", "workout", "yoga", "fitness"],
+//   Beauty: ["salon", "spa", "makeup", "cosmetic", "skincare", "perfume"],
+//   Pets: ["dog", "cat", "pet", "vet", "pet food", "litter"],
+//   Kids: ["toy", "school", "diaper", "baby", "formula", "stroller"],
+// };
 
-function _getAiCategories(type) {
-  return type === "income"
-    ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
-    : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
-}
+// function _getAiCategories(type) {
+//   return type === "income"
+//     ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
+//     : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
+// }
 
-function _getAiCatState(type) {
-  if (!_aiCatState[type]) {
-    _aiCatState[type] = {
-      suggestedCategory: "",
-      suggestedDesc: "",
-      acceptedCategory: "",
-      acceptedDesc: "",
-    };
-  }
-  return _aiCatState[type];
-}
+// function _getAiCatState(type) {
+//   if (!_aiCatState[type]) {
+//     _aiCatState[type] = {
+//       suggestedCategory: "",
+//       suggestedDesc: "",
+//       acceptedCategory: "",
+//       acceptedDesc: "",
+//     };
+//   }
+//   return _aiCatState[type];
+// }
 
-function _addAiScore(scores, strongest, cat, score) {
-  if (!cat || !score) return;
-  scores[cat] = (scores[cat] || 0) + score;
-  strongest[cat] = Math.max(strongest[cat] || 0, score);
-}
+// function _addAiScore(scores, strongest, cat, score) {
+//   if (!cat || !score) return;
+//   scores[cat] = (scores[cat] || 0) + score;
+//   strongest[cat] = Math.max(strongest[cat] || 0, score);
+// }
 
-function _getCategorySeeds(cat) {
-  if (!cat) return [];
-  const exact = _AI_CATEGORY_SEEDS[cat];
-  if (exact) return exact;
-  const found = Object.entries(_AI_CATEGORY_SEEDS).find(
-    ([name]) => name.toLowerCase() === cat.toLowerCase(),
-  );
-  return found ? found[1] : [];
-}
+// function _getCategorySeeds(cat) {
+//   if (!cat) return [];
+//   const exact = _AI_CATEGORY_SEEDS[cat];
+//   if (exact) return exact;
+//   const found = Object.entries(_AI_CATEGORY_SEEDS).find(
+//     ([name]) => name.toLowerCase() === cat.toLowerCase(),
+//   );
+//   return found ? found[1] : [];
+// }
 
-function _tokenizeAiText(text) {
-  return [
-    ...new Set(
-      (text.toLowerCase().match(/[a-z0-9]+/g) || []).filter(
-        (token) =>
-          token.length >= 3 &&
-          ![
-            "the",
-            "and",
-            "for",
-            "with",
-            "from",
-            "this",
-            "that",
-            "your",
-          ].includes(token),
-      ),
-    ),
-  ];
-}
+// function _tokenizeAiText(text) {
+//   return [
+//     ...new Set(
+//       (text.toLowerCase().match(/[a-z0-9]+/g) || []).filter(
+//         (token) =>
+//           token.length >= 3 &&
+//           ![
+//             "the",
+//             "and",
+//             "for",
+//             "with",
+//             "from",
+//             "this",
+//             "that",
+//             "your",
+//           ].includes(token),
+//       ),
+//     ),
+//   ];
+// }
 
-function _localKeywordGuess(type, desc) {
-  const lower = desc.toLowerCase();
-  const allowed = new Set(_getAiCategories(type));
-  const descTokens = _tokenizeAiText(desc);
-  const scores = {};
-  const strongest = {};
+// function _localKeywordGuess(type, desc) {
+//   const lower = desc.toLowerCase();
+//   const allowed = new Set(_getAiCategories(type));
+//   const descTokens = _tokenizeAiText(desc);
+//   const scores = {};
+//   const strongest = {};
 
-  for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
-    if (!allowed.has(cat)) continue;
-    for (const kw of keywords) {
-      if (lower.includes(kw)) {
-        const phraseBonus = kw.includes(" ") ? 8 : 0;
-        const score = kw.length + phraseBonus;
-        _addAiScore(scores, strongest, cat, score);
-      }
-    }
-  }
+//   for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
+//     if (!allowed.has(cat)) continue;
+//     for (const kw of keywords) {
+//       if (lower.includes(kw)) {
+//         const phraseBonus = kw.includes(" ") ? 8 : 0;
+//         const score = kw.length + phraseBonus;
+//         _addAiScore(scores, strongest, cat, score);
+//       }
+//     }
+//   }
 
-  for (const cat of allowed) {
-    const catLower = cat.toLowerCase();
-    if (lower.includes(catLower)) {
-      _addAiScore(scores, strongest, cat, catLower.length + 6);
-    }
+//   for (const cat of allowed) {
+//     const catLower = cat.toLowerCase();
+//     if (lower.includes(catLower)) {
+//       _addAiScore(scores, strongest, cat, catLower.length + 6);
+//     }
 
-    const catTokens = _tokenizeAiText(cat);
-    const overlap = catTokens.filter((token) =>
-      descTokens.includes(token),
-    ).length;
-    if (overlap) {
-      _addAiScore(scores, strongest, cat, overlap * 5);
-    }
+//     const catTokens = _tokenizeAiText(cat);
+//     const overlap = catTokens.filter((token) =>
+//       descTokens.includes(token),
+//     ).length;
+//     if (overlap) {
+//       _addAiScore(scores, strongest, cat, overlap * 5);
+//     }
 
-    for (const seed of _getCategorySeeds(cat)) {
-      if (lower.includes(seed)) {
-        const seedScore = seed.length + (seed.includes(" ") ? 10 : 4);
-        _addAiScore(scores, strongest, cat, seedScore);
-      }
-    }
-  }
+//     for (const seed of _getCategorySeeds(cat)) {
+//       if (lower.includes(seed)) {
+//         const seedScore = seed.length + (seed.includes(" ") ? 10 : 4);
+//         _addAiScore(scores, strongest, cat, seedScore);
+//       }
+//     }
+//   }
 
-  for (const txn of (transactions || []).slice(0, 300)) {
-    if (txn.type !== type || !allowed.has(txn.category)) continue;
-    const txnDesc = (txn.description || "").trim();
-    if (!txnDesc) continue;
+//   for (const txn of (transactions || []).slice(0, 300)) {
+//     if (txn.type !== type || !allowed.has(txn.category)) continue;
+//     const txnDesc = (txn.description || "").trim();
+//     if (!txnDesc) continue;
 
-    const txnLower = txnDesc.toLowerCase();
-    const txnTokens = _tokenizeAiText(txnDesc);
-    const overlap = txnTokens.filter((token) =>
-      descTokens.includes(token),
-    ).length;
+//     const txnLower = txnDesc.toLowerCase();
+//     const txnTokens = _tokenizeAiText(txnDesc);
+//     const overlap = txnTokens.filter((token) =>
+//       descTokens.includes(token),
+//     ).length;
 
-    if (lower === txnLower) {
-      _addAiScore(scores, strongest, txn.category, 40);
-      continue;
-    }
-    if (lower.includes(txnLower) || txnLower.includes(lower)) {
-      _addAiScore(scores, strongest, txn.category, 20);
-    }
-    if (overlap > 0) {
-      _addAiScore(scores, strongest, txn.category, overlap * 7);
-    }
-  }
+//     if (lower === txnLower) {
+//       _addAiScore(scores, strongest, txn.category, 40);
+//       continue;
+//     }
+//     if (lower.includes(txnLower) || txnLower.includes(lower)) {
+//       _addAiScore(scores, strongest, txn.category, 20);
+//     }
+//     if (overlap > 0) {
+//       _addAiScore(scores, strongest, txn.category, overlap * 7);
+//     }
+//   }
 
-  if (!Object.keys(scores).length) return null;
-  return Object.entries(scores).sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
-  })[0][0];
-}
+//   if (!Object.keys(scores).length) return null;
+//   return Object.entries(scores).sort((a, b) => {
+//     if (b[1] !== a[1]) return b[1] - a[1];
+//     return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
+//   })[0][0];
+// }
 
 /* ──────────────────────────────────────────────
    FEATURE 1: AI AUTO-CATEGORIZATION
@@ -1328,750 +1328,750 @@ function resetAiCatBadge(type) {
    Uses Web Speech API → transcribes → Claude
    parses amount, description, category → pre-fills form.
 ────────────────────────────────────────────── */
-const VOICE_BACKEND_TIMEOUT_MS = 6500;
-const VOICE_IDLE_MESSAGE =
-  "Tap the mic and speak a transaction. We'll fill the draft for you.";
-const VOICE_EXPENSE_ACTION_PATTERN =
-  "spend|spent|pay|paid|use|used|buy|bought|order|ordered|book|booked|give|gave|purchase|purchased|charge|charged|expense";
-const VOICE_INCOME_ACTION_PATTERN =
-  "receive|received|earn|earned|get|got|make|made|credit|credited|income|salary|refund|bonus";
-const VOICE_NUMBER_WORDS = {
-  a: 1,
-  an: 1,
-  zero: 0,
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-  ten: 10,
-  eleven: 11,
-  twelve: 12,
-  thirteen: 13,
-  fourteen: 14,
-  fifteen: 15,
-  sixteen: 16,
-  seventeen: 17,
-  eighteen: 18,
-  nineteen: 19,
-  twenty: 20,
-  thirty: 30,
-  forty: 40,
-  fifty: 50,
-  sixty: 60,
-  seventy: 70,
-  eighty: 80,
-  ninety: 90,
-};
-const VOICE_NUMBER_WORD_PATTERN = Object.keys(VOICE_NUMBER_WORDS)
-  .sort((a, b) => b.length - a.length)
-  .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-  .join("|");
-const VOICE_UI_COPY = {
-  idle: {
-    icon: "fa-microphone",
-    title: "Log by voice",
-    hint: 'Say "Spent 200 rupees on lunch"',
-  },
-  starting: {
-    icon: "fa-spinner fa-spin",
-    title: "Preparing mic",
-    hint: "Allow microphone access if the browser asks.",
-  },
-  listening: {
-    icon: "fa-wave-square",
-    title: "Listening...",
-    hint: "Tap again to stop listening.",
-  },
-  processing: {
-    icon: "fa-spinner fa-spin",
-    title: "Processing...",
-    hint: "Turning speech into a draft.",
-  },
-  success: {
-    icon: "fa-check",
-    title: "Draft ready",
-    hint: "Review the fields, then confirm the entry.",
-  },
-  error: {
-    icon: "fa-rotate-right",
-    title: "Try again",
-    hint: "Tap to retry voice logging.",
-  },
-  unsupported: {
-    icon: "fa-circle-info",
-    title: "Voice unavailable",
-    hint: "Use Chrome or Edge with microphone access.",
-  },
-};
-
-let _voiceRecognition = null;
-let _voiceBusy = false;
-let _voiceSession = {
-  id: 0,
-  type: "",
-  resultReceived: false,
-};
-
-function startVoiceLog(type) {
-  const activeType = _voiceSession.type;
-
-  if (_voiceBusy && activeType === type) {
-    _cancelVoiceCapture(
-      type,
-      "Listening stopped. Tap again when you're ready.",
-    );
-    return;
-  }
-
-  if (_voiceBusy && activeType && activeType !== type) {
-    _cancelVoiceCapture(activeType);
-  }
-
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    _hideVoicePreview(type);
-    _setVoiceUi(
-      type,
-      "unsupported",
-      "Voice dictation needs Chrome or Edge with microphone access.",
-    );
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  const sessionId = Date.now() + Math.random();
-  _voiceRecognition = recognition;
-  _voiceBusy = true;
-  _voiceSession = {
-    id: sessionId,
-    type,
-    resultReceived: false,
-  };
-
-  _hideVoicePreview(type);
-  _setVoiceUi(type, "starting", "Requesting microphone access...");
-
-  recognition.lang = navigator.language || "en-IN";
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 3;
-
-  recognition.onstart = () => {
-    if (_voiceSession.id !== sessionId) return;
-    _setVoiceUi(
-      type,
-      "listening",
-      'Listening... say "Spent 200 rupees on lunch".',
-    );
-  };
-
-  recognition.onresult = async (event) => {
-    if (_voiceSession.id !== sessionId) return;
-
-    let interimTranscript = "";
-    let finalTranscript = "";
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const piece = event.results[i][0]?.transcript?.trim();
-      if (!piece) continue;
-      if (event.results[i].isFinal) finalTranscript += `${piece} `;
-      else interimTranscript += `${piece} `;
-    }
-
-    finalTranscript = finalTranscript.trim();
-    interimTranscript = interimTranscript.trim();
-
-    if (finalTranscript) {
-      _voiceSession.resultReceived = true;
-      _voiceBusy = false;
-      _renderVoicePreview(type, finalTranscript);
-      _setVoiceUi(type, "processing", "Processing what you said...");
-      try {
-        recognition.stop();
-      } catch {}
-      _voiceRecognition = null;
-      await _handleVoiceTranscript(type, finalTranscript);
-      return;
-    }
-
-    if (interimTranscript) {
-      _setVoiceUi(type, "listening", `Hearing: "${interimTranscript}"`);
-    }
-  };
-
-  recognition.onerror = (event) => {
-    if (_voiceSession.id !== sessionId) return;
-    const errorCode = event?.error || "unknown";
-    _voiceRecognition = null;
-    _voiceBusy = false;
-    _voiceSession = {
-      id: 0,
-      type: "",
-      resultReceived: false,
-    };
-    _setVoiceUi(type, "error", _getVoiceErrorMessage(errorCode));
-  };
-
-  recognition.onend = () => {
-    if (_voiceSession.id !== sessionId) return;
-    _voiceRecognition = null;
-
-    if (_voiceBusy && !_voiceSession.resultReceived) {
-      _voiceBusy = false;
-      _voiceSession = {
-        id: 0,
-        type: "",
-        resultReceived: false,
-      };
-      _setVoiceUi(
-        type,
-        "error",
-        "No speech detected. Try again and speak a little closer to the mic.",
-      );
-      return;
-    }
-
-    if (_voiceSession.resultReceived) {
-      _voiceSession = {
-        id: 0,
-        type: "",
-        resultReceived: false,
-      };
-    }
-  };
-
-  try {
-    recognition.start();
-  } catch (error) {
-    _voiceRecognition = null;
-    _voiceBusy = false;
-    _voiceSession = {
-      id: 0,
-      type: "",
-      resultReceived: false,
-    };
-    _setVoiceUi(
-      type,
-      "error",
-      "The microphone couldn't start in this browser. Refresh and try again.",
-    );
-    console.warn("Voice recognition start failed", error);
-  }
-}
-
-function _cancelVoiceCapture(type, message = VOICE_IDLE_MESSAGE) {
-  try {
-    _voiceRecognition?.stop();
-  } catch {}
-  _voiceRecognition = null;
-  _voiceBusy = false;
-  _voiceSession = {
-    id: 0,
-    type: "",
-    resultReceived: false,
-  };
-  _setVoiceUi(type, "idle", message);
-}
-
-function resetVoiceUi(type) {
-  if (_voiceBusy && _voiceSession.type === type) {
-    _cancelVoiceCapture(type);
-    return;
-  }
-
-  _hideVoicePreview(type);
-  _setVoiceUi(type, "idle", VOICE_IDLE_MESSAGE);
-}
-
-function _getVoiceElements(type) {
-  return {
-    btn: document.getElementById(`${type}VoiceBtn`),
-    icon: document.querySelector(`#${type}VoiceBtn .voice-btn-icon i`),
-    title: document.querySelector(`#${type}VoiceBtn .voice-btn-title`),
-    hint: document.querySelector(`#${type}VoiceBtn .voice-btn-hint`),
-    status: document.getElementById(`${type}VoiceStatus`),
-    preview: document.getElementById(`${type}VoicePreview`),
-    transcript: document.getElementById(`${type}VoiceTranscript`),
-    chips: document.getElementById(`${type}VoiceChips`),
-  };
-}
-
-function _setVoiceUi(type, state, message) {
-  const els = _getVoiceElements(type);
-  if (!els.btn || !els.status) return;
-
-  const copy = VOICE_UI_COPY[state] || VOICE_UI_COPY.idle;
-  els.btn.dataset.state = state;
-  els.status.dataset.state = state;
-  els.btn.disabled = state === "starting" || state === "processing";
-
-  if (els.icon) els.icon.className = `fas ${copy.icon}`;
-  if (els.title) els.title.textContent = copy.title;
-  if (els.hint) els.hint.textContent = copy.hint;
-  els.status.textContent = message || VOICE_IDLE_MESSAGE;
-}
-
-function _hideVoicePreview(type) {
-  const els = _getVoiceElements(type);
-  if (!els.preview) return;
-  els.preview.hidden = true;
-  if (els.transcript) els.transcript.textContent = "";
-  if (els.chips) els.chips.innerHTML = "";
-}
-
-function _renderVoicePreview(type, transcript, draft = null) {
-  const els = _getVoiceElements(type);
-  if (!els.preview || !els.transcript || !els.chips) return;
-
-  els.preview.hidden = false;
-  els.transcript.textContent = transcript;
-  els.chips.innerHTML = "";
-
-  if (!draft) return;
-  if (draft.amount) {
-    _appendVoiceChip(
-      els.chips,
-      `₹${Number(draft.amount).toLocaleString("en-IN")}`,
-      "amount",
-    );
-  }
-  if (draft.category) {
-    _appendVoiceChip(els.chips, draft.category, "category");
-  }
-  if (draft.description) {
-    _appendVoiceChip(els.chips, draft.description, "description");
-  }
-}
-
-function _appendVoiceChip(container, label, variant = "default") {
-  const chip = document.createElement("span");
-  chip.className = `voice-preview-chip voice-preview-chip--${variant}`;
-  chip.textContent = label;
-  container.appendChild(chip);
-}
-
-function _getVoiceErrorMessage(errorCode) {
-  const messages = {
-    "audio-capture":
-      "No microphone was found (audio-capture). Check device mic access and try again.",
-    "not-allowed":
-      "Microphone access was blocked (not-allowed). Allow mic permission and try again.",
-    "service-not-allowed":
-      "This browser blocked speech services (service-not-allowed). Try Chrome or Edge.",
-    network:
-      "Speech recognition lost its network connection (network). Check connectivity and try again.",
-    "no-speech":
-      "No speech was detected (no-speech). Speak a little louder or closer to the mic.",
-    "language-not-supported":
-      "This browser can't recognize the current language setting (language-not-supported).",
-    aborted: "Listening stopped.",
-  };
-
-  return (
-    messages[errorCode] ||
-    `Voice capture failed (${errorCode}). Please try again.`
-  );
-}
-
-function _escapeVoiceRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function _scaleVoiceAmount(numberText, multiplierText) {
-  let amount = Number.parseFloat(String(numberText).replace(/,/g, ""));
-  if (!Number.isFinite(amount) || amount <= 0) return null;
-
-  const multiplier = String(multiplierText || "").toLowerCase();
-  if (multiplier === "k" || multiplier === "thousand") amount *= 1000;
-  if (multiplier === "lakh" || multiplier === "lac") amount *= 100000;
-  return Math.round(amount * 100) / 100;
-}
-
-function _parseWordNumber(phrase) {
-  const tokens = String(phrase)
-    .toLowerCase()
-    .replace(/-/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-  if (!tokens.length) return null;
-
-  let total = 0;
-  let current = 0;
-  let decimal = "";
-  let afterPoint = false;
-  let seenNumber = false;
-
-  for (const token of tokens) {
-    if (token === "and") continue;
-    if (token === "point") {
-      afterPoint = true;
-      continue;
-    }
-
-    if (afterPoint) {
-      if (!(token in VOICE_NUMBER_WORDS)) return null;
-      const digit = VOICE_NUMBER_WORDS[token];
-      if (digit < 0 || digit > 9) return null;
-      decimal += String(digit);
-      seenNumber = true;
-      continue;
-    }
-
-    if (token === "hundred") {
-      current = (current || 1) * 100;
-      seenNumber = true;
-      continue;
-    }
-    if (token === "thousand") {
-      total += (current || 1) * 1000;
-      current = 0;
-      seenNumber = true;
-      continue;
-    }
-    if (token === "lakh" || token === "lac") {
-      total += (current || 1) * 100000;
-      current = 0;
-      seenNumber = true;
-      continue;
-    }
-
-    const value = VOICE_NUMBER_WORDS[token];
-    if (value === undefined) return null;
-    current += value;
-    seenNumber = true;
-  }
-
-  if (!seenNumber) return null;
-  const whole = total + current;
-  if (!decimal) return whole || null;
-  return Number.parseFloat(`${whole}.${decimal}`);
-}
-
-function _extractWordAmount(transcript) {
-  const patterns = [
-    new RegExp(
-      `\\b((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\s+(?:rupees?|rs|inr)\\b`,
-      "i",
-    ),
-    new RegExp(
-      `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\b`,
-      "i",
-    ),
-  ];
-
-  for (const pattern of patterns) {
-    const match = transcript.match(pattern);
-    if (!match) continue;
-    const amount = _parseWordNumber(match[1]);
-    if (amount) {
-      return {
-        amount,
-        matchedText: match[0],
-      };
-    }
-  }
-
-  return {
-    amount: null,
-    matchedText: "",
-  };
-}
-
-function _extractVoiceAmount(transcript) {
-  const patterns = [
-    /\b(?:rs\.?|inr|rupees?)\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)?\b/i,
-    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)\b/i,
-    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rs\.?|inr|rupees?)\b/i,
-    new RegExp(
-      `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+(\\d+(?:,\\d+)*(?:\\.\\d+)?)\\s*(k|thousand|lakh|lac)?\\b`,
-      "i",
-    ),
-    /\b(\d+(?:,\d+)*(?:\.\d+)?)\s+(?:on|for|towards|at|from)\b/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match = transcript.match(pattern);
-    if (!match) continue;
-    const amount = _scaleVoiceAmount(match[1], match[2]);
-    if (amount) {
-      return {
-        amount,
-        matchedText: match[0],
-      };
-    }
-  }
-
-  return _extractWordAmount(transcript);
-}
-
-function _fallbackVoiceDescription(type, transcript, category) {
-  if (category && category !== "Other") {
-    if (type === "income") {
-      if (category === "Salary") return "Salary";
-      if (category === "Freelance") return "Freelance payment";
-      return `${category} income`;
-    }
-    if (category === "Food") return "Food expense";
-    if (category === "Transport") return "Transport expense";
-    return `${category} expense`;
-  }
-
-  const trimmed = String(transcript || "").trim();
-  return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : "";
-}
-
-function _cleanVoiceDescription(type, transcript, matchedText) {
-  let cleaned = String(transcript || "");
-
-  if (matchedText) {
-    cleaned = cleaned.replace(
-      new RegExp(_escapeVoiceRegExp(matchedText), "i"),
-      " ",
-    );
-  }
-
-  const actionPattern =
-    type === "income"
-      ? new RegExp(
-          `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_INCOME_ACTION_PATTERN})(?:\\s+from|\\s+payment|\\s+of)?\\b`,
-          "gi",
-        )
-      : new RegExp(
-          `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_EXPENSE_ACTION_PATTERN})(?:\\s+for)?\\b`,
-          "gi",
-        );
-
-  cleaned = cleaned
-    .replace(actionPattern, " ")
-    .replace(/\b(?:rs\.?|inr|rupees?)\b/gi, " ")
-    .replace(/\b(?:today|right now|just now|please|transaction|entry)\b/gi, " ")
-    .replace(/^[\s,.-]*(?:on|for|from|towards|to|at|via|of)\b/gi, " ")
-    .replace(/[.,]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!cleaned) return "";
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
-
-function _parseVoiceLocally(type, transcript) {
-  const allowedCategories = _getAiCategories(type);
-  const amountResult = _extractVoiceAmount(transcript);
-  const directCategory =
-    _localKeywordGuess(type, transcript) || _localKeywordGuess(type, "");
-  let description = _cleanVoiceDescription(
-    type,
-    transcript,
-    amountResult.matchedText,
-  );
-  let category =
-    _localKeywordGuess(type, description) || directCategory || "Other";
-
-  const matchedCategory = allowedCategories.find(
-    (item) => item.toLowerCase() === String(category).toLowerCase(),
-  );
-  category =
-    matchedCategory || (allowedCategories.includes("Other") ? "Other" : "");
-
-  if (!description) {
-    description = _fallbackVoiceDescription(type, transcript, category);
-  }
-
-  let confidence = 0;
-  if (amountResult.amount) confidence += 0.5;
-  if (description && description.toLowerCase() !== transcript.toLowerCase()) {
-    confidence += 0.2;
-  }
-  if (category && category !== "Other") confidence += 0.2;
-  if (
-    amountResult.matchedText &&
-    /rs|inr|rupees?|k|thousand|lakh|lac/i.test(amountResult.matchedText)
-  ) {
-    confidence += 0.1;
-  }
-
-  return {
-    amount: amountResult.amount,
-    description,
-    category,
-    date: todayStr(),
-    confidence: Math.min(confidence, 1),
-    source: "local",
-  };
-}
-
-function _needsVoiceBackendFallback(draft) {
-  return (
-    !draft.amount ||
-    !draft.description ||
-    !draft.category ||
-    draft.category === "Other" ||
-    draft.confidence < 0.75
-  );
-}
-
-function _getVoiceAiEndpoint() {
-  return String(
-    window.BLUELEDGER_VOICE_AI_ENDPOINT ||
-      document.body?.dataset.voiceAiEndpoint ||
-      localStorage.getItem("bl_voice_ai_endpoint") ||
-      "",
-  ).trim();
-}
-
-function _sanitizeVoiceDraft(type, payload) {
-  const source = payload?.draft || payload;
-  if (!source || typeof source !== "object") return null;
-
-  const allowedCategories = _getAiCategories(type);
-  const amount = _scaleVoiceAmount(source.amount, "");
-  let description = String(source.description || "").trim();
-  let category = String(source.category || "").trim();
-
-  if (!description) description = "";
-  const matchedCategory = allowedCategories.find(
-    (item) => item.toLowerCase() === category.toLowerCase(),
-  );
-  category = matchedCategory || "";
-
-  return {
-    amount,
-    description,
-    category,
-    date: todayStr(),
-    confidence: 1,
-    source: "backend",
-  };
-}
-
-async function _parseVoiceWithBackend(type, transcript, localDraft) {
-  const endpoint = _getVoiceAiEndpoint();
-  if (!endpoint) return null;
-
-  const controller =
-    typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timeoutId = controller
-    ? setTimeout(() => controller.abort(), VOICE_BACKEND_TIMEOUT_MS)
-    : null;
-
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        transcript,
-        type,
-        categories: _getAiCategories(type),
-        localDraft,
-      }),
-      signal: controller?.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Voice AI endpoint error ${response.status}`);
-    }
-
-    const payload = await response.json();
-    return _sanitizeVoiceDraft(type, payload);
-  } catch (error) {
-    console.warn("Voice AI fallback skipped", error);
-    return null;
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-}
-
-function _applyVoiceDraft(type, draft) {
-  const amtEl = document.getElementById(`${type}Amount`);
-  const descEl = document.getElementById(`${type}Desc`);
-  const catEl = document.getElementById(`${type}Category`);
-  const dateEl = document.getElementById(`${type}Date`);
-
-  if (amtEl && draft.amount) {
-    amtEl.value = draft.amount;
-  }
-  if (descEl && draft.description) {
-    descEl.value = draft.description;
-  }
-  if (dateEl && !dateEl.value) {
-    dateEl.value = draft.date || todayStr();
-  }
-  if (catEl && draft.category) {
-    catEl.value = draft.category;
-  }
-
-  if (
-    descEl &&
-    draft.description &&
-    (!draft.category || draft.category === "Other")
-  ) {
-    aiAutoCategory(type, draft.description);
-  }
-}
-
-async function _handleVoiceTranscript(type, transcript) {
-  const localDraft = _parseVoiceLocally(type, transcript);
-  let finalDraft = localDraft;
-
-  if (_needsVoiceBackendFallback(localDraft)) {
-    const backendDraft = await _parseVoiceWithBackend(
-      type,
-      transcript,
-      localDraft,
-    );
-    if (backendDraft) {
-      finalDraft = {
-        ...localDraft,
-        ...backendDraft,
-        amount: backendDraft.amount || localDraft.amount,
-        description: backendDraft.description || localDraft.description,
-        category: backendDraft.category || localDraft.category,
-      };
-    }
-  }
-
-  _renderVoicePreview(type, transcript, finalDraft);
-  _applyVoiceDraft(type, {
-    ...finalDraft,
-    amount: finalDraft.amount || null,
-  });
-
-  if (!finalDraft.amount) {
-    _setVoiceUi(
-      type,
-      "error",
-      "I heard the transcript, but couldn't detect the amount. Try again or type the amount manually.",
-    );
-    return;
-  }
-
-  if (!finalDraft.category) {
-    finalDraft.category = "Other";
-  }
-  if (!finalDraft.description) {
-    finalDraft.description = _fallbackVoiceDescription(
-      type,
-      transcript,
-      finalDraft.category,
-    );
-  }
-
-  _applyVoiceDraft(type, finalDraft);
-  _renderVoicePreview(type, transcript, finalDraft);
-  _setVoiceUi(
-    type,
-    "success",
-    `Draft ready${finalDraft.source === "backend" ? " with AI assist" : ""}. Review the fields, then confirm the entry.`,
-  );
-}
+// const VOICE_BACKEND_TIMEOUT_MS = 6500;
+// const VOICE_IDLE_MESSAGE =
+//   "Tap the mic and speak a transaction. We'll fill the draft for you.";
+// const VOICE_EXPENSE_ACTION_PATTERN =
+//   "spend|spent|pay|paid|use|used|buy|bought|order|ordered|book|booked|give|gave|purchase|purchased|charge|charged|expense";
+// const VOICE_INCOME_ACTION_PATTERN =
+//   "receive|received|earn|earned|get|got|make|made|credit|credited|income|salary|refund|bonus";
+// const VOICE_NUMBER_WORDS = {
+//   a: 1,
+//   an: 1,
+//   zero: 0,
+//   one: 1,
+//   two: 2,
+//   three: 3,
+//   four: 4,
+//   five: 5,
+//   six: 6,
+//   seven: 7,
+//   eight: 8,
+//   nine: 9,
+//   ten: 10,
+//   eleven: 11,
+//   twelve: 12,
+//   thirteen: 13,
+//   fourteen: 14,
+//   fifteen: 15,
+//   sixteen: 16,
+//   seventeen: 17,
+//   eighteen: 18,
+//   nineteen: 19,
+//   twenty: 20,
+//   thirty: 30,
+//   forty: 40,
+//   fifty: 50,
+//   sixty: 60,
+//   seventy: 70,
+//   eighty: 80,
+//   ninety: 90,
+// };
+// const VOICE_NUMBER_WORD_PATTERN = Object.keys(VOICE_NUMBER_WORDS)
+//   .sort((a, b) => b.length - a.length)
+//   .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+//   .join("|");
+// const VOICE_UI_COPY = {
+//   idle: {
+//     icon: "fa-microphone",
+//     title: "Log by voice",
+//     hint: 'Say "Spent 200 rupees on lunch"',
+//   },
+//   starting: {
+//     icon: "fa-spinner fa-spin",
+//     title: "Preparing mic",
+//     hint: "Allow microphone access if the browser asks.",
+//   },
+//   listening: {
+//     icon: "fa-wave-square",
+//     title: "Listening...",
+//     hint: "Tap again to stop listening.",
+//   },
+//   processing: {
+//     icon: "fa-spinner fa-spin",
+//     title: "Processing...",
+//     hint: "Turning speech into a draft.",
+//   },
+//   success: {
+//     icon: "fa-check",
+//     title: "Draft ready",
+//     hint: "Review the fields, then confirm the entry.",
+//   },
+//   error: {
+//     icon: "fa-rotate-right",
+//     title: "Try again",
+//     hint: "Tap to retry voice logging.",
+//   },
+//   unsupported: {
+//     icon: "fa-circle-info",
+//     title: "Voice unavailable",
+//     hint: "Use Chrome or Edge with microphone access.",
+//   },
+// };
+
+// let _voiceRecognition = null;
+// let _voiceBusy = false;
+// let _voiceSession = {
+//   id: 0,
+//   type: "",
+//   resultReceived: false,
+// };
+
+// function startVoiceLog(type) {
+//   const activeType = _voiceSession.type;
+
+//   if (_voiceBusy && activeType === type) {
+//     _cancelVoiceCapture(
+//       type,
+//       "Listening stopped. Tap again when you're ready.",
+//     );
+//     return;
+//   }
+
+//   if (_voiceBusy && activeType && activeType !== type) {
+//     _cancelVoiceCapture(activeType);
+//   }
+
+//   const SpeechRecognition =
+//     window.SpeechRecognition || window.webkitSpeechRecognition;
+//   if (!SpeechRecognition) {
+//     _hideVoicePreview(type);
+//     _setVoiceUi(
+//       type,
+//       "unsupported",
+//       "Voice dictation needs Chrome or Edge with microphone access.",
+//     );
+//     return;
+//   }
+
+//   const recognition = new SpeechRecognition();
+//   const sessionId = Date.now() + Math.random();
+//   _voiceRecognition = recognition;
+//   _voiceBusy = true;
+//   _voiceSession = {
+//     id: sessionId,
+//     type,
+//     resultReceived: false,
+//   };
+
+//   _hideVoicePreview(type);
+//   _setVoiceUi(type, "starting", "Requesting microphone access...");
+
+//   recognition.lang = navigator.language || "en-IN";
+//   recognition.continuous = false;
+//   recognition.interimResults = true;
+//   recognition.maxAlternatives = 3;
+
+//   recognition.onstart = () => {
+//     if (_voiceSession.id !== sessionId) return;
+//     _setVoiceUi(
+//       type,
+//       "listening",
+//       'Listening... say "Spent 200 rupees on lunch".',
+//     );
+//   };
+
+//   recognition.onresult = async (event) => {
+//     if (_voiceSession.id !== sessionId) return;
+
+//     let interimTranscript = "";
+//     let finalTranscript = "";
+
+//     for (let i = event.resultIndex; i < event.results.length; i++) {
+//       const piece = event.results[i][0]?.transcript?.trim();
+//       if (!piece) continue;
+//       if (event.results[i].isFinal) finalTranscript += `${piece} `;
+//       else interimTranscript += `${piece} `;
+//     }
+
+//     finalTranscript = finalTranscript.trim();
+//     interimTranscript = interimTranscript.trim();
+
+//     if (finalTranscript) {
+//       _voiceSession.resultReceived = true;
+//       _voiceBusy = false;
+//       _renderVoicePreview(type, finalTranscript);
+//       _setVoiceUi(type, "processing", "Processing what you said...");
+//       try {
+//         recognition.stop();
+//       } catch {}
+//       _voiceRecognition = null;
+//       await _handleVoiceTranscript(type, finalTranscript);
+//       return;
+//     }
+
+//     if (interimTranscript) {
+//       _setVoiceUi(type, "listening", `Hearing: "${interimTranscript}"`);
+//     }
+//   };
+
+//   recognition.onerror = (event) => {
+//     if (_voiceSession.id !== sessionId) return;
+//     const errorCode = event?.error || "unknown";
+//     _voiceRecognition = null;
+//     _voiceBusy = false;
+//     _voiceSession = {
+//       id: 0,
+//       type: "",
+//       resultReceived: false,
+//     };
+//     _setVoiceUi(type, "error", _getVoiceErrorMessage(errorCode));
+//   };
+
+//   recognition.onend = () => {
+//     if (_voiceSession.id !== sessionId) return;
+//     _voiceRecognition = null;
+
+//     if (_voiceBusy && !_voiceSession.resultReceived) {
+//       _voiceBusy = false;
+//       _voiceSession = {
+//         id: 0,
+//         type: "",
+//         resultReceived: false,
+//       };
+//       _setVoiceUi(
+//         type,
+//         "error",
+//         "No speech detected. Try again and speak a little closer to the mic.",
+//       );
+//       return;
+//     }
+
+//     if (_voiceSession.resultReceived) {
+//       _voiceSession = {
+//         id: 0,
+//         type: "",
+//         resultReceived: false,
+//       };
+//     }
+//   };
+
+//   try {
+//     recognition.start();
+//   } catch (error) {
+//     _voiceRecognition = null;
+//     _voiceBusy = false;
+//     _voiceSession = {
+//       id: 0,
+//       type: "",
+//       resultReceived: false,
+//     };
+//     _setVoiceUi(
+//       type,
+//       "error",
+//       "The microphone couldn't start in this browser. Refresh and try again.",
+//     );
+//     console.warn("Voice recognition start failed", error);
+//   }
+// }
+
+// function _cancelVoiceCapture(type, message = VOICE_IDLE_MESSAGE) {
+//   try {
+//     _voiceRecognition?.stop();
+//   } catch {}
+//   _voiceRecognition = null;
+//   _voiceBusy = false;
+//   _voiceSession = {
+//     id: 0,
+//     type: "",
+//     resultReceived: false,
+//   };
+//   _setVoiceUi(type, "idle", message);
+// }
+
+// function resetVoiceUi(type) {
+//   if (_voiceBusy && _voiceSession.type === type) {
+//     _cancelVoiceCapture(type);
+//     return;
+//   }
+
+//   _hideVoicePreview(type);
+//   _setVoiceUi(type, "idle", VOICE_IDLE_MESSAGE);
+// }
+
+// function _getVoiceElements(type) {
+//   return {
+//     btn: document.getElementById(`${type}VoiceBtn`),
+//     icon: document.querySelector(`#${type}VoiceBtn .voice-btn-icon i`),
+//     title: document.querySelector(`#${type}VoiceBtn .voice-btn-title`),
+//     hint: document.querySelector(`#${type}VoiceBtn .voice-btn-hint`),
+//     status: document.getElementById(`${type}VoiceStatus`),
+//     preview: document.getElementById(`${type}VoicePreview`),
+//     transcript: document.getElementById(`${type}VoiceTranscript`),
+//     chips: document.getElementById(`${type}VoiceChips`),
+//   };
+// }
+
+// function _setVoiceUi(type, state, message) {
+//   const els = _getVoiceElements(type);
+//   if (!els.btn || !els.status) return;
+
+//   const copy = VOICE_UI_COPY[state] || VOICE_UI_COPY.idle;
+//   els.btn.dataset.state = state;
+//   els.status.dataset.state = state;
+//   els.btn.disabled = state === "starting" || state === "processing";
+
+//   if (els.icon) els.icon.className = `fas ${copy.icon}`;
+//   if (els.title) els.title.textContent = copy.title;
+//   if (els.hint) els.hint.textContent = copy.hint;
+//   els.status.textContent = message || VOICE_IDLE_MESSAGE;
+// }
+
+// function _hideVoicePreview(type) {
+//   const els = _getVoiceElements(type);
+//   if (!els.preview) return;
+//   els.preview.hidden = true;
+//   if (els.transcript) els.transcript.textContent = "";
+//   if (els.chips) els.chips.innerHTML = "";
+// }
+
+// function _renderVoicePreview(type, transcript, draft = null) {
+//   const els = _getVoiceElements(type);
+//   if (!els.preview || !els.transcript || !els.chips) return;
+
+//   els.preview.hidden = false;
+//   els.transcript.textContent = transcript;
+//   els.chips.innerHTML = "";
+
+//   if (!draft) return;
+//   if (draft.amount) {
+//     _appendVoiceChip(
+//       els.chips,
+//       `₹${Number(draft.amount).toLocaleString("en-IN")}`,
+//       "amount",
+//     );
+//   }
+//   if (draft.category) {
+//     _appendVoiceChip(els.chips, draft.category, "category");
+//   }
+//   if (draft.description) {
+//     _appendVoiceChip(els.chips, draft.description, "description");
+//   }
+// }
+
+// function _appendVoiceChip(container, label, variant = "default") {
+//   const chip = document.createElement("span");
+//   chip.className = `voice-preview-chip voice-preview-chip--${variant}`;
+//   chip.textContent = label;
+//   container.appendChild(chip);
+// }
+
+// function _getVoiceErrorMessage(errorCode) {
+//   const messages = {
+//     "audio-capture":
+//       "No microphone was found (audio-capture). Check device mic access and try again.",
+//     "not-allowed":
+//       "Microphone access was blocked (not-allowed). Allow mic permission and try again.",
+//     "service-not-allowed":
+//       "This browser blocked speech services (service-not-allowed). Try Chrome or Edge.",
+//     network:
+//       "Speech recognition lost its network connection (network). Check connectivity and try again.",
+//     "no-speech":
+//       "No speech was detected (no-speech). Speak a little louder or closer to the mic.",
+//     "language-not-supported":
+//       "This browser can't recognize the current language setting (language-not-supported).",
+//     aborted: "Listening stopped.",
+//   };
+
+//   return (
+//     messages[errorCode] ||
+//     `Voice capture failed (${errorCode}). Please try again.`
+//   );
+// }
+
+// function _escapeVoiceRegExp(value) {
+//   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// }
+
+// function _scaleVoiceAmount(numberText, multiplierText) {
+//   let amount = Number.parseFloat(String(numberText).replace(/,/g, ""));
+//   if (!Number.isFinite(amount) || amount <= 0) return null;
+
+//   const multiplier = String(multiplierText || "").toLowerCase();
+//   if (multiplier === "k" || multiplier === "thousand") amount *= 1000;
+//   if (multiplier === "lakh" || multiplier === "lac") amount *= 100000;
+//   return Math.round(amount * 100) / 100;
+// }
+
+// function _parseWordNumber(phrase) {
+//   const tokens = String(phrase)
+//     .toLowerCase()
+//     .replace(/-/g, " ")
+//     .split(/\s+/)
+//     .filter(Boolean);
+//   if (!tokens.length) return null;
+
+//   let total = 0;
+//   let current = 0;
+//   let decimal = "";
+//   let afterPoint = false;
+//   let seenNumber = false;
+
+//   for (const token of tokens) {
+//     if (token === "and") continue;
+//     if (token === "point") {
+//       afterPoint = true;
+//       continue;
+//     }
+
+//     if (afterPoint) {
+//       if (!(token in VOICE_NUMBER_WORDS)) return null;
+//       const digit = VOICE_NUMBER_WORDS[token];
+//       if (digit < 0 || digit > 9) return null;
+//       decimal += String(digit);
+//       seenNumber = true;
+//       continue;
+//     }
+
+//     if (token === "hundred") {
+//       current = (current || 1) * 100;
+//       seenNumber = true;
+//       continue;
+//     }
+//     if (token === "thousand") {
+//       total += (current || 1) * 1000;
+//       current = 0;
+//       seenNumber = true;
+//       continue;
+//     }
+//     if (token === "lakh" || token === "lac") {
+//       total += (current || 1) * 100000;
+//       current = 0;
+//       seenNumber = true;
+//       continue;
+//     }
+
+//     const value = VOICE_NUMBER_WORDS[token];
+//     if (value === undefined) return null;
+//     current += value;
+//     seenNumber = true;
+//   }
+
+//   if (!seenNumber) return null;
+//   const whole = total + current;
+//   if (!decimal) return whole || null;
+//   return Number.parseFloat(`${whole}.${decimal}`);
+// }
+
+// function _extractWordAmount(transcript) {
+//   const patterns = [
+//     new RegExp(
+//       `\\b((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\s+(?:rupees?|rs|inr)\\b`,
+//       "i",
+//     ),
+//     new RegExp(
+//       `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\b`,
+//       "i",
+//     ),
+//   ];
+
+//   for (const pattern of patterns) {
+//     const match = transcript.match(pattern);
+//     if (!match) continue;
+//     const amount = _parseWordNumber(match[1]);
+//     if (amount) {
+//       return {
+//         amount,
+//         matchedText: match[0],
+//       };
+//     }
+//   }
+
+//   return {
+//     amount: null,
+//     matchedText: "",
+//   };
+// }
+
+// function _extractVoiceAmount(transcript) {
+//   const patterns = [
+//     /\b(?:rs\.?|inr|rupees?)\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)?\b/i,
+//     /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(k|thousand|lakh|lac)\b/i,
+//     /\b(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:rs\.?|inr|rupees?)\b/i,
+//     new RegExp(
+//       `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+(\\d+(?:,\\d+)*(?:\\.\\d+)?)\\s*(k|thousand|lakh|lac)?\\b`,
+//       "i",
+//     ),
+//     /\b(\d+(?:,\d+)*(?:\.\d+)?)\s+(?:on|for|towards|at|from)\b/i,
+//   ];
+
+//   for (const pattern of patterns) {
+//     const match = transcript.match(pattern);
+//     if (!match) continue;
+//     const amount = _scaleVoiceAmount(match[1], match[2]);
+//     if (amount) {
+//       return {
+//         amount,
+//         matchedText: match[0],
+//       };
+//     }
+//   }
+
+//   return _extractWordAmount(transcript);
+// }
+
+// function _fallbackVoiceDescription(type, transcript, category) {
+//   if (category && category !== "Other") {
+//     if (type === "income") {
+//       if (category === "Salary") return "Salary";
+//       if (category === "Freelance") return "Freelance payment";
+//       return `${category} income`;
+//     }
+//     if (category === "Food") return "Food expense";
+//     if (category === "Transport") return "Transport expense";
+//     return `${category} expense`;
+//   }
+
+//   const trimmed = String(transcript || "").trim();
+//   return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : "";
+// }
+
+// function _cleanVoiceDescription(type, transcript, matchedText) {
+//   let cleaned = String(transcript || "");
+
+//   if (matchedText) {
+//     cleaned = cleaned.replace(
+//       new RegExp(_escapeVoiceRegExp(matchedText), "i"),
+//       " ",
+//     );
+//   }
+
+//   const actionPattern =
+//     type === "income"
+//       ? new RegExp(
+//           `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_INCOME_ACTION_PATTERN})(?:\\s+from|\\s+payment|\\s+of)?\\b`,
+//           "gi",
+//         )
+//       : new RegExp(
+//           `\\b(?:please\\s+)?(?:add|log|record|note)?\\s*(?:i\\s+)?(?:just\\s+)?(?:${VOICE_EXPENSE_ACTION_PATTERN})(?:\\s+for)?\\b`,
+//           "gi",
+//         );
+
+//   cleaned = cleaned
+//     .replace(actionPattern, " ")
+//     .replace(/\b(?:rs\.?|inr|rupees?)\b/gi, " ")
+//     .replace(/\b(?:today|right now|just now|please|transaction|entry)\b/gi, " ")
+//     .replace(/^[\s,.-]*(?:on|for|from|towards|to|at|via|of)\b/gi, " ")
+//     .replace(/[.,]/g, " ")
+//     .replace(/\s+/g, " ")
+//     .trim();
+
+//   if (!cleaned) return "";
+//   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+// }
+
+// function _parseVoiceLocally(type, transcript) {
+//   const allowedCategories = _getAiCategories(type);
+//   const amountResult = _extractVoiceAmount(transcript);
+//   const directCategory =
+//     _localKeywordGuess(type, transcript) || _localKeywordGuess(type, "");
+//   let description = _cleanVoiceDescription(
+//     type,
+//     transcript,
+//     amountResult.matchedText,
+//   );
+//   let category =
+//     _localKeywordGuess(type, description) || directCategory || "Other";
+
+//   const matchedCategory = allowedCategories.find(
+//     (item) => item.toLowerCase() === String(category).toLowerCase(),
+//   );
+//   category =
+//     matchedCategory || (allowedCategories.includes("Other") ? "Other" : "");
+
+//   if (!description) {
+//     description = _fallbackVoiceDescription(type, transcript, category);
+//   }
+
+//   let confidence = 0;
+//   if (amountResult.amount) confidence += 0.5;
+//   if (description && description.toLowerCase() !== transcript.toLowerCase()) {
+//     confidence += 0.2;
+//   }
+//   if (category && category !== "Other") confidence += 0.2;
+//   if (
+//     amountResult.matchedText &&
+//     /rs|inr|rupees?|k|thousand|lakh|lac/i.test(amountResult.matchedText)
+//   ) {
+//     confidence += 0.1;
+//   }
+
+//   return {
+//     amount: amountResult.amount,
+//     description,
+//     category,
+//     date: todayStr(),
+//     confidence: Math.min(confidence, 1),
+//     source: "local",
+//   };
+// }
+
+// function _needsVoiceBackendFallback(draft) {
+//   return (
+//     !draft.amount ||
+//     !draft.description ||
+//     !draft.category ||
+//     draft.category === "Other" ||
+//     draft.confidence < 0.75
+//   );
+// }
+
+// function _getVoiceAiEndpoint() {
+//   return String(
+//     window.BLUELEDGER_VOICE_AI_ENDPOINT ||
+//       document.body?.dataset.voiceAiEndpoint ||
+//       localStorage.getItem("bl_voice_ai_endpoint") ||
+//       "",
+//   ).trim();
+// }
+
+// function _sanitizeVoiceDraft(type, payload) {
+//   const source = payload?.draft || payload;
+//   if (!source || typeof source !== "object") return null;
+
+//   const allowedCategories = _getAiCategories(type);
+//   const amount = _scaleVoiceAmount(source.amount, "");
+//   let description = String(source.description || "").trim();
+//   let category = String(source.category || "").trim();
+
+//   if (!description) description = "";
+//   const matchedCategory = allowedCategories.find(
+//     (item) => item.toLowerCase() === category.toLowerCase(),
+//   );
+//   category = matchedCategory || "";
+
+//   return {
+//     amount,
+//     description,
+//     category,
+//     date: todayStr(),
+//     confidence: 1,
+//     source: "backend",
+//   };
+// }
+
+// async function _parseVoiceWithBackend(type, transcript, localDraft) {
+//   const endpoint = _getVoiceAiEndpoint();
+//   if (!endpoint) return null;
+
+//   const controller =
+//     typeof AbortController !== "undefined" ? new AbortController() : null;
+//   const timeoutId = controller
+//     ? setTimeout(() => controller.abort(), VOICE_BACKEND_TIMEOUT_MS)
+//     : null;
+
+//   try {
+//     const response = await fetch(endpoint, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         transcript,
+//         type,
+//         categories: _getAiCategories(type),
+//         localDraft,
+//       }),
+//       signal: controller?.signal,
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`Voice AI endpoint error ${response.status}`);
+//     }
+
+//     const payload = await response.json();
+//     return _sanitizeVoiceDraft(type, payload);
+//   } catch (error) {
+//     console.warn("Voice AI fallback skipped", error);
+//     return null;
+//   } finally {
+//     if (timeoutId) clearTimeout(timeoutId);
+//   }
+// }
+
+// function _applyVoiceDraft(type, draft) {
+//   const amtEl = document.getElementById(`${type}Amount`);
+//   const descEl = document.getElementById(`${type}Desc`);
+//   const catEl = document.getElementById(`${type}Category`);
+//   const dateEl = document.getElementById(`${type}Date`);
+
+//   if (amtEl && draft.amount) {
+//     amtEl.value = draft.amount;
+//   }
+//   if (descEl && draft.description) {
+//     descEl.value = draft.description;
+//   }
+//   if (dateEl && !dateEl.value) {
+//     dateEl.value = draft.date || todayStr();
+//   }
+//   if (catEl && draft.category) {
+//     catEl.value = draft.category;
+//   }
+
+//   if (
+//     descEl &&
+//     draft.description &&
+//     (!draft.category || draft.category === "Other")
+//   ) {
+//     aiAutoCategory(type, draft.description);
+//   }
+// }
+
+// async function _handleVoiceTranscript(type, transcript) {
+//   const localDraft = _parseVoiceLocally(type, transcript);
+//   let finalDraft = localDraft;
+
+//   if (_needsVoiceBackendFallback(localDraft)) {
+//     const backendDraft = await _parseVoiceWithBackend(
+//       type,
+//       transcript,
+//       localDraft,
+//     );
+//     if (backendDraft) {
+//       finalDraft = {
+//         ...localDraft,
+//         ...backendDraft,
+//         amount: backendDraft.amount || localDraft.amount,
+//         description: backendDraft.description || localDraft.description,
+//         category: backendDraft.category || localDraft.category,
+//       };
+//     }
+//   }
+
+//   _renderVoicePreview(type, transcript, finalDraft);
+//   _applyVoiceDraft(type, {
+//     ...finalDraft,
+//     amount: finalDraft.amount || null,
+//   });
+
+//   if (!finalDraft.amount) {
+//     _setVoiceUi(
+//       type,
+//       "error",
+//       "I heard the transcript, but couldn't detect the amount. Try again or type the amount manually.",
+//     );
+//     return;
+//   }
+
+//   if (!finalDraft.category) {
+//     finalDraft.category = "Other";
+//   }
+//   if (!finalDraft.description) {
+//     finalDraft.description = _fallbackVoiceDescription(
+//       type,
+//       transcript,
+//       finalDraft.category,
+//     );
+//   }
+
+//   _applyVoiceDraft(type, finalDraft);
+//   _renderVoicePreview(type, transcript, finalDraft);
+//   _setVoiceUi(
+//     type,
+//     "success",
+//     `Draft ready${finalDraft.source === "backend" ? " with AI assist" : ""}. Review the fields, then confirm the entry.`,
+//   );
+// }
 
 /* ──────────────────────────────────────────────
    FEATURE 6: RECEIPT SCANNING
