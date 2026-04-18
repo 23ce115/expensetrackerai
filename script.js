@@ -165,22 +165,22 @@ let _aiCatState = {};
 let _askBlHistory = [];
 let _askBlBusy = false;
 
-/* ── Shared Anthropic API call ── */
-// async function _callAI(messages, systemPrompt, maxTokens = 300) {
-//   const res = await fetch("https://api.anthropic.com/v1/messages", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({
-//       model: AI_MODEL,
-//       max_tokens: maxTokens,
-//       system: systemPrompt,
-//       messages,
-//     }),
-//   });
-//   if (!res.ok) throw new Error(`AI API error ${res.status}`);
-//   const data = await res.json();
-//   return data.content?.map((b) => b.text || "").join("") || "";
-// }
+// /* ── Shared Anthropic API call ── */
+async function _callAI(messages, systemPrompt, maxTokens = 300) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages,
+    }),
+  });
+  if (!res.ok) throw new Error(`AI API error ${res.status}`);
+  const data = await res.json();
+  return data.content?.map((b) => b.text || "").join("") || "";
+}
 
 /* ──────────────────────────────────────────────
    LOCAL KEYWORD CLASSIFIER
@@ -1028,7 +1028,7 @@ function resetAiCatBadge(type) {
 //   try {
 //     const system = `You are BlueLedger AI, a friendly and concise personal finance assistant built into the BlueLedger app.
 // The user's financial data is provided below. Answer their question directly using the data.
-// Be concise, warm, and use ₹ for amounts. Use emojis sparingly. 
+// Be concise, warm, and use ₹ for amounts. Use emojis sparingly.
 // If the data is insufficient to answer, say so honestly.
 // Never make up transactions. Format numbers in Indian style (lakhs/crores if large).
 
