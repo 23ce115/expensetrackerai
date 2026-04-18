@@ -77,8 +77,9 @@ function _bootApp() {
       }
     });
 
-    /* Expose MONTH_NAMES globally so any module can use it
-       without redeclaring it (script.js uses MONTH_NAMES directly) */
+    /* MONTH_NAMES: script.js now sets window.MONTH_NAMES first as a fallback,
+       so this guard is a safe no-op in normal operation. Kept for resilience
+       in case load order ever changes. */
     if (!window.MONTH_NAMES) {
       window.MONTH_NAMES = [
         "January",
