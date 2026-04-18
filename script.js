@@ -1,18 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════
-   script.js — BlueLedger Core App Logic
-   OWNS: PIN/auth, vault encryption, transactions CRUD, UI rendering,
-         modals, sync, settings, imports/exports.
-
-   DOES NOT OWN (delegated to other files):
-     _overviewChart / chart state  → charts.js
-     setChartPeriod()              → charts.js
-     MONTH_NAMES const             → window.MONTH_NAMES (main.js)
-     chartPeriod variable          → main.js (global)
-     todayStr()                    → utils.js
-     safeNumber()                  → utils.js
-     openReceiptScanner()          → receipt.js
-   ═══════════════════════════════════════════════════════════════ */
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    SECURITY — AES-256 PIN ENCRYPTION
    sessionPin lives ONLY in RAM. localStorage holds
@@ -35,7 +20,7 @@ const SYNC_DEVICE_KEY = "bl_sync_device_v1";
 const SYNC_TABLE = "encrypted_vaults";
 const SYNC_POLL_MS = 30 * 1000;
 
-// REMOVED: safeNumber() is defined in utils.js — do not redeclare here
+// safeNumber() lives in utils.js — removed duplicate
 
 // function safeGet(id) {
 //   return document.getElementById(id);
@@ -95,7 +80,7 @@ let categoryBudgets = {};
 let recurringTemplates = [];
 
 let currentPeriod = "monthly"; // always monthly
-// chartPeriod is declared in main.js — read/write it as a global here
+let chartPeriod = "monthly";   // FIXED: was commented out, now declared here
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
 let ctxId = null;
@@ -129,7 +114,7 @@ const BASE_EXPENSE_CATS = [
   "Health",
   "Investment",
 ];
-// REMOVED: MONTH_NAMES const — use window.MONTH_NAMES set by main.js
+// MONTH_NAMES removed — use window.MONTH_NAMES (set by main.js bootstrap)
 
 const CAT_COLORS = {
   Food: "#f97316",
@@ -2079,130 +2064,12 @@ function resetAiCatBadge(type) {
    User uploads a receipt photo → base64 → Claude vision
    → extracts amount, date, description, category → pre-fills form.
 ────────────────────────────────────────────── */
-// REMOVED: openReceiptScanner() duplicate — defined in receipt.js
+// openReceiptScanner() lives in receipt.js — removed duplicate
 
-async function _processReceiptImage(type, file) {
-  const btn = safeGet(`${type}ReceiptBtn`);
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  }
 
-  notify("Scanning receipt…", "info");
+// _processReceiptImage() lives in receipt.js — removed duplicate with broken ANTHROPIC_API_KEY reference
+// Receipt scanning handled by receipt.js
 
-  try {
-    // Convert to base64 safely
-    const base64 = await new Promise((res, rej) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const result = reader.result;
-        if (!result) return rej(new Error("Empty file result"));
-        res(result.split(",")[1]);
-      };
-
-      reader.onerror = () => rej(new Error("File read failed"));
-      reader.readAsDataURL(file);
-    });
-
-    const mediaType = file.type || "image/jpeg";
-
-    const cats =
-      type === "income"
-        ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
-        : [...BASE_EXPENSE_CATS, ...customCategories, "Other"];
-
-    const system = `You are a receipt scanner for an Indian personal finance app.
-Extract transaction data from this receipt image and return ONLY valid JSON:
-{
-  "amount": 450,
-  "description": "Coffee and snacks",
-  "category": "Food",
-  "date": "2025-04-03",
-  "notes": "Any relevant extra detail"
-}
-Rules:
-- amount is total paid in rupees as a number (no symbol). If unclear, use null.
-- description: concise merchant + item summary.
-- category must be exactly one from: ${cats.join(", ")}
-- date: ISO format YYYY-MM-DD if visible, otherwise null.
-- notes: any useful extra detail (items, GST, etc.) or empty string.
-- Return ONLY the JSON, no explanation or markdown.`;
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        max_tokens: 300,
-        system,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType,
-                  data: base64,
-                },
-              },
-              {
-                type: "text",
-                text: "Extract the transaction details from this receipt.",
-              },
-            ],
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    const text = data?.content?.[0]?.text;
-    if (!text) throw new Error("Invalid AI response");
-
-    // Extract JSON safely
-    let parsed;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      // fallback if AI wraps JSON in text
-      const match = text.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("JSON parse failed");
-      parsed = JSON.parse(match[0]);
-    }
-
-    // Apply to UI safely
-    const amt = safeGet(`${type}Amount`);
-    const desc = safeGet(`${type}Desc`);
-    const notes = safeGet(`${type}Notes`);
-    const cat = safeGet(`${type}Category`);
-
-    if (amt && parsed.amount != null) amt.value = parsed.amount;
-    if (desc) desc.value = parsed.description || "";
-    if (notes) notes.value = parsed.notes || "";
-    if (cat && parsed.category) cat.value = parsed.category;
-
-    notify("Receipt scanned successfully!", "success");
-  } catch (err) {
-    console.error(err);
-    notify("Failed to scan receipt", "error");
-  } finally {
-    const btn = safeGet(`${type}ReceiptBtn`);
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-camera"></i>';
-    }
   }
 }
 
@@ -5274,8 +5141,7 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
   });
 }
 
-// setChartPeriod() is owned by charts.js and exposed on window.
-// Call window.setChartPeriod(period) or just setChartPeriod(period) — it resolves to charts.js.
+// setChartPeriod() owned by charts.js — removed duplicate #1
 
 function renderChart(period, sourceTxns) {
   // Kept for backward-compat; delegates to Chart.js
@@ -7786,11 +7652,7 @@ document.getElementById("headerDate").textContent =
 loadTheme();
 loadGlassOpacity();
 
-// SERVICE WORKER — registered via main.js with safe fallback.
-// If sw.js exists, it must include a fetch event handler that uses
-// event.respondWith(fetch(event.request).catch(() => new Response('')))
-// to prevent "Failed to convert value to Response" errors for
-// third-party requests (ads, analytics, etc.) it cannot intercept.
+// Service worker registered by main.js
 
 (async function initApp() {
   const authMode = localStorage.getItem(AUTH_MODE_KEY);
@@ -8025,7 +7887,7 @@ async function doPasswordReset() {
 
 renderCardSwitcher();
 populateCategorySelects();
-setChartPeriod(chartPeriod);
+// setChartPeriod deferred to main.js _bootApp which runs after all scripts load
 refreshAll();
 syncFabVisibility();
 
@@ -8212,19 +8074,8 @@ function _clearAiSuggestion(type) {
 //   }
 // }
 
-window.addEventListener("load", () => {
-  try {
-    if (typeof initOverviewChart === "function") {
-      initOverviewChart();
-      updateOverviewChart("monthly");
-    } else {
-      console.error("initOverviewChart not found");
-    }
-  } catch (e) {
-    console.error("Chart init failed:", e);
-  }
-});
+// Chart initialisation handled by main.js window load listener
 
-// REMOVED: second setChartPeriod() definition — charts.js owns this function
+// setChartPeriod() owned by charts.js — removed duplicate #2
 
-// REMOVED: bare updateOverviewChart call — handled by main.js window load listener
+// updateOverviewChart triggered by main.js _bootApp after DOM ready
