@@ -118,17 +118,10 @@ function _bootApp() {
       ];
     }
 
-    /* Init chart canvases */
-    if (typeof initOverviewChart === "function") initOverviewChart();
-    if (typeof initCategoryChart === "function") initCategoryChart();
-
-    /* Set initial chart period — setChartPeriod is defined in charts.js */
-    if (
-      typeof setChartPeriod === "function" &&
-      typeof chartPeriod !== "undefined"
-    ) {
-      setChartPeriod(chartPeriod);
-    }
+    /* Chart init is intentionally deferred to the window "load" event below.
+       DOMContentLoaded fires before script.js (266 KB) has fully executed,
+       so getChartData() is not yet on window at this point.
+       The window.load listener is the safe place to init charts. */
 
     /* Register service worker safely */
     if ("serviceWorker" in navigator) {
@@ -145,13 +138,26 @@ function _bootApp() {
 window.addEventListener("load", () => {
   document.body.style.setProperty("--x", "50%");
   document.body.style.setProperty("--y", "50%");
+
+  /* ── Chart init (window.load = all scripts fully executed) ── */
   try {
+    if (typeof initCategoryChart === "function") initCategoryChart();
+
     if (typeof initOverviewChart === "function") {
       initOverviewChart();
-      if (typeof chartPeriod !== "undefined") {
-        updateOverviewChart(chartPeriod);
-      }
     }
+    /* Give Chart.js one tick to register the canvas, then feed data */
+    setTimeout(function () {
+      try {
+        const period =
+          typeof chartPeriod !== "undefined" ? chartPeriod : "monthly";
+        if (typeof updateOverviewChart === "function")
+          updateOverviewChart(period);
+        if (typeof setChartPeriod === "function") setChartPeriod(period);
+      } catch (e) {
+        console.error("Chart data update failed:", e);
+      }
+    }, 0);
   } catch (e) {
     console.error("Chart init failed on load:", e);
   }
