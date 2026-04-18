@@ -3586,6 +3586,9 @@ async function _afterUnlock(password, userId) {
   }
   populateCategorySelects();
   updateAddAccountUI();
+  // Init Chart.js canvases (safe to call multiple times — they self-check)
+  if (typeof initOverviewChart === "function") initOverviewChart();
+  if (typeof initCategoryChart === "function") initCategoryChart();
   refreshAll();
   populateSyncModal();
   initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
@@ -7882,9 +7885,6 @@ async function doPasswordReset() {
 
 renderCardSwitcher();
 populateCategorySelects();
-// Init Chart.js charts before first render
-if (typeof initOverviewChart === "function") initOverviewChart();
-if (typeof initCategoryChart === "function") initCategoryChart();
 setChartPeriod(chartPeriod);
 refreshAll();
 syncFabVisibility();
