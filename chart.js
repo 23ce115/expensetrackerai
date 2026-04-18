@@ -25,20 +25,33 @@ function initOverviewChart() {
   const container = document.getElementById("chartContainer");
   if (!container) return;
 
-  /* Replace static container with canvas + controls */
+  /* Destroy previous chart instance if any */
+  if (_overviewChart) {
+    _overviewChart.destroy();
+    _overviewChart = null;
+  }
+
+  /* Clear container and reset */
   container.innerHTML = "";
   container.style.position = "relative";
   container.style.padding = "0";
 
-  /* Period toggle buttons — glassmorphism style */
-  const controls = document.createElement("div");
-  controls.className = "chart-period-controls";
-  controls.innerHTML = `
-    <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
-    <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
-    <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
-  `;
-  container.parentElement.querySelector(".card-header").appendChild(controls);
+  /* Remove any existing period controls to avoid duplicates */
+  const cardHeader = container.closest(".card")?.querySelector(".card-header");
+  if (cardHeader) {
+    const existing = cardHeader.querySelector(".chart-period-controls");
+    if (existing) existing.remove();
+
+    /* Period toggle buttons — glassmorphism style */
+    const controls = document.createElement("div");
+    controls.className = "chart-period-controls";
+    controls.innerHTML = `
+      <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
+    `;
+    cardHeader.appendChild(controls);
+  }
 
   /* Canvas */
   const canvas = document.createElement("canvas");
@@ -51,7 +64,6 @@ function initOverviewChart() {
   const labelsDiv = document.getElementById("chartLabels");
   if (labelsDiv) labelsDiv.style.display = "none";
 
-  /* Hide old legend (we keep the HTML one) */
   _buildOverviewChart(canvas);
 }
 
@@ -240,11 +252,14 @@ function updateOverviewChart(period) {
    ═══════════════════════════════════════════════════════════════ */
 
 function initCategoryChart() {
+  /* If already initialised, skip */
+  if (document.getElementById("categoryChartWrap")) return;
+
   const colorBar = document.querySelector(".color-bar");
   if (!colorBar) return;
 
   /* Replace the color-bar with a canvas */
-  colorBar.outerHTML = `<div id="categoryChartWrap" style="position:relative;width:100%;height:8px;margin:.6rem 0 .4rem;"><canvas id="categoryCanvas" height="8"></canvas></div>`;
+  colorBar.outerHTML = `<div id="categoryChartWrap" style="position:relative;width:100%;height:8px;margin:.6rem 0 .4rem;overflow:hidden;border-radius:4px;"><canvas id="categoryCanvas" height="8"></canvas></div>`;
 }
 
 function updateCategoryChart(catsData) {
