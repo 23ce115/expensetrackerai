@@ -18,11 +18,11 @@
 "use strict";
 
 /* ── Private chart state (single source of truth) ────────────── */
-let _overviewChart         = null;
-let _categoryChart         = null;
+let _overviewChart = null;
+let _categoryChart = null;
 let _currentOverviewPeriod = "monthly";
 
-const INCOME_COLOR  = "#10b981";
+const INCOME_COLOR = "#10b981";
 const EXPENSE_COLOR = "#f97316";
 
 /* ══════════════════════════════════════════════════════════════
@@ -33,11 +33,14 @@ function initOverviewChart() {
   const container = safeGet("chartContainer");
   if (!container) return;
 
-  if (_overviewChart) { _overviewChart.destroy(); _overviewChart = null; }
+  if (_overviewChart) {
+    _overviewChart.destroy();
+    _overviewChart = null;
+  }
 
-  container.innerHTML       = "";
-  container.style.position  = "relative";
-  container.style.padding   = "0";
+  container.innerHTML = "";
+  container.style.position = "relative";
+  container.style.padding = "0";
 
   const cardHeader = container.closest(".card")?.querySelector(".card-header");
   if (cardHeader) {
@@ -46,15 +49,15 @@ function initOverviewChart() {
     const controls = document.createElement("div");
     controls.className = "chart-period-controls";
     controls.innerHTML = `
-      <button class="cpc-btn ${_currentOverviewPeriod==="daily"   ? "cpc-btn--active":""}" onclick="setChartPeriod('daily')">Daily</button>
-      <button class="cpc-btn ${_currentOverviewPeriod==="weekly"  ? "cpc-btn--active":""}" onclick="setChartPeriod('weekly')">Weekly</button>
-      <button class="cpc-btn ${_currentOverviewPeriod==="monthly" ? "cpc-btn--active":""}" onclick="setChartPeriod('monthly')">Monthly</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
     `;
     cardHeader.appendChild(controls);
   }
 
   const canvas = document.createElement("canvas");
-  canvas.id          = "overviewCanvas";
+  canvas.id = "overviewCanvas";
   canvas.style.width = "100%";
   canvas.style.maxHeight = "220px";
   container.appendChild(canvas);
@@ -72,18 +75,22 @@ function _buildOverviewChart(canvas) {
     return;
   }
 
-  const ctx  = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
   const data = getChartData(_currentOverviewPeriod);
   if (!data || data.length === 0) return;
 
-  if (_overviewChart) { _overviewChart.destroy(); _overviewChart = null; }
+  if (_overviewChart) {
+    _overviewChart.destroy();
+    _overviewChart = null;
+  }
 
-  const isDark  = document.documentElement.getAttribute("data-theme") !== "light";
+  const isDark =
+    document.documentElement.getAttribute("data-theme") !== "light";
   const gridCol = isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)";
   const tickCol = isDark ? "#64748b" : "#94a3b8";
 
-  const labels   = data.map((d) => d.label   || "");
-  const incomes  = data.map((d) => d.income  || 0);
+  const labels = data.map((d) => d.label || "");
+  const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
   _overviewChart = new Chart(ctx, {
@@ -95,17 +102,23 @@ function _buildOverviewChart(canvas) {
           label: "Income",
           data: incomes,
           backgroundColor: incomes.map((_, i) =>
-            data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)"),
-          borderRadius: 6, borderSkipped: false,
-          barPercentage: 0.55, categoryPercentage: 0.7,
+            data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
+          ),
+          borderRadius: 6,
+          borderSkipped: false,
+          barPercentage: 0.55,
+          categoryPercentage: 0.7,
         },
         {
           label: "Expense",
           data: expenses,
           backgroundColor: expenses.map((_, i) =>
-            data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)"),
-          borderRadius: 6, borderSkipped: false,
-          barPercentage: 0.55, categoryPercentage: 0.7,
+            data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
+          ),
+          borderRadius: 6,
+          borderSkipped: false,
+          barPercentage: 0.55,
+          categoryPercentage: 0.7,
         },
       ],
     },
@@ -117,13 +130,20 @@ function _buildOverviewChart(canvas) {
         legend: { display: false },
         tooltip: {
           backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)", borderWidth: 1,
-          titleColor: "#e2e8f0", bodyColor: "#94a3b8",
-          padding: 12, cornerRadius: 10,
+          borderColor: "rgba(148,163,184,0.15)",
+          borderWidth: 1,
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
+          padding: 12,
+          cornerRadius: 10,
           callbacks: {
             title(items) {
               if (!items?.[0]) return "";
-              return _tooltipTitle(_currentOverviewPeriod, data, items[0].dataIndex);
+              return _tooltipTitle(
+                _currentOverviewPeriod,
+                data,
+                items[0].dataIndex,
+              );
             },
             label(item) {
               const val = item.raw || 0;
@@ -135,11 +155,23 @@ function _buildOverviewChart(canvas) {
         },
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: tickCol, font: { size: 11 } }, border: { display: false } },
+        x: {
+          grid: { display: false },
+          ticks: { color: tickCol, font: { size: 11 } },
+          border: { display: false },
+        },
         y: {
           grid: { color: gridCol, drawBorder: false },
-          ticks: { color: tickCol, font: { size: 11 },
-            callback: (v) => v === 0 ? "₹0" : v >= 1000 ? "₹"+(v/1000).toFixed(0)+"k" : "₹"+v },
+          ticks: {
+            color: tickCol,
+            font: { size: 11 },
+            callback: (v) =>
+              v === 0
+                ? "₹0"
+                : v >= 1000
+                  ? "₹" + (v / 1000).toFixed(0) + "k"
+                  : "₹" + v,
+          },
           border: { display: false },
         },
       },
@@ -151,10 +183,20 @@ function _tooltipTitle(period, data, idx) {
   if (!data?.[idx]) return "";
   const now = new Date();
   if (period === "daily") {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (6 - idx));
-    return d.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+    const d = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - (6 - idx),
+    );
+    return d.toLocaleDateString("en-IN", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   }
-  if (period === "weekly") return data[idx]?.label ? `Week of ${data[idx].label}` : "";
+  if (period === "weekly")
+    return data[idx]?.label ? `Week of ${data[idx].label}` : "";
   return data[idx]?.fullLabel || data[idx]?.label || "";
 }
 
@@ -166,19 +208,28 @@ function updateOverviewChart(period) {
   _currentOverviewPeriod = period || _currentOverviewPeriod;
 
   document.querySelectorAll(".cpc-btn").forEach((btn) => {
-    btn.classList.toggle("cpc-btn--active",
-      btn.textContent.trim().toLowerCase() === _currentOverviewPeriod);
+    btn.classList.toggle(
+      "cpc-btn--active",
+      btn.textContent.trim().toLowerCase() === _currentOverviewPeriod,
+    );
   });
 
-  const canvas    = safeGet("overviewCanvas");
+  const canvas = safeGet("overviewCanvas");
   const container = safeGet("chartContainer");
 
-  if (!canvas)         { initOverviewChart(); return; }
-  if (!_overviewChart) { _buildOverviewChart(canvas); return; }
+  if (!canvas) {
+    initOverviewChart();
+    return;
+  }
+  if (!_overviewChart) {
+    _buildOverviewChart(canvas);
+    return;
+  }
   if (typeof getChartData !== "function") return;
 
-  const data    = getChartData(_currentOverviewPeriod);
-  const hasData = Array.isArray(data) &&
+  const data = getChartData(_currentOverviewPeriod);
+  const hasData =
+    Array.isArray(data) &&
     data.some((d) => (d.income || 0) > 0 || (d.expense || 0) > 0);
 
   if (!hasData) {
@@ -195,17 +246,19 @@ function updateOverviewChart(period) {
   container?.querySelector(".chart-empty-chartjs")?.remove();
   canvas.style.display = "block";
 
-  const labels   = data.map((d) => d.label   || "");
-  const incomes  = data.map((d) => d.income  || 0);
+  const labels = data.map((d) => d.label || "");
+  const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
   _overviewChart.data.labels = labels;
   _overviewChart.data.datasets[0].data = incomes;
   _overviewChart.data.datasets[0].backgroundColor = incomes.map((_, i) =>
-    data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)");
+    data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
+  );
   _overviewChart.data.datasets[1].data = expenses;
   _overviewChart.data.datasets[1].backgroundColor = expenses.map((_, i) =>
-    data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)");
+    data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
+  );
   _overviewChart.update();
 }
 
@@ -216,7 +269,11 @@ function updateOverviewChart(period) {
 
 function setChartPeriod(period) {
   /* Keep the script.js `chartPeriod` global in sync */
-  try { chartPeriod = period; } catch (e) { /* not yet declared — safe to ignore */ }
+  try {
+    chartPeriod = period;
+  } catch (e) {
+    /* not yet declared — safe to ignore */
+  }
   _currentOverviewPeriod = period;
   updateOverviewChart(period);
 }
@@ -238,7 +295,10 @@ function updateCategoryChart(catsData) {
   const total = (catsData || []).reduce((s, c) => s + (c.value || 0), 0);
 
   if (!total || !catsData?.length) {
-    if (_categoryChart) { _categoryChart.destroy(); _categoryChart = null; }
+    if (_categoryChart) {
+      _categoryChart.destroy();
+      _categoryChart = null;
+    }
     wrap.innerHTML = `<div class="color-bar" style="display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;background:rgba(148,163,184,0.12)"></div>`;
     return;
   }
@@ -250,7 +310,10 @@ function updateCategoryChart(catsData) {
     if (!canvas) return;
   }
 
-  if (_categoryChart) { _categoryChart.destroy(); _categoryChart = null; }
+  if (_categoryChart) {
+    _categoryChart.destroy();
+    _categoryChart = null;
+  }
   wrap.style.height = "8px";
   canvas.height = 8;
 
@@ -259,22 +322,31 @@ function updateCategoryChart(catsData) {
     data: {
       labels: [""],
       datasets: catsData.map((c) => ({
-        label: c.label, data: [c.value || 0],
-        backgroundColor: c.color, borderRadius: 0, borderSkipped: false,
+        label: c.label,
+        data: [c.value || 0],
+        backgroundColor: c.color,
+        borderRadius: 0,
+        borderSkipped: false,
       })),
     },
     options: {
-      indexAxis: "y", responsive: true, maintainAspectRatio: false,
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)", borderWidth: 1,
-          titleColor: "#e2e8f0", bodyColor: "#94a3b8",
-          padding: 10, cornerRadius: 8,
+          borderColor: "rgba(148,163,184,0.15)",
+          borderWidth: 1,
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
+          padding: 10,
+          cornerRadius: 8,
           callbacks: {
             title: () => "Category breakdown",
-            label: (item) => `  ${item.dataset.label || ""}: ₹${(item.raw||0).toLocaleString("en-IN")}`,
+            label: (item) =>
+              `  ${item.dataset.label || ""}: ₹${(item.raw || 0).toLocaleString("en-IN")}`,
           },
         },
       },
@@ -298,16 +370,18 @@ function renderChartJS(period) {
 function renderCategoryChartJS(sortedCats) {
   if (typeof getCatColor !== "function") return;
   const data = (sortedCats || []).map(([name, val]) => ({
-    label: name, value: val || 0, color: getCatColor(name),
+    label: name,
+    value: val || 0,
+    color: getCatColor(name),
   }));
   updateCategoryChart(data);
 }
 
 /* ── Global exposure ─────────────────────────────────────────── */
-window.initOverviewChart     = initOverviewChart;
-window.updateOverviewChart   = updateOverviewChart;
-window.setChartPeriod        = setChartPeriod;
-window.initCategoryChart     = initCategoryChart;
-window.updateCategoryChart   = updateCategoryChart;
-window.renderChartJS         = renderChartJS;
+window.initOverviewChart = initOverviewChart;
+window.updateOverviewChart = updateOverviewChart;
+window.setChartPeriod = setChartPeriod;
+window.initCategoryChart = initCategoryChart;
+window.updateCategoryChart = updateCategoryChart;
+window.renderChartJS = renderChartJS;
 window.renderCategoryChartJS = renderCategoryChartJS;
