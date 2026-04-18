@@ -20,6 +20,22 @@ const SYNC_DEVICE_KEY = "bl_sync_device_v1";
 const SYNC_TABLE = "encrypted_vaults";
 const SYNC_POLL_MS = 30 * 1000;
 
+function safeGet(id) {
+  return document.getElementById(id);
+}
+
+function safeAddClass(el, className) {
+  if (el) el.classList.add(className);
+}
+
+function safeRemoveClass(el, className) {
+  if (el) el.classList.remove(className);
+}
+
+function safeToggleClass(el, className, condition) {
+  if (el) el.classList.toggle(className, condition);
+}
+
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
 const BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
 const BL_SUPABASE_ANON_KEY =
@@ -912,15 +928,14 @@ function resetAiCatBadge(type) {
    summary to Claude and answers in plain English.
 ────────────────────────────────────────────── */
 function openAskBl() {
-  document.getElementById("askBlPanel").classList.add("ask-bl-panel--open");
-  document.getElementById("askBlOverlay").classList.add("ask-bl-overlay--open");
-  setTimeout(() => document.getElementById("askBlInput")?.focus(), 300);
+  safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+  setTimeout(() => safeGet("askBlInput")?.focus(), 300);
 }
+
 function closeAskBl() {
-  document.getElementById("askBlPanel").classList.remove("ask-bl-panel--open");
-  document
-    .getElementById("askBlOverlay")
-    .classList.remove("ask-bl-overlay--open");
+  safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
 }
 
 function _buildFinanceSummary() {
@@ -2064,32 +2079,42 @@ function openReceiptScanner(type) {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "image/*";
-  input.capture = "environment"; // prefer rear camera on mobile
+  input.capture = "environment";
+
   input.onchange = (e) => {
-    const file = e.target.files[0];
+    const file = e?.target?.files?.[0];
     if (file) _processReceiptImage(type, file);
   };
+
   input.click();
 }
 
 async function _processReceiptImage(type, file) {
-  const btn = document.getElementById(`${type}ReceiptBtn`);
+  const btn = safeGet(`${type}ReceiptBtn`);
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
   }
+
   notify("Scanning receipt…", "info");
 
   try {
-    // Convert to base64
+    // Convert to base64 safely
     const base64 = await new Promise((res, rej) => {
       const reader = new FileReader();
-      reader.onload = () => res(reader.result.split(",")[1]);
+
+      reader.onload = () => {
+        const result = reader.result;
+        if (!result) return rej(new Error("Empty file result"));
+        res(result.split(",")[1]);
+      };
+
       reader.onerror = () => rej(new Error("File read failed"));
       reader.readAsDataURL(file);
     });
 
     const mediaType = file.type || "image/jpeg";
+
     const cats =
       type === "income"
         ? [...BASE_INCOME_CATS, ...customCategories, "Other"]
@@ -2114,7 +2139,11 @@ Rules:
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY, // ✅ IMPORTANT
+        "anthropic-version": "2023-06-01",
+      },
       body: JSON.stringify({
         model: AI_MODEL,
         max_tokens: 300,
@@ -2125,7 +2154,11 @@ Rules:
             content: [
               {
                 type: "image",
-                source: { type: "base64", media_type: mediaType, data: base64 },
+                source: {
+                  type: "base64",
+                  media_type: mediaType,
+                  data: base64,
+                },
               },
               {
                 type: "text",
@@ -2137,46 +2170,43 @@ Rules:
       }),
     });
 
-    if (!response.ok) throw new Error(`API error ${response.status}`);
-    const data = await response.json();
-    const raw = data.content?.map((b) => b.text || "").join("") || "";
-    const clean = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
 
-    // Pre-fill form
-    if (parsed.amount) {
-      const amtEl = document.getElementById(`${type}Amount`);
-      if (amtEl) amtEl.value = parsed.amount;
+    const data = await response.json();
+
+    const text = data?.content?.[0]?.text;
+    if (!text) throw new Error("Invalid AI response");
+
+    // Extract JSON safely
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // fallback if AI wraps JSON in text
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("JSON parse failed");
+      parsed = JSON.parse(match[0]);
     }
-    if (parsed.description) {
-      const descEl = document.getElementById(`${type}Desc`);
-      if (descEl) {
-        descEl.value = parsed.description;
-        aiAutoCategory(type, parsed.description);
-      }
-    }
-    if (parsed.category) {
-      const catEl = document.getElementById(`${type}Category`);
-      if (catEl) {
-        const match = cats.find(
-          (c) => c.toLowerCase() === parsed.category.toLowerCase(),
-        );
-        if (match) catEl.value = match;
-      }
-    }
-    if (parsed.date) {
-      const dateEl = document.getElementById(`${type}Date`);
-      if (dateEl && parsed.date) dateEl.value = parsed.date;
-    }
-    if (parsed.notes) {
-      const notesEl = document.getElementById(`${type}Notes`);
-      if (notesEl) notesEl.value = parsed.notes;
-    }
-    notify("Receipt scanned — please review and confirm ✓", "success");
-  } catch (e) {
-    notify("Receipt scan failed. Please fill in manually.", "error");
-    console.warn("Receipt scan failed", e);
+
+    // Apply to UI safely
+    const amt = safeGet(`${type}Amount`);
+    const desc = safeGet(`${type}Desc`);
+    const notes = safeGet(`${type}Notes`);
+    const cat = safeGet(`${type}Category`);
+
+    if (amt && parsed.amount != null) amt.value = parsed.amount;
+    if (desc) desc.value = parsed.description || "";
+    if (notes) notes.value = parsed.notes || "";
+    if (cat && parsed.category) cat.value = parsed.category;
+
+    notify("Receipt scanned successfully!", "success");
+  } catch (err) {
+    console.error(err);
+    notify("Failed to scan receipt", "error");
   } finally {
+    const btn = safeGet(`${type}ReceiptBtn`);
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-camera"></i>';
@@ -2488,32 +2518,45 @@ function hasStoredData() {
 
 function updateSyncStatus(kind, badgeText, bodyText, metaText) {
   if (syncConfig) syncConfig.status = kind;
-  const badge = document.getElementById("syncStatusBadge");
-  const body = document.getElementById("syncStatusText");
-  const meta = document.getElementById("syncStatusMeta");
+
+  const badge = safeGet("syncStatusBadge");
+  const body = safeGet("syncStatusText");
+  const meta = safeGet("syncStatusMeta");
+
   if (badge) {
     badge.textContent = badgeText;
     badge.className = "sync-status-badge";
-    if (kind === "ok") badge.classList.add("sync-status-badge--ok");
-    if (kind === "warn") badge.classList.add("sync-status-badge--warn");
+
+    if (kind === "ok") {
+      safeAddClass(badge, "sync-status-badge--ok");
+    } else if (kind === "warn") {
+      safeAddClass(badge, "sync-status-badge--warn");
+    }
   }
+
   if (body) body.textContent = bodyText;
-  if (meta)
+
+  if (meta) {
     meta.textContent =
       metaText ||
       (syncConfig?.lastSyncedAt
         ? `Last synced ${new Date(syncConfig.lastSyncedAt).toLocaleString("en-IN")}`
         : "Local-only vault");
-  // Update settings menu sync row if open
-  const dot = document.getElementById("settingsSyncDot");
-  const label = document.getElementById("settingsSyncLabel");
+  }
+
+  // Settings menu sync row
+  const dot = safeGet("settingsSyncDot");
+  const label = safeGet("settingsSyncLabel");
+
   if (dot && label) {
     if (kind === "ok") {
       dot.style.background = "#10b981";
       label.style.color = "#10b981";
+
       const mins = syncConfig?.lastSyncedAt
         ? Math.round((Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000)
         : 0;
+
       label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
     } else if (kind === "warn") {
       dot.style.background = "#f59e0b";
@@ -2526,7 +2569,6 @@ function updateSyncStatus(kind, badgeText, bodyText, metaText) {
     }
   }
 }
-
 function openSyncModal() {
   populateSyncModal();
   openModal("syncModal");
@@ -2850,25 +2892,27 @@ function showAuthScreen(tab = "login") {
 
   if (tab === "login") openAuthPopup("login");
 }
-
 function openAuthPopup(type) {
-  const overlay = document.getElementById(
-    type === "login" ? "loginPopupOverlay" : "signupPopupOverlay",
-  );
-  if (overlay) overlay.classList.add("open");
+  const overlayId =
+    type === "login" ? "loginPopupOverlay" : "signupPopupOverlay";
+
+  const overlay = safeGet(overlayId);
+  safeAddClass(overlay, "open");
+
   // Clear errors
   const errId = type === "login" ? "loginError" : "signupError";
-  const errEl = document.getElementById(errId);
+  const errEl = safeGet(errId);
+
   if (errEl) errEl.textContent = "";
 }
 
 function closeAuthPopup(type) {
-  const overlay = document.getElementById(
-    type === "login" ? "loginPopupOverlay" : "signupPopupOverlay",
-  );
-  if (overlay) overlay.classList.remove("open");
-}
+  const overlayId =
+    type === "login" ? "loginPopupOverlay" : "signupPopupOverlay";
 
+  const overlay = safeGet(overlayId);
+  safeRemoveClass(overlay, "open");
+}
 /* openBiometricSetup — called from Settings */
 async function openBiometricSetup() {
   const canBio = await _checkBiometricAvailable();
@@ -3168,14 +3212,15 @@ function _webAuthnStorePassword(password) {
 }
 
 function hideAuthScreen() {
-  document.getElementById("authScreen").style.display = "none";
+  const authScreen = safeGet("authScreen");
+  if (authScreen) authScreen.style.display = "none";
+
   // Close any open popups
   ["loginPopupOverlay", "signupPopupOverlay"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove("open");
+    const el = safeGet(id);
+    safeRemoveClass(el, "open");
   });
 }
-
 // Legacy switchAuthTab stub — kept for compatibility (real implementation above)
 
 async function doSignUp() {
@@ -4051,24 +4096,33 @@ async function unlockWithLockPassword() {
 }
 
 function _lockFailure(errEl) {
-  document.getElementById("lockPasswordInput").value = "";
-  const dots = document.getElementById("pinDots");
-  dots?.classList.add("shake");
-  setTimeout(() => dots?.classList.remove("shake"), 700);
+  const input = safeGet("lockPasswordInput");
+  if (input) input.value = "";
+
+  const dots = safeGet("pinDots");
+  safeAddClass(dots, "shake");
+  setTimeout(() => safeRemoveClass(dots, "shake"), 700);
 
   pinAttempts++;
   const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
 
+  if (!errEl) return; // ✅ safety
+
   if (pinAttempts >= MAX_PIN_ATTEMPTS) {
     pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
     pinAttempts = 0;
+
     errEl.textContent = "Too many attempts — locked for 30s";
+
     const countdown = setInterval(() => {
       const s = Math.ceil((pinLockedUntil - Date.now()) / 1000);
+
       if (s <= 0) {
         clearInterval(countdown);
         errEl.textContent = "";
-      } else errEl.textContent = `Locked — try again in ${s}s`;
+      } else {
+        errEl.textContent = `Locked — try again in ${s}s`;
+      }
     }, 500);
   } else if (pinAttempts >= 2) {
     errEl.innerHTML = `Wrong password (${remaining} left). 
@@ -4076,8 +4130,9 @@ function _lockFailure(errEl) {
          style="color:#f87171;text-decoration:underline">Sign out &amp; start fresh</a>`;
   } else {
     errEl.textContent = `Wrong password — ${remaining} attempt${remaining === 1 ? "" : "s"} remaining`;
+
     setTimeout(() => {
-      errEl.textContent = "";
+      if (errEl) errEl.textContent = "";
     }, 2500);
   }
 }
@@ -4306,38 +4361,49 @@ function showLockScreen(subtitle) {
   ls.style.display = "flex";
 
   if (authMode === "password") {
-    ls.classList.add("lock-screen--password");
-    // Hide PIN pad, show password form
-    const pinArea = document.getElementById("pinArea");
-    const pwdArea = document.getElementById("passwordArea");
+    safeAddClass(ls, "lock-screen--password");
+
+    // Areas
+    const pinArea = safeGet("pinArea");
+    const pwdArea = safeGet("passwordArea");
+
     if (pinArea) pinArea.style.display = "none";
     if (pwdArea) pwdArea.style.display = "block";
-    const pwdInput = document.getElementById("lockPasswordInput");
+
+    // Password input
+    const pwdInput = safeGet("lockPasswordInput");
     if (pwdInput) {
       pwdInput.value = "";
       setTimeout(() => pwdInput.focus(), 300);
     }
-    // Show biometric button if available
-    const bioBtn = document.getElementById("lockBiometricBtn");
-    const bioDivider = document.getElementById("lockBiometricDivider");
+
+    // Biometric
+    const bioBtn = safeGet("lockBiometricBtn");
+    const bioDivider = safeGet("lockBiometricDivider");
+
     if (bioBtn) {
       const hasPasswordCred =
         localStorage.getItem("bl_has_stored_creds") === "1" &&
         _canUsePasswordCredentialFlow();
+
       const hasWebAuthn =
         localStorage.getItem("bl_has_webauthn") === "1" &&
         !!window.PublicKeyCredential;
+
       const canBio = hasPasswordCred || hasWebAuthn;
+
       bioBtn.style.display = canBio ? "flex" : "none";
       if (bioDivider) bioDivider.style.display = canBio ? "block" : "none";
-      // Label the button appropriately per platform
+
       if (canBio) {
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const isMac =
           /Mac/.test(navigator.userAgent) && navigator.maxTouchPoints > 0;
         const isWindows = /Windows/.test(navigator.userAgent);
-        const labelEl = document.getElementById("lockBiometricLabel");
-        const iconEl = document.getElementById("lockBiometricIcon");
+
+        const labelEl = safeGet("lockBiometricLabel");
+        const iconEl = safeGet("lockBiometricIcon");
+
         if (isIOS || (isMac && hasWebAuthn && !hasPasswordCred)) {
           if (labelEl) labelEl.textContent = "Use Face ID";
           if (iconEl) iconEl.className = "fas fa-face-smile";
@@ -4348,26 +4414,40 @@ function showLockScreen(subtitle) {
           if (labelEl) labelEl.textContent = "Use Fingerprint / Biometric";
           if (iconEl) iconEl.className = "fas fa-fingerprint";
         }
+
         if (!isWindows) setTimeout(tryLockScreenBiometric, 600);
       }
     }
-    document.getElementById("lockSubtitle").textContent =
-      subtitle || "Enter your password to continue";
+
+    const subtitleEl = safeGet("lockSubtitle");
+    if (subtitleEl) {
+      subtitleEl.textContent = subtitle || "Enter your password to continue";
+    }
   } else {
-    ls.classList.remove("lock-screen--password");
+    safeRemoveClass(ls, "lock-screen--password");
+
     pinBuffer = "";
     updatePinDots();
-    const pinArea = document.getElementById("pinArea");
-    const pwdArea = document.getElementById("passwordArea");
+
+    const pinArea = safeGet("pinArea");
+    const pwdArea = safeGet("passwordArea");
+
     if (pinArea) pinArea.style.display = "block";
     if (pwdArea) pwdArea.style.display = "none";
-    document.getElementById("lockSubtitle").textContent =
-      subtitle || "Enter your PIN to continue";
-  }
 
-  document.getElementById("lockError").textContent = "";
-  document.getElementById("lockAttempts").textContent = "";
+    const subtitleEl = safeGet("lockSubtitle");
+    if (subtitleEl) {
+      subtitleEl.textContent = subtitle || "Enter your PIN to continue";
+    }
+  }
 }
+
+// Bottom resets
+const errEl = safeGet("lockError");
+if (errEl) errEl.textContent = "";
+
+const attemptsEl = safeGet("lockAttempts");
+if (attemptsEl) attemptsEl.textContent = "";
 
 function hideLockScreen() {
   document.getElementById("lockScreen").style.display = "none";
@@ -4395,11 +4475,12 @@ function pinBackspace() {
 
 function updatePinDots() {
   const len = pinBuffer.length;
+
   for (let i = 1; i <= 4; i++) {
-    document.getElementById("pd" + i).classList.toggle("filled", i <= len);
+    const dot = safeGet("pd" + i);
+    safeToggleClass(dot, "filled", i <= len);
   }
 }
-
 function attemptUnlock() {
   clearTimeout(window._pinT);
   const pin = pinBuffer;
@@ -4423,8 +4504,8 @@ function attemptUnlock() {
   if (!vault || vault.verify !== VERIFY_TOKEN) {
     pinAttempts++;
     const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
-    const dots = document.getElementById("pinDots");
-    dots.classList.add("shake");
+    const dots = safeGet("pinDots");
+    safeAddClass(dots, "shake");
 
     if (pinAttempts >= MAX_PIN_ATTEMPTS) {
       pinLockedUntil = Date.now() + PIN_LOCKOUT_MS;
@@ -4452,7 +4533,7 @@ function attemptUnlock() {
     }
 
     setTimeout(() => {
-      dots.classList.remove("shake");
+      safeRemoveClass(dots, "shake");
       pinBuffer = "";
       updatePinDots();
       if (pinAttempts < MAX_PIN_ATTEMPTS)
@@ -4870,7 +4951,7 @@ const MONTH_SHORT = [
 ];
 
 function openMonthPicker() {
-  document.getElementById("periodMenu").classList.remove("open");
+  safeRemoveClass(safeGet("periodMenu"), "open");
   pickerYear = new Date().getFullYear();
   pickerSelected = pickedMonth ? { ...pickedMonth } : null;
   renderPickerGrid();
@@ -4948,7 +5029,7 @@ function applyPickedMonth() {
   document
     .querySelectorAll(".period-menu-item")
     .forEach((el) =>
-      el.classList.toggle("active", el.textContent.trim() === "Pick Month"),
+      safeToggleClass(el, "active", el.textContent.trim() === "Pick Month"),
     );
   refreshAll();
   notify("Viewing " + name, "info");
@@ -5353,6 +5434,7 @@ function renderChange(elId, cur, prev, label, isGood) {
 }
 
 function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
+  if (!document.getElementById("chartContainer")) return;
   const analyticsTxns = sourceTxns;
   const txns = getTxns(period, analyticsTxns);
   const inc = sumInc(txns),
@@ -5385,15 +5467,17 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
   // sync period menu active state
   document.querySelectorAll(".period-menu-item").forEach((el) => {
     const txt = el.textContent.trim().toLowerCase();
-    el.classList.toggle("active", txt === period);
+    safeToggleClass(el, "active", txt === period);
   });
-const periodEl = document.getElementById("periodLabel");
-if (periodEl) {
-  periodEl.textContent = pLabel;
-}  document
+  const periodLabel = safeGet("periodLabel");
+  if (periodLabel) {
+    periodLabel.textContent = pLabel;
+  }
+  document
     .querySelectorAll(".period-menu-item")
     .forEach((el) =>
-      el.classList.toggle(
+      safeToggleClass(
+        el,
         "active",
         el.textContent.trim().toLowerCase() === period,
       ),
@@ -5402,12 +5486,20 @@ if (periodEl) {
     const limit = userData.spendingLimit || 0;
     const mExp = sumSpend(getTxns("monthly"));
     const pct = limit > 0 ? Math.min((mExp / limit) * 100, 100) : 0;
-    document.getElementById("spendLimitVal").textContent = fmt(limit);
-    document.getElementById("spendUsedVal").textContent = "Used: " + fmt(mExp);
-    const fill = document.getElementById("progressFill");
-    fill.style.width = pct + "%";
-    fill.style.background =
-      pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "#f97316";
+    const spendLimitVal = safeGet("spendLimitVal");
+    if (spendLimitVal) {
+      spendLimitVal.textContent = fmt(limit);
+    }
+    const spendUsedVal = safeGet("spendUsedVal");
+    if (spendUsedVal) {
+      spendUsedVal.textContent = "Used: " + fmt(mExp);
+    }
+    const fill = safeGet("progressFill");
+    if (fill) {
+      fill.style.width = pct + "%";
+      fill.style.background =
+        pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "#f97316";
+    }
   }
 }
 
@@ -5462,12 +5554,13 @@ function renderTxns(period) {
       countEl.textContent = `${totalAll} transaction${totalAll !== 1 ? "s" : ""}`;
     }
   }
-  document
-    .getElementById("filterBtn")
-    .classList.toggle(
-      "active-filter",
-      filterCfg.type !== "all" || filterCfg.cats.length > 0,
-    );
+  const filterBtn = safeGet("filterBtn");
+
+  safeToggleClass(
+    filterBtn,
+    "active-filter",
+    filterCfg.type !== "all" || filterCfg.cats.length > 0,
+  );
   const body = document.getElementById("txnBody");
   const mobileList = document.getElementById("txnMobileList");
   const footer = document.getElementById("txnListFooter");
@@ -5805,20 +5898,26 @@ function refreshAll() {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function togglePeriodMenu() {
-  document.getElementById("periodMenu").classList.toggle("open");
+  const menu = safeGet("periodMenu");
+  safeToggleClass(menu, "open");
 }
+
 function setPeriod(p) {
-  // Only monthly and picked are supported; daily/weekly are disabled
+  // Only monthly and picked are supported
   if (p === "daily" || p === "weekly") return;
+
   currentPeriod = p;
   pickedMonth = null;
   txnExpanded = false;
-  document.getElementById("periodMenu").classList.remove("open");
+
+  const menu = safeGet("periodMenu");
+  safeRemoveClass(menu, "open");
+
   refreshAll();
 }
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".period-dropdown"))
-    document.getElementById("periodMenu").classList.remove("open");
+    safeRemoveClass(safeGet("periodMenu"), "open");
   if (!e.target.closest(".action-btn") && !e.target.closest("#contextMenu"))
     closeCtx();
 });
@@ -5826,8 +5925,10 @@ document.addEventListener("click", (e) => {
 function openCtx(e, id) {
   e.stopPropagation();
   ctxId = id;
-  const menu = document.getElementById("contextMenu");
-  menu.style.display = "block";
+  const menu = safeGet("contextMenu");
+  if (menu) {
+    menu.style.display = "block";
+  }
   const r = e.currentTarget.getBoundingClientRect();
   let left = r.left - 145;
   if (left < 8) left = r.right + 4;
@@ -6337,53 +6438,63 @@ function syncFabVisibility() {
 
 function bnSwitch(tab) {
   // Clear active state
-  document
-    .querySelectorAll(".bn-tab")
-    .forEach((t) => t.classList.remove("bn-tab--active"));
+  document.querySelectorAll(".bn-tab").forEach((t) => {
+    safeRemoveClass(t, "bn-tab--active");
+  });
 
   if (tab === "add") {
     // Don't mark Add as active — open sheet instead
     openBnSheet();
     return;
   }
+
   if (tab === "report") {
-    document.getElementById("bnReport").classList.add("bn-tab--active");
+    safeAddClass(safeGet("bnReport"), "bn-tab--active");
     openBnReport();
     return;
   }
+
   if (tab === "cat") {
-    document.getElementById("bnCat").classList.add("bn-tab--active");
+    safeAddClass(safeGet("bnCat"), "bn-tab--active");
     openCategoryManager();
+
     setTimeout(() => {
-      document
-        .querySelectorAll(".bn-tab")
-        .forEach((t) => t.classList.remove("bn-tab--active"));
-      document.getElementById("bnHome").classList.add("bn-tab--active");
+      document.querySelectorAll(".bn-tab").forEach((t) => {
+        safeRemoveClass(t, "bn-tab--active");
+      });
+      safeAddClass(safeGet("bnHome"), "bn-tab--active");
     }, 300);
+
     return;
   }
+
   if (tab === "settings") {
-    document.getElementById("bnSettings").classList.add("bn-tab--active");
+    safeAddClass(safeGet("bnSettings"), "bn-tab--active");
     openBnSettings();
     return;
   }
+
   // Home
-  document.getElementById("bnHome").classList.add("bn-tab--active");
+  safeAddClass(safeGet("bnHome"), "bn-tab--active");
 }
 
 function openBnSheet() {
   updateAddAccountUI();
-  document.getElementById("bnAddSheet").classList.add("open");
-  document.getElementById("bnSheetOverlay").classList.add("open");
+
+  safeAddClass(safeGet("bnAddSheet"), "open");
+  safeAddClass(safeGet("bnSheetOverlay"), "open");
 }
+
 function closeBnSheet() {
-  document.getElementById("bnAddSheet")?.classList.remove("open");
-  document.getElementById("bnSheetOverlay")?.classList.remove("open");
+  safeRemoveClass(safeGet("bnAddSheet"), "open");
+  safeRemoveClass(safeGet("bnSheetOverlay"), "open");
+
   // Return active to Home
-  document
-    .querySelectorAll(".bn-tab")
-    .forEach((t) => t.classList.remove("bn-tab--active"));
-  document.getElementById("bnHome")?.classList.add("bn-tab--active");
+  document.querySelectorAll(".bn-tab").forEach((t) => {
+    safeRemoveClass(t, "bn-tab--active");
+  });
+
+  safeAddClass(safeGet("bnHome"), "bn-tab--active");
 }
 
 function captureTxnDraft(type) {
@@ -6417,8 +6528,9 @@ function applyTxnDraft(type, draft) {
 
 function closeAddTargetSheet() {
   pendingAddFlow = null;
-  document.getElementById("bnAddTargetSheet")?.classList.remove("open");
-  document.getElementById("bnAddTargetOverlay")?.classList.remove("open");
+
+  safeRemoveClass(safeGet("bnAddTargetSheet"), "open");
+  safeRemoveClass(safeGet("bnAddTargetOverlay"), "open");
 }
 
 function openAddTargetPicker(type, source = "sheet") {
@@ -6426,30 +6538,39 @@ function openAddTargetPicker(type, source = "sheet") {
     notify("Add another account first to use this shortcut", "info");
     return;
   }
+
   pendingAddFlow = {
     type,
     draft: source === "modal" ? captureTxnDraft(type) : null,
   };
+
   if (source === "modal") {
     closeModal(type === "income" ? "incomeModal" : "expenseModal");
   } else {
     closeBnSheet();
   }
 
-  const title = document.getElementById("bnAddTargetTitle");
-  if (title)
+  const title = safeGet("bnAddTargetTitle");
+  if (title) {
     title.textContent = type === "income" ? "Add Income To" : "Add Expense To";
-  const flow = document.getElementById("bnAddTargetFlow");
-  if (flow) flow.textContent = type === "income" ? "income" : "expense";
+  }
 
-  const list = document.getElementById("bnAddTargetList");
+  const flow = safeGet("bnAddTargetFlow");
+  if (flow) {
+    flow.textContent = type === "income" ? "income" : "expense";
+  }
+
+  const list = safeGet("bnAddTargetList");
   if (list) {
     list.innerHTML = cards
       .map((card, idx) => {
         if (idx === activeCardIdx) return "";
+
         return `<button type="button" class="bn-account-option" onclick="switchCardForAdd(${idx})">
           <div class="bn-account-meta">
-            <span class="bn-account-dot" style="background:${CARD_ACCENT_COLORS[idx % CARD_ACCENT_COLORS.length]}"></span>
+            <span class="bn-account-dot" style="background:${
+              CARD_ACCENT_COLORS[idx % CARD_ACCENT_COLORS.length]
+            }"></span>
             <div>
               <div class="bn-account-name">${getCardDisplayName(card, idx)}</div>
               <div class="bn-account-sub">${getCardDisplaySub(card)}</div>
@@ -6461,8 +6582,8 @@ function openAddTargetPicker(type, source = "sheet") {
       .join("");
   }
 
-  document.getElementById("bnAddTargetSheet").classList.add("open");
-  document.getElementById("bnAddTargetOverlay").classList.add("open");
+  safeAddClass(safeGet("bnAddTargetSheet"), "open");
+  safeAddClass(safeGet("bnAddTargetOverlay"), "open");
 }
 
 function switchCardForAdd(idx) {
@@ -6475,22 +6596,25 @@ function switchCardForAdd(idx) {
 }
 
 function openBnSettings() {
-  document.getElementById("bnSettingsPanel").classList.add("open");
-  document.getElementById("bnSettingsOverlay").classList.add("open");
+  safeAddClass(safeGet("bnSettingsPanel"), "open");
+  safeAddClass(safeGet("bnSettingsOverlay"), "open");
   openBnSettingsWithSync();
 }
 
 function openBnReport() {
-  document.getElementById("bnReportSheet").classList.add("open");
-  document.getElementById("bnReportOverlay").classList.add("open");
+  safeAddClass(safeGet("bnReportSheet"), "open");
+  safeAddClass(safeGet("bnReportOverlay"), "open");
 }
+
 function closeBnReport() {
-  document.getElementById("bnReportSheet")?.classList.remove("open");
-  document.getElementById("bnReportOverlay")?.classList.remove("open");
-  document
-    .querySelectorAll(".bn-tab")
-    .forEach((t) => t.classList.remove("bn-tab--active"));
-  document.getElementById("bnHome")?.classList.add("bn-tab--active");
+  safeRemoveClass(safeGet("bnReportSheet"), "open");
+  safeRemoveClass(safeGet("bnReportOverlay"), "open");
+
+  document.querySelectorAll(".bn-tab").forEach((t) => {
+    safeRemoveClass(t, "bn-tab--active");
+  });
+
+  safeAddClass(safeGet("bnHome"), "bn-tab--active");
 }
 
 function openReportFor(period) {
@@ -6689,38 +6813,43 @@ function openYearlyReport() {
 }
 
 function closeBnSettings() {
-  document.getElementById("bnSettingsPanel")?.classList.remove("open");
-  document.getElementById("bnSettingsOverlay")?.classList.remove("open");
-  document
-    .querySelectorAll(".bn-tab")
-    .forEach((t) => t.classList.remove("bn-tab--active"));
-  document.getElementById("bnHome")?.classList.add("bn-tab--active");
+  safeRemoveClass(safeGet("bnSettingsPanel"), "open");
+  safeRemoveClass(safeGet("bnSettingsOverlay"), "open");
+
+  document.querySelectorAll(".bn-tab").forEach((t) => {
+    safeRemoveClass(t, "bn-tab--active");
+  });
+
+  safeAddClass(safeGet("bnHome"), "bn-tab--active");
 }
 
 function toggleActionSheet() {
-  const sheet = document.getElementById("actionSheet");
-  const overlay = document.getElementById("actionSheetOverlay");
-  const icon = document.getElementById("fabMainIcon");
-  const isOpen = sheet.classList.contains("open");
+  const sheet = safeGet("actionSheet");
+  const overlay = safeGet("actionSheetOverlay");
+  const icon = safeGet("fabMainIcon");
+
+  if (!sheet || !overlay) return; // ✅ critical safety
+
+  const isOpen = sheet ? sheet.classList.contains("open") : false;
+
   if (isOpen) {
-    sheet.classList.remove("open");
-    overlay.classList.remove("open");
-    if (icon) {
-      icon.className = "fas fa-plus";
-    }
+    safeRemoveClass(sheet, "open");
+    safeRemoveClass(overlay, "open");
+
+    if (icon) icon.className = "fas fa-plus";
   } else {
-    sheet.classList.add("open");
-    overlay.classList.add("open");
-    if (icon) {
-      icon.className = "fas fa-times";
-    }
+    safeAddClass(sheet, "open");
+    safeAddClass(overlay, "open");
+
+    if (icon) icon.className = "fas fa-times";
   }
 }
 
 function closeActionSheet() {
-  document.getElementById("actionSheet")?.classList.remove("open");
-  document.getElementById("actionSheetOverlay")?.classList.remove("open");
-  const icon = document.getElementById("fabMainIcon");
+  safeRemoveClass(safeGet("actionSheet"), "open");
+  safeRemoveClass(safeGet("actionSheetOverlay"), "open");
+
+  const icon = safeGet("fabMainIcon");
   if (icon) icon.className = "fas fa-plus";
 }
 
@@ -6979,9 +7108,12 @@ function loadTheme() {
 }
 
 function toggleSettingsMenu() {
-  const menu = document.getElementById("settingsMenu");
-  const isOpen = menu.classList.contains("open");
-  menu.classList.toggle("open");
+  const menu = safeGet("settingsMenu");
+  if (!menu) return; // ✅ critical guard
+
+  const isOpen = menu ? menu.classList.contains("open") : false;
+
+  safeToggleClass(menu, "open");
 
   if (!isOpen) {
     // Sync both sliders on open
@@ -7030,7 +7162,7 @@ function toggleSettingsMenu() {
 }
 
 function closeSettingsMenu() {
-  document.getElementById("settingsMenu").classList.remove("open");
+  safeRemoveClass(safeGet("settingsMenu"), "open");
 }
 
 function toggleBnGlassSlider() {
@@ -7070,11 +7202,13 @@ function openTxnFullPage() {
   });
 
   if (!allTxns.length) {
-    body.innerHTML =
-      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>';
-    subtitle.textContent = "No data";
-    page.classList.remove("txn-page-closing");
-    requestAnimationFrame(() => page.classList.add("txn-page-open"));
+    safeSetHTML(
+      body,
+      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>',
+    );
+    safeSetContent(subtitle, "No data");
+    safeRemoveClass(page, "txn-page-closing");
+    requestAnimationFrame(() => safeAddClass(page, "txn-page-open"));
     return;
   }
 
@@ -7121,16 +7255,25 @@ function openTxnFullPage() {
     })
     .join("");
 
-  page.classList.remove("txn-page-closing");
-  requestAnimationFrame(() => page.classList.add("txn-page-open"));
+  if (page) {
+    safeRemoveClass(page, "txn-page-closing");
+
+    requestAnimationFrame(() => {
+      safeAddClass(page, "txn-page-open");
+    });
+  }
 }
 
 function closeTxnFullPage() {
-  const page = document.getElementById("txnFullPage");
+  const page = safeGet("txnFullPage");
   if (!page) return;
-  page.classList.add("txn-page-closing");
-  page.classList.remove("txn-page-open");
-  setTimeout(() => page.classList.remove("txn-page-closing"), 600);
+
+  safeAddClass(page, "txn-page-closing");
+  safeRemoveClass(page, "txn-page-open");
+
+  setTimeout(() => {
+    safeRemoveClass(page, "txn-page-closing");
+  }, 600);
 }
 
 function openBnSettingsWithSync() {
@@ -7440,12 +7583,18 @@ function openImportModal() {
 
 function handleDragOver(e) {
   e.preventDefault();
-  e.currentTarget.classList.add("dragover");
+
+  const target = e.currentTarget;
+  safeAddClass(target, "dragover");
 }
+
 function handleDrop(e) {
   e.preventDefault();
-  e.currentTarget.classList.remove("dragover");
-  const file = e.dataTransfer.files[0];
+
+  const target = e.currentTarget;
+  safeRemoveClass(target, "dragover");
+
+  const file = e?.dataTransfer?.files?.[0];
   if (file) parseCSVFile(file);
 }
 function handleImportFile(input) {
