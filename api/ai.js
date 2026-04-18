@@ -8,73 +8,58 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "GEMINI_API_KEY not set" });
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey)
+    return res.status(500).json({ error: "OPENROUTER_API_KEY not set" });
 
   try {
     const { messages, system } = req.body;
-
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "messages array required" });
     }
 
-    const contents = messages.map((m) => {
-      const role = m.role === "assistant" ? "model" : "user";
+    const formattedMessages = [
+      ...(system ? [{ role: "system", content: system }] : []),
+      ...messages.map((m) => ({
+        role: m.role,
+        content: Array.isArray(m.content)
+          ? m.content.find((c) => c.type === "text")?.text || ""
+          : m.content,
+      })),
+    ];
 
-      if (typeof m.content === "string") {
-        return { role, parts: [{ text: m.content }] };
-      }
-
-      if (Array.isArray(m.content)) {
-        const parts = m.content.map((block) => {
-          if (block.type === "text") return { text: block.text };
-          if (block.type === "image" && block.source?.type === "base64") {
-            return {
-              inline_data: {
-                mime_type: block.source.media_type || "image/jpeg",
-                data: block.source.data,
-              },
-            };
-          }
-          return { text: JSON.stringify(block) };
-        });
-        return { role, parts };
-      }
-
-      return { role, parts: [{ text: String(m.content || "") }] };
-    });
-
-    const body = {
-      contents,
-      generationConfig: { maxOutputTokens: 1000 },
-    };
-
-    if (system) {
-      body.system_instruction = { parts: [{ text: system }] };
-    }
-
-    const geminiRes = await fetch(
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,      {
+    const openRouterRes = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://blueledger.co.in",
+          "X-Title": "BlueLedger",
+        },
+        body: JSON.stringify({
+          model: "meta-llama/llama-3.2-3b-instruct:free",
+          messages: formattedMessages,
+          max_tokens: 1000,
+        }),
       },
     );
 
-    const data = await geminiRes.json();
+    const data = await openRouterRes.json();
 
-    if (!geminiRes.ok) {
+    if (!openRouterRes.ok) {
       console.error(
-        "Gemini API error:",
-        geminiRes.status,
+        "OpenRouter API error:",
+        openRouterRes.status,
         JSON.stringify(data),
       );
-      return res.status(geminiRes.status).json({
-        error: data?.error?.message || "Gemini API error",
+      return res.status(openRouterRes.status).json({
+        error: data?.error?.message || "OpenRouter API error",
       });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content || "";
     return res.status(200).json({
       content: [{ type: "text", text }],
     });
