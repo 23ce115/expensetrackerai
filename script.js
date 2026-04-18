@@ -3586,6 +3586,7 @@ async function _afterUnlock(password, userId) {
   }
   populateCategorySelects();
   updateAddAccountUI();
+  setChartPeriod(chartPeriod); // set chart period AFTER vault loads so buttons + chart render correctly
   refreshAll();
   populateSyncModal();
   initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
@@ -5137,30 +5138,25 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
     });
   }
   if (period === "weekly") {
-    const dow = now.getDay();
-    const daysToMon = dow === 0 ? -6 : 1 - dow;
-    const thisMonday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + daysToMon,
-    );
-    return Array.from({ length: 8 }, (_, i) => {
-      const ws = new Date(
-        thisMonday.getFullYear(),
-        thisMonday.getMonth(),
-        thisMonday.getDate() - (7 - i) * 7,
-      );
-      const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 6);
+    // Show W1/W2/W3/W4 of the current month (matches reference design)
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: 4 }, (_, i) => {
+      const startDay = 1 + i * 7;
+      const endDay = Math.min(startDay + 6, lastDayOfMonth);
+      const ws = new Date(year, month, startDay);
+      const we = new Date(year, month, endDay);
       const tx = sourceTxns.filter((t) => {
         const d = toDay(new Date(t.date + "T00:00:00"));
         return d >= ws && d <= we;
       });
+      const todayInWeek = now >= ws && now <= we;
       return {
-        label:
-          ws.getDate() + " " + ws.toLocaleString("en-IN", { month: "short" }),
+        label: `W${i + 1}`,
         income: sumInc(tx),
-        expense: sumExp(tx),
-        active: i === 7,
+        expense: sumExp(tx.filter((t) => t.type === "expense")),
+        active: todayInWeek,
       };
     });
   }
@@ -5812,8 +5808,6 @@ function togglePeriodMenu() {
   document.getElementById("periodMenu").classList.toggle("open");
 }
 function setPeriod(p) {
-  // Only monthly and picked are supported; daily/weekly are disabled
-  if (p === "daily" || p === "weekly") return;
   currentPeriod = p;
   pickedMonth = null;
   txnExpanded = false;
@@ -7891,8 +7885,11 @@ async function doPasswordReset() {
 
 renderCardSwitcher();
 populateCategorySelects();
-setChartPeriod(chartPeriod);
-refreshAll();
+// NOTE: setChartPeriod() and refreshAll() are intentionally NOT called here.
+// The vault is encrypted — transactions don't exist yet at this point.
+// Both are called inside _afterUnlock() once the vault is decrypted and
+// loadActiveCard() has populated `transactions`. Calling them here would
+// always render empty charts on every page load.
 syncFabVisibility();
 
 function _clearAiSuggestion(type) {
