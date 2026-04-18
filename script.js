@@ -8071,3 +8071,30 @@ function resetAiCatBadge(type) {
     badgeEl.dataset.suggestedMatch = "";
   }
 }
+
+window.addEventListener("load", () => {
+  try {
+    if (typeof initOverviewChart === "function") {
+      initOverviewChart();
+      updateOverviewChart("monthly");
+    } else {
+      console.error("initOverviewChart not found");
+    }
+  } catch (e) {
+    console.error("Chart init failed:", e);
+  }
+});
+
+function setChartPeriod(period) {
+  chartPeriod = period;
+
+  if (typeof updateOverviewChart === "function") {
+    updateOverviewChart(period);
+  } else {
+    console.error("updateOverviewChart not found");
+  }
+}
+
+if (typeof updateOverviewChart === "function") {
+  updateOverviewChart(chartPeriod);
+}
