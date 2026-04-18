@@ -1,528 +1,1225 @@
 /* ═══════════════════════════════════════════════════════════════
-   chart.js — BlueLedger Chart System (Chart.js powered)
-   Handles: overview bar chart, category stacked bar chart.
-   Depends on: utils.js (must load first), Chart.js global
+   ai.js — BlueLedger AI Module
+   Handles: Anthropic API calls, auto-categorization,
+            local keyword classifier, AskBL chat, AI Insights.
+   Depends on: utils.js (must load first)
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
+/* ── Constants ───────────────────────────────────────────────── */
+const AI_MODEL = "claude-sonnet-4-20250514";
+
 /* ── Internal state ─────────────────────────────────────────── */
-let _overviewChart = null;
-let _categoryChart = null;
-let _currentOverviewPeriod = "monthly";
-
-/* ── Theme tokens ────────────────────────────────────────────── */
-const INCOME_COLOR = "#10b981";
-const EXPENSE_COLOR = "#f97316";
-const INCOME_FILL = "rgba(16,185,129,0.15)";
-const EXPENSE_FILL = "rgba(249,115,22,0.15)";
+let _aiCatTimers = {};
+let _aiCatGeneration = {};
+let _aiCatDismissed = {};
+let _aiCatState = {};
+let _askBlHistory = [];
+let _askBlBusy = false;
+let _aiInsightsBusy = false;
 
 /* ══════════════════════════════════════════════════════════════
-   DATA HELPERS
+   KEYWORD MAPS
+   ══════════════════════════════════════════════════════════════ */
+const _AI_KEYWORD_MAP = {
+  Food: [
+    "starbucks",
+    "coffee",
+    "cafe",
+    "restaurant",
+    "lunch",
+    "dinner",
+    "breakfast",
+    "zomato",
+    "swiggy",
+    "dominos",
+    "pizza",
+    "burger",
+    "biryani",
+    "food",
+    "grocery",
+    "supermarket",
+    "vegetables",
+    "fruits",
+    "milk",
+    "bread",
+    "chai",
+    "tea",
+    "snack",
+    "meal",
+    "eat",
+    "dunkin",
+    "mcdonalds",
+    "kfc",
+    "subway",
+    "barbeque",
+    "bakery",
+    "hotel",
+    "canteen",
+    "tiffin",
+    "dine",
+    "dining",
+    "juice",
+    "coca",
+    "pepsi",
+    "maggi",
+    "rice",
+    "dal",
+    "apple",
+    "banana",
+    "orange",
+    "mango",
+    "grapes",
+    "fruit",
+    "vegetable",
+    "tomato",
+    "potato",
+    "onion",
+    "egg",
+    "eggs",
+    "chicken",
+    "paneer",
+    "biscuit",
+    "biscuits",
+    "chips",
+    "chocolate",
+    "dosa",
+    "masala dosa",
+    "idli",
+    "vada",
+    "sambar",
+    "uttapam",
+    "poha",
+    "upma",
+    "paratha",
+    "roti",
+    "naan",
+    "sabzi",
+    "thali",
+    "sandwich",
+    "shawarma",
+    "wrap",
+    "roll",
+    "momo",
+    "momos",
+    "noodles",
+    "pasta",
+    "ice cream",
+    "kulfi",
+    "mithai",
+    "sweet",
+    "sweets",
+    "lassi",
+  ],
+  Transport: [
+    "uber",
+    "ola",
+    "rapido",
+    "auto",
+    "taxi",
+    "cab",
+    "petrol",
+    "diesel",
+    "fuel",
+    "metro",
+    "bus",
+    "train",
+    "flight",
+    "airways",
+    "airline",
+    "travel",
+    "transport",
+    "toll",
+    "parking",
+    "irctc",
+    "indigo",
+    "spicejet",
+    "air india",
+    "vistara",
+    "redbus",
+    "rickshaw",
+    "bike",
+    "carpool",
+    "share",
+    "commute",
+    "railway",
+    "station",
+  ],
+  Shopping: [
+    "amazon",
+    "flipkart",
+    "myntra",
+    "ajio",
+    "nykaa",
+    "meesho",
+    "zepto",
+    "blinkit",
+    "bigbasket",
+    "reliance",
+    "dmart",
+    "mall",
+    "shopping",
+    "clothes",
+    "shirt",
+    "shoes",
+    "fashion",
+    "apparel",
+    "dress",
+    "watch",
+    "bag",
+    "accessories",
+    "cosmetics",
+    "beauty",
+    "electronics",
+    "mobile",
+    "laptop",
+    "gadget",
+    "appliance",
+    "furniture",
+    "decor",
+    "gift",
+    "toys",
+    "toy",
+    "perfume",
+    "soap",
+    "shampoo",
+    "detergent",
+    "bucket",
+    "bottle",
+    "utensils",
+    "kitchen",
+  ],
+  Entertainment: [
+    "netflix",
+    "hotstar",
+    "prime",
+    "disney",
+    "apple music",
+    "youtube music",
+    "amazon prime",
+    "prime video",
+    "spotify",
+    "youtube",
+    "gaming",
+    "game",
+    "movie",
+    "cinema",
+    "pvr",
+    "inox",
+    "concert",
+    "event",
+    "ticket",
+    "show",
+    "play",
+    "hbo",
+    "apple tv",
+    "jio",
+    "sonyliv",
+    "zee",
+    "music",
+    "stream",
+  ],
+  Health: [
+    "pharmacy",
+    "medicine",
+    "doctor",
+    "hospital",
+    "clinic",
+    "apollo",
+    "medplus",
+    "health",
+    "gym",
+    "fitness",
+    "yoga",
+    "physiotherapy",
+    "dental",
+    "optician",
+    "lab",
+    "test",
+    "pathology",
+    "prescription",
+    "tablet",
+    "capsule",
+    "syrup",
+    "ayurvedic",
+    "wellness",
+    "therapy",
+    "insurance",
+    "mediclaim",
+    "condom",
+    "condoms",
+    "sanitary pad",
+    "sanitary pads",
+    "pad",
+    "pads",
+    "tampon",
+    "pregnancy test",
+    "mask",
+    "masks",
+    "first aid",
+    "bandage",
+    "painkiller",
+    "medical",
+    "wellwoman",
+  ],
+  Education: [
+    "udemy",
+    "coursera",
+    "school",
+    "college",
+    "university",
+    "fees",
+    "course",
+    "book",
+    "stationery",
+    "tuition",
+    "coaching",
+    "class",
+    "exam",
+    "study",
+    "subscription",
+    "skill",
+    "certificate",
+    "degree",
+    "notes",
+    "pen",
+    "pencil",
+  ],
+  Utilities: [
+    "electricity",
+    "water",
+    "gas",
+    "broadband",
+    "wifi",
+    "internet",
+    "mobile recharge",
+    "recharge",
+    "dth",
+    "cable",
+    "postpaid",
+    "prepaid",
+    "rent",
+    "maintenance",
+    "society",
+    "bsnl",
+    "airtel",
+    "jio",
+    "vi",
+    "vodafone",
+    "idea",
+    "tata",
+    "dish",
+    "tatasky",
+    "telephone",
+    "bill",
+    "utility",
+    "municipal",
+  ],
+  Salary: [
+    "salary",
+    "payroll",
+    "wage",
+    "stipend",
+    "ctc",
+    "increment",
+    "hike",
+    "bonus",
+    "appraisal",
+    "employer",
+    "company",
+    "office",
+    "paycheck",
+    "remuneration",
+    "payslip",
+    "salary credit",
+    "monthly salary",
+  ],
+  Freelance: [
+    "freelance",
+    "client",
+    "project",
+    "invoice",
+    "contract",
+    "consulting",
+    "upwork",
+    "fiverr",
+    "toptal",
+    "design",
+    "development",
+    "writing",
+    "gig",
+    "work from home",
+    "payment received",
+    "milestone",
+    "retainer",
+  ],
+};
+
+const _AI_CATEGORY_SEEDS = {
+  Food: [
+    "coffee",
+    "tea",
+    "snack",
+    "meal",
+    "restaurant",
+    "breakfast",
+    "lunch",
+    "dinner",
+    "grocery",
+  ],
+  Entertainment: [
+    "music",
+    "movie",
+    "game",
+    "concert",
+    "show",
+    "ott",
+    "streaming",
+  ],
+  Shopping: [
+    "shopping",
+    "clothes",
+    "shoes",
+    "gift",
+    "accessory",
+    "cosmetic",
+    "bag",
+  ],
+  Transport: [
+    "uber",
+    "ola",
+    "taxi",
+    "metro",
+    "bus",
+    "fuel",
+    "petrol",
+    "diesel",
+  ],
+  Health: [
+    "medicine",
+    "pharmacy",
+    "doctor",
+    "clinic",
+    "hospital",
+    "condom",
+    "sanitary",
+    "medical",
+  ],
+  Investment: ["sip", "mutual fund", "stock", "shares", "investment", "fd"],
+  Salary: ["salary", "payroll", "payslip", "salary credit"],
+  Freelance: ["client", "invoice", "project", "gig", "retainer"],
+  Business: ["business", "vendor", "gst", "shop", "inventory"],
+  Insurance: ["insurance", "premium", "policy", "mediclaim"],
+  Furniture: [
+    "bed",
+    "mattress",
+    "sofa",
+    "couch",
+    "chair",
+    "table",
+    "desk",
+    "wardrobe",
+    "cupboard",
+    "shelf",
+    "pillow",
+    "blanket",
+    "lamp",
+    "furniture",
+  ],
+  Electronics: [
+    "mobile",
+    "phone",
+    "laptop",
+    "charger",
+    "headphones",
+    "earbuds",
+    "tv",
+    "monitor",
+  ],
+  Groceries: [
+    "grocery",
+    "vegetable",
+    "fruit",
+    "milk",
+    "bread",
+    "rice",
+    "dal",
+    "egg",
+  ],
+  Utilities: [
+    "electricity",
+    "water",
+    "wifi",
+    "internet",
+    "recharge",
+    "rent",
+    "maintenance",
+    "bill",
+  ],
+  Education: ["course", "fees", "book", "exam", "tuition", "class", "study"],
+  Travel: ["flight", "hotel", "trip", "booking", "train", "bus", "travel"],
+  Fitness: ["gym", "protein", "workout", "yoga", "fitness"],
+  Beauty: ["salon", "spa", "makeup", "cosmetic", "skincare", "perfume"],
+  Pets: ["dog", "cat", "pet", "vet", "pet food", "litter"],
+  Kids: ["toy", "school", "diaper", "baby", "formula", "stroller"],
+};
+
+/* ══════════════════════════════════════════════════════════════
+   CORE API CALL
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * Get color for a named category. Consistent hash-based for custom cats.
- * @param {string} cat
- * @returns {string} CSS color
+ * Shared Anthropic /v1/messages wrapper.
+ * @param {Array}  messages
+ * @param {string} systemPrompt
+ * @param {number} [maxTokens=300]
+ * @returns {Promise<string>}
  */
-function getCatColor(cat) {
-  const colors = window.CAT_COLORS || {};
-  if (colors[cat]) return colors[cat];
-  let hash = 0;
-  for (let i = 0; i < (cat || "").length; i++) {
-    hash = cat.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`;
-}
-
-/**
- * Get chart data for the given period.
- * Calls getAnalyticsTransactions() from main.js if available,
- * otherwise falls back to the global `transactions` array.
- * @param {"daily"|"weekly"|"monthly"} period
- * @returns {Array<{label:string, income:number, expense:number, active:boolean}>}
- */
-function getChartData(period) {
-  const sourceTxns =
-    typeof getAnalyticsTransactions === "function"
-      ? getAnalyticsTransactions()
-      : typeof transactions !== "undefined"
-        ? transactions
-        : [];
-
-  const now = new Date();
-  const localDateStr = (d) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const sumInc = (txns) =>
-    txns
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + (t.amount || 0), 0);
-  const sumExp = (txns) =>
-    txns
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + Math.abs(t.amount || 0), 0);
-
-  if (period === "daily") {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() - (6 - i),
-      );
-      const ds = localDateStr(d);
-      const tx = sourceTxns.filter((t) => t.date === ds);
-      return {
-        label: d.toLocaleDateString("en-US", { weekday: "short" }),
-        income: sumInc(tx),
-        expense: sumExp(tx),
-        active: i === 6,
-      };
-    });
-  }
-
-  if (period === "weekly") {
-    const dow = now.getDay();
-    const daysToMon = dow === 0 ? -6 : 1 - dow;
-    const thisMonday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + daysToMon,
-    );
-    return Array.from({ length: 8 }, (_, i) => {
-      const ws = new Date(
-        thisMonday.getFullYear(),
-        thisMonday.getMonth(),
-        thisMonday.getDate() - (7 - i) * 7,
-      );
-      const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 6);
-      const tx = sourceTxns.filter((t) => {
-        const d = toDay(new Date(t.date + "T00:00:00"));
-        return d >= ws && d <= we;
-      });
-      return {
-        label:
-          ws.getDate() + " " + ws.toLocaleString("en-IN", { month: "short" }),
-        income: sumInc(tx),
-        expense: sumExp(tx),
-        active: i === 7,
-      };
-    });
-  }
-
-  // Monthly — last 6 months
-  const monthLabels = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return Array.from({ length: 6 }, (_, i) => {
-    const offset = 5 - i;
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    const yr = d.getFullYear();
-    const mi = d.getMonth();
-    const tx = sourceTxns.filter((t) => {
-      const td = new Date(t.date + "T00:00:00");
-      return td.getFullYear() === yr && td.getMonth() === mi;
-    });
-    return {
-      label: monthLabels[mi],
-      fullLabel: `${monthLabels[mi]} ${yr}`,
-      income: sumInc(tx),
-      expense: sumExp(tx),
-      active: offset === 0,
-    };
+async function _callAI(messages, systemPrompt, maxTokens = 300) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages,
+    }),
   });
+  if (!res.ok) throw new Error(`AI API error ${res.status}`);
+  const data = await res.json();
+  return (data.content || []).map((b) => b.text || "").join("") || "";
 }
 
 /* ══════════════════════════════════════════════════════════════
-   OVERVIEW BAR CHART
+   CATEGORY HELPERS
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * First-time initialisation. Creates the canvas, period buttons,
- * and Chart.js instance inside #chartContainer.
+ * Get allowed categories for a transaction type.
+ * @param {"income"|"expense"} type
+ * @returns {string[]}
  */
-function initOverviewChart() {
-  const container = safeGet("chartContainer");
+function _getAiCategories(type) {
+  const custom =
+    typeof customCategories !== "undefined" && Array.isArray(customCategories)
+      ? customCategories
+      : [];
+  if (type === "income") {
+    return [...(window.BASE_INCOME_CATS || []), ...custom, "Other"];
+  }
+  return [...(window.BASE_EXPENSE_CATS || []), ...custom, "Other"];
+}
+
+/**
+ * Get or initialise per-type AI state object.
+ * @param {"income"|"expense"} type
+ * @returns {object}
+ */
+function _getAiCatState(type) {
+  if (!_aiCatState[type]) {
+    _aiCatState[type] = {
+      suggestedCategory: "",
+      suggestedDesc: "",
+      acceptedCategory: "",
+      acceptedDesc: "",
+    };
+  }
+  return _aiCatState[type];
+}
+
+function _addAiScore(scores, strongest, cat, score) {
+  if (!cat || !score) return;
+  scores[cat] = (scores[cat] || 0) + score;
+  strongest[cat] = Math.max(strongest[cat] || 0, score);
+}
+
+function _getCategorySeeds(cat) {
+  if (!cat) return [];
+  const exact = _AI_CATEGORY_SEEDS[cat];
+  if (exact) return exact;
+  const found = Object.entries(_AI_CATEGORY_SEEDS).find(
+    ([name]) => name.toLowerCase() === cat.toLowerCase(),
+  );
+  return found ? found[1] : [];
+}
+
+function _tokenizeAiText(text) {
+  const stopWords = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "this",
+    "that",
+    "your",
+  ]);
+  return [
+    ...new Set(
+      (
+        String(text || "")
+          .toLowerCase()
+          .match(/[a-z0-9]+/g) || []
+      ).filter((t) => t.length >= 3 && !stopWords.has(t)),
+    ),
+  ];
+}
+
+/**
+ * Local keyword-based category guess — instant, no API call.
+ * @param {"income"|"expense"} type
+ * @param {string} desc
+ * @returns {string|null}
+ */
+function _localKeywordGuess(type, desc) {
+  if (!desc || desc.length < 2) return null;
+  const lower = desc.toLowerCase();
+  const allowed = new Set(_getAiCategories(type));
+  const descTokens = _tokenizeAiText(desc);
+  const scores = {};
+  const strongest = {};
+
+  // Keyword map match
+  for (const [cat, keywords] of Object.entries(_AI_KEYWORD_MAP)) {
+    if (!allowed.has(cat)) continue;
+    for (const kw of keywords) {
+      if (lower.includes(kw)) {
+        const phraseBonus = kw.includes(" ") ? 8 : 0;
+        _addAiScore(scores, strongest, cat, kw.length + phraseBonus);
+      }
+    }
+  }
+
+  // Direct category name in description
+  for (const cat of allowed) {
+    const catLower = cat.toLowerCase();
+    if (lower.includes(catLower)) {
+      _addAiScore(scores, strongest, cat, catLower.length + 6);
+    }
+    const catTokens = _tokenizeAiText(cat);
+    const overlap = catTokens.filter((t) => descTokens.includes(t)).length;
+    if (overlap) _addAiScore(scores, strongest, cat, overlap * 5);
+
+    for (const seed of _getCategorySeeds(cat)) {
+      if (lower.includes(seed)) {
+        _addAiScore(
+          scores,
+          strongest,
+          cat,
+          seed.length + (seed.includes(" ") ? 10 : 4),
+        );
+      }
+    }
+  }
+
+  // Historical transaction match
+  const txns =
+    typeof transactions !== "undefined" && Array.isArray(transactions)
+      ? transactions
+      : [];
+  for (const txn of txns.slice(0, 300)) {
+    if (txn.type !== type || !allowed.has(txn.category)) continue;
+    const txnDesc = (txn.description || "").trim();
+    if (!txnDesc) continue;
+    const txnLower = txnDesc.toLowerCase();
+    const txnTokens = _tokenizeAiText(txnDesc);
+    const overlap = txnTokens.filter((t) => descTokens.includes(t)).length;
+
+    if (lower === txnLower) {
+      _addAiScore(scores, strongest, txn.category, 40);
+      continue;
+    }
+    if (lower.includes(txnLower) || txnLower.includes(lower)) {
+      _addAiScore(scores, strongest, txn.category, 20);
+    }
+    if (overlap > 0) _addAiScore(scores, strongest, txn.category, overlap * 7);
+  }
+
+  if (!Object.keys(scores).length) return null;
+  return Object.entries(scores).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return (strongest[b[0]] || 0) - (strongest[a[0]] || 0);
+  })[0][0];
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AI BADGE RENDERING
+   ══════════════════════════════════════════════════════════════ */
+
+function _clearAiSuggestion(type) {
+  const badgeEl = safeGet(`${type}AiBadge`);
+  const state = _getAiCatState(type);
+  state.suggestedCategory = "";
+  state.suggestedDesc = "";
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
+
+function _showAiBadge(type, match, desc, isFinal) {
+  const badgeEl = safeGet(`${type}AiBadge`);
+  const selectEl = safeGet(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+  const state = _getAiCatState(type);
+
+  if (_aiCatDismissed[type] === desc) return;
+
+  state.suggestedCategory = match;
+  state.suggestedDesc = desc;
+
+  const isApplied =
+    state.acceptedCategory === match && state.acceptedDesc === desc;
+  badgeEl.dataset.lastDesc = desc;
+  badgeEl.dataset.suggestedMatch = match;
+
+  const confidenceIcon = isFinal
+    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
+    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess while AI confirms"></i>`;
+
+  const helperText = isApplied
+    ? "Applied to the category field."
+    : isFinal
+      ? "Review it, then tap Use if it looks right."
+      : "Quick guess while AI confirms the category.";
+
+  badgeEl.style.display = "flex";
+  badgeEl.innerHTML = `
+    <div class="ai-cat-copy">
+      <div class="ai-cat-title-row">
+        ${confidenceIcon}
+        <span class="ai-cat-title">Suggested category</span>
+      </div>
+      <div class="ai-cat-main">
+        <strong>${safeText(match)}</strong>
+        ${!isFinal ? "<span class='ai-cat-pending'>AI is confirming...</span>" : ""}
+      </div>
+      <div class="ai-cat-help">${safeText(helperText)}</div>
+    </div>
+    <div class="ai-cat-actions">
+      ${
+        !isApplied
+          ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${safeText(match)}')">Use</button>`
+          : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`
+      }
+      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUTO-CATEGORIZATION — PUBLIC API
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Main entry point: called on every description keystroke.
+ * Shows instant local guess, then debounces an AI call.
+ * @param {"income"|"expense"} type
+ * @param {string} value — current description input value
+ */
+function aiAutoCategory(type, value) {
+  clearTimeout(_aiCatTimers[type]);
+  const badgeEl = safeGet(`${type}AiBadge`);
+  if (!badgeEl) return;
+
+  const trimmed = value ? value.trim() : "";
+  const state = _getAiCatState(type);
+
+  // Reset accepted state if description changed
+  if (state.acceptedDesc !== trimmed) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (!trimmed || trimmed.length < 3) {
+    _aiCatDismissed[type] = "";
+    _clearAiSuggestion(type);
+    return;
+  }
+
+  // Do not re-show a dismissed suggestion for the same text
+  if (_aiCatDismissed[type] === trimmed) return;
+
+  _clearAiSuggestion(type);
+
+  // Instant local guess
+  const localGuess = _localKeywordGuess(type, trimmed);
+  if (localGuess) {
+    _showAiBadge(type, localGuess, trimmed, false);
+  }
+
+  // Debounced AI call (700 ms)
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  const myGen = _aiCatGeneration[type];
+
+  _aiCatTimers[type] = setTimeout(async () => {
+    if (_aiCatGeneration[type] !== myGen) return;
+    await _runAiCat(type, trimmed, myGen);
+  }, 700);
+}
+
+async function _runAiCat(type, desc, generation) {
+  const cats = _getAiCategories(type);
+  const badgeEl = safeGet(`${type}AiBadge`);
+  const selectEl = safeGet(`${type}Category`);
+  if (!badgeEl || !selectEl) return;
+
+  try {
+    const system =
+      `You are a financial transaction categorizer for an Indian personal finance app.\n` +
+      `Given a transaction description, return ONLY the single best matching category name from the list.\n` +
+      `Do not explain. Do not add punctuation. Return only the category name exactly as given.\n` +
+      `Categories: ${cats.join(", ")}`;
+
+    const result = await _callAI([{ role: "user", content: desc }], system, 20);
+
+    if (_aiCatGeneration[type] !== generation) return;
+
+    const suggested = result.trim();
+    const match =
+      cats.find((c) => c.toLowerCase() === suggested.toLowerCase()) ||
+      cats.find((c) => suggested.toLowerCase().includes(c.toLowerCase()));
+
+    if (!match) {
+      const localGuess = _localKeywordGuess(type, desc);
+      if (!localGuess) _clearAiSuggestion(type);
+      return;
+    }
+
+    _showAiBadge(type, match, desc, true);
+  } catch (e) {
+    if (_aiCatGeneration[type] !== generation) return;
+    const localGuess = _localKeywordGuess(type, desc);
+    if (!localGuess) _clearAiSuggestion(type);
+    console.warn("AI categorization failed:", e);
+  }
+}
+
+/**
+ * Apply AI-suggested category to the select field.
+ */
+function aiApplyCategory(type, category) {
+  const selectEl = safeGet(`${type}Category`);
+  const descEl = safeGet(`${type}Desc`);
+  const state = _getAiCatState(type);
+  if (selectEl) selectEl.value = category;
+  state.acceptedCategory = category;
+  state.acceptedDesc = descEl ? safeGetValue(descEl) : "";
+  _showAiBadge(type, category, state.acceptedDesc, true);
+}
+
+/**
+ * Dismiss the AI badge for the current description text.
+ */
+function aiDismissBadge(type) {
+  const descEl = safeGet(`${type}Desc`);
+  _aiCatDismissed[type] = descEl ? safeGetValue(descEl) : "";
+  _clearAiSuggestion(type);
+}
+
+/**
+ * Called when user manually changes the category dropdown.
+ */
+function aiCategorySelectionChanged(type) {
+  const descEl = safeGet(`${type}Desc`);
+  const selectEl = safeGet(`${type}Category`);
+  const state = _getAiCatState(type);
+  const desc = descEl ? safeGetValue(descEl) : "";
+
+  if (
+    state.acceptedCategory &&
+    selectEl &&
+    selectEl.value !== state.acceptedCategory
+  ) {
+    state.acceptedCategory = "";
+    state.acceptedDesc = "";
+  }
+
+  if (desc) _aiCatDismissed[type] = desc;
+  _clearAiSuggestion(type);
+}
+
+/**
+ * Full reset — call when opening/closing a modal form.
+ */
+function resetAiCatBadge(type) {
+  clearTimeout(_aiCatTimers[type]);
+  _aiCatGeneration[type] = (_aiCatGeneration[type] || 0) + 1;
+  _aiCatDismissed[type] = "";
+  _aiCatState[type] = {
+    suggestedCategory: "",
+    suggestedDesc: "",
+    acceptedCategory: "",
+    acceptedDesc: "",
+  };
+  const badgeEl = safeGet(`${type}AiBadge`);
+  if (badgeEl) {
+    badgeEl.style.display = "none";
+    badgeEl.dataset.lastDesc = "";
+    badgeEl.dataset.suggestedMatch = "";
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ASK BLUELEDGER — NL CHAT
+   ══════════════════════════════════════════════════════════════ */
+
+function openAskBl() {
+  safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+  setTimeout(() => safeGet("askBlInput")?.focus(), 300);
+}
+
+function closeAskBl() {
+  safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+}
+
+function _buildFinanceSummary() {
+  const txns =
+    typeof transactions !== "undefined" && Array.isArray(transactions)
+      ? transactions.slice(0, 300)
+      : [];
+  const now = new Date();
+  const thisMonth = txns.filter((t) => {
+    const d = new Date(t.date);
+    return (
+      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    );
+  });
+
+  const totalIncome = txns
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + t.amount, 0);
+  const totalExpense = txns
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  const catMap = {};
+  txns.forEach((t) => {
+    if (t.type !== "expense") return;
+    catMap[t.category] = (catMap[t.category] || 0) + Math.abs(t.amount);
+  });
+  const catLines = Object.entries(catMap)
+    .sort((a, b) => b[1] - a[1])
+    .map(([c, v]) => `  ${c}: ${formatINR(v)}`)
+    .join("\n");
+
+  const recent = txns
+    .slice(0, 30)
+    .map(
+      (t) =>
+        `${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${formatINR(t.amount)}`,
+    )
+    .join("\n");
+
+  const monthIncome = thisMonth
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + t.amount, 0);
+  const monthExpense = thisMonth
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  return `User financial data (BlueLedger app):
+Currency: Indian Rupees (₹)
+Total transactions available: ${txns.length}
+Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })}
+This month income: ${formatINR(monthIncome)} | This month expenses: ${formatINR(monthExpense)}
+All-time income: ${formatINR(totalIncome)} | All-time expenses: ${formatINR(totalExpense)}
+
+Spending by category (all time):
+${catLines || "  No expense data yet"}
+
+Recent transactions (up to 30):
+Date | Type | Category | Description | Amount
+${recent || "  No transactions yet"}`;
+}
+
+async function askBlSend(prefill) {
+  if (_askBlBusy) return;
+  const inputEl = safeGet("askBlInput");
+  const question = (prefill || (inputEl ? inputEl.value : "") || "").trim();
+  if (!question) return;
+  if (inputEl) inputEl.value = "";
+
+  _appendAskBlMsg("user", safeText(question));
+  _askBlHistory.push({ role: "user", content: question });
+
+  const typingId = "askbl-typing-" + Date.now();
+  _appendAskBlMsg(
+    "assistant",
+    `<span id="${typingId}" class="ask-bl-typing"><span></span><span></span><span></span></span>`,
+  );
+
+  _askBlBusy = true;
+  const sendBtn = safeGet("askBlSendBtn");
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const system =
+      `You are BlueLedger AI, a friendly and concise personal finance assistant.\n` +
+      `The user's financial data is provided below. Answer directly using the data.\n` +
+      `Be concise, warm, and use ₹ for amounts. Use emojis sparingly.\n` +
+      `If the data is insufficient, say so honestly. Never invent transactions.\n\n` +
+      _buildFinanceSummary();
+
+    const reply = await _callAI(_askBlHistory, system, 400);
+
+    safeGet(typingId)?.closest(".ask-bl-msg")?.remove();
+
+    _askBlHistory.push({ role: "assistant", content: reply });
+    if (_askBlHistory.length > 20) _askBlHistory = _askBlHistory.slice(-20);
+
+    _appendAskBlMsg("assistant", markdownToHtml(reply));
+  } catch (e) {
+    safeGet(typingId)?.closest(".ask-bl-msg")?.remove();
+    _appendAskBlMsg(
+      "assistant",
+      "Sorry, I couldn't connect to the AI right now. Please try again.",
+    );
+    console.warn("Ask BlueLedger failed:", e);
+  } finally {
+    _askBlBusy = false;
+    const btn = safeGet("askBlSendBtn");
+    if (btn) btn.disabled = false;
+  }
+}
+
+function _appendAskBlMsg(role, html) {
+  const container = safeGet("askBlMessages");
   if (!container) return;
 
-  // Destroy any previous instance
-  if (_overviewChart) {
-    _overviewChart.destroy();
-    _overviewChart = null;
-  }
+  const welcome = container.querySelector(".ask-bl-welcome");
+  if (welcome) welcome.style.display = "none";
 
-  container.innerHTML = "";
-  container.style.position = "relative";
-  container.style.padding = "0";
-
-  // Period toggle buttons
-  const cardHeader = container.closest(".card")?.querySelector(".card-header");
-  if (cardHeader) {
-    const existing = cardHeader.querySelector(".chart-period-controls");
-    if (existing) existing.remove();
-
-    const controls = document.createElement("div");
-    controls.className = "chart-period-controls";
-    controls.innerHTML = `
-      <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
-      <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
-      <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
-    `;
-    cardHeader.appendChild(controls);
-  }
-
-  // Canvas
-  const canvas = document.createElement("canvas");
-  canvas.id = "overviewCanvas";
-  canvas.style.width = "100%";
-  canvas.style.maxHeight = "220px";
-  container.appendChild(canvas);
-
-  // Hide legacy labels div if present
-  const labelsDiv = safeGet("chartLabels");
-  if (labelsDiv) labelsDiv.style.display = "none";
-
-  _buildOverviewChart(canvas);
+  const div = document.createElement("div");
+  div.className = `ask-bl-msg ask-bl-msg--${role}`;
+  div.innerHTML =
+    role === "assistant"
+      ? `<div class="ask-bl-avatar"><i class="fas fa-robot"></i></div><div class="ask-bl-bubble">${html}</div>`
+      : `<div class="ask-bl-bubble">${html}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
 }
 
-function _buildOverviewChart(canvas) {
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const data = getChartData(_currentOverviewPeriod);
+/* ══════════════════════════════════════════════════════════════
+   AI SPENDING INSIGHTS
+   ══════════════════════════════════════════════════════════════ */
 
-  if (!data || data.length === 0) {
-    console.warn("BlueLedger Charts: No chart data available");
+async function runAiInsights() {
+  if (_aiInsightsBusy) return;
+  _aiInsightsBusy = true;
+
+  const btn = safeGet("aiInsightsBtn");
+  const panel = safeGet("aiInsightsPanel");
+  if (!panel) {
+    _aiInsightsBusy = false;
     return;
   }
 
-  if (_overviewChart) {
-    _overviewChart.destroy();
-    _overviewChart = null;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analysing…';
   }
 
-  const isDark =
-    document.documentElement.getAttribute("data-theme") !== "light";
-  const gridCol = isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)";
-  const tickCol = isDark ? "#64748b" : "#94a3b8";
+  panel.style.display = "block";
+  panel.innerHTML = `
+    <div class="ai-insights-loading">
+      <i class="fas fa-brain" style="color:#a78bfa;font-size:1.4rem"></i>
+      <div>
+        <div style="font-weight:700;color:#e2e8f0;font-size:.88rem">AI is analysing your spending…</div>
+        <div style="color:#64748b;font-size:.78rem;margin-top:.2rem">Looking for patterns, anomalies &amp; opportunities</div>
+      </div>
+    </div>`;
 
-  const labels = data.map((d) => d.label || "");
-  const incomes = data.map((d) => d.income || 0);
-  const expenses = data.map((d) => d.expense || 0);
+  try {
+    const txns =
+      typeof transactions !== "undefined" && Array.isArray(transactions)
+        ? transactions
+        : [];
+    const now = new Date();
 
-  _overviewChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Income",
-          data: incomes,
-          backgroundColor: incomes.map((_, i) =>
-            data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
-          ),
-          borderRadius: 6,
-          borderSkipped: false,
-          barPercentage: 0.55,
-          categoryPercentage: 0.7,
-        },
-        {
-          label: "Expense",
-          data: expenses,
-          backgroundColor: expenses.map((_, i) =>
-            data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
-          ),
-          borderRadius: 6,
-          borderSkipped: false,
-          barPercentage: 0.55,
-          categoryPercentage: 0.7,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)",
-          borderWidth: 1,
-          titleColor: "#e2e8f0",
-          bodyColor: "#94a3b8",
-          padding: 12,
-          cornerRadius: 10,
-          callbacks: {
-            title(items) {
-              if (!items || !items[0]) return "";
-              const idx = items[0].dataIndex;
-              return _tooltipTitle(_currentOverviewPeriod, data, idx);
-            },
-            label(item) {
-              const val = item.raw || 0;
-              const sym = item.datasetIndex === 0 ? "↑" : "↓";
-              const col = item.datasetIndex === 0 ? "Income " : "Expense";
-              return `  ${sym} ${col}: ₹${val.toLocaleString("en-IN")}`;
-            },
-          },
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: tickCol, font: { size: 11 } },
-          border: { display: false },
-        },
-        y: {
-          grid: { color: gridCol, drawBorder: false },
-          ticks: {
-            color: tickCol,
-            font: { size: 11 },
-            callback: (v) =>
-              v === 0
-                ? "₹0"
-                : v >= 1000
-                  ? "₹" + (v / 1000).toFixed(0) + "k"
-                  : "₹" + v,
-          },
-          border: { display: false },
-        },
-      },
-    },
-  });
-}
-
-function _tooltipTitle(period, data, idx) {
-  if (!data || !data[idx]) return "";
-  const now = new Date();
-
-  if (period === "daily") {
-    const d = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - (6 - idx),
-    );
-    return d.toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+    const thisMonth = txns.filter((t) => {
+      const d = new Date(t.date + "T00:00:00");
+      return (
+        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      );
     });
-  }
+    const lastMonth = txns.filter((t) => {
+      const d = new Date(t.date + "T00:00:00");
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return (
+        d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth()
+      );
+    });
 
-  if (period === "weekly") {
-    return data[idx]?.label ? `Week of ${data[idx].label}` : "";
-  }
+    const catTotals = {};
+    const thisMonthCats = {};
+    const lastMonthCats = {};
 
-  return data[idx]?.fullLabel || data[idx]?.label || "";
-}
+    txns
+      .slice(0, 200)
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        catTotals[t.category] =
+          (catTotals[t.category] || 0) + Math.abs(t.amount);
+      });
+    thisMonth
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        thisMonthCats[t.category] =
+          (thisMonthCats[t.category] || 0) + Math.abs(t.amount);
+      });
+    lastMonth
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        lastMonthCats[t.category] =
+          (lastMonthCats[t.category] || 0) + Math.abs(t.amount);
+      });
 
-/**
- * Update chart for a given period (or re-use current if no argument).
- * Safe to call at any time — handles empty data state gracefully.
- * @param {string} [period]
- */
-function updateOverviewChart(period) {
-  _currentOverviewPeriod = period || _currentOverviewPeriod;
+    const thisMonthIncome = thisMonth
+      .filter((t) => t.type === "income")
+      .reduce((s, t) => s + t.amount, 0);
+    const thisMonthExpense = thisMonth
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+    const lastMonthExpense = lastMonth
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-  // Update period button active states
-  document.querySelectorAll(".cpc-btn").forEach((btn) => {
-    btn.classList.toggle(
-      "cpc-btn--active",
-      btn.textContent.trim().toLowerCase() === _currentOverviewPeriod,
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+    const daysLeft = daysInMonth - now.getDate();
+    const spendingLimit =
+      (typeof userData !== "undefined" && userData?.spendingLimit) || 0;
+
+    const catCompare = Object.keys({ ...thisMonthCats, ...lastMonthCats })
+      .map((cat) => {
+        const cur = thisMonthCats[cat] || 0;
+        const prev = lastMonthCats[cat] || 0;
+        const diff = prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+        return `  ${cat}: this month ${formatINR(cur)}${prev > 0 ? `, last month ${formatINR(prev)}${diff !== null ? ` (${diff > 0 ? "+" : ""}${diff}%)` : ""}` : ""}`;
+      })
+      .join("\n");
+
+    const recentTxns = txns
+      .slice(0, 20)
+      .map(
+        (t) =>
+          `  ${t.date} | ${t.type} | ${t.category} | ${t.description || "-"} | ${t.type === "income" ? "+" : "-"}${formatINR(t.amount)}`,
+      )
+      .join("\n");
+
+    const dataContext = `Financial snapshot:
+Current month: ${now.toLocaleString("en-IN", { month: "long", year: "numeric" })} (day ${now.getDate()} of ${daysInMonth}, ${daysLeft} days left)
+This month income: ${formatINR(thisMonthIncome)} | expenses: ${formatINR(thisMonthExpense)}
+Last month expenses: ${formatINR(lastMonthExpense)}
+${spendingLimit > 0 ? `Monthly spending limit: ${formatINR(spendingLimit)} (${Math.round((thisMonthExpense / spendingLimit) * 100)}% used)` : "No spending limit set"}
+Total transactions: ${txns.length}
+
+Category comparison (this month vs last month):
+${catCompare || "  Not enough data"}
+
+Recent 20 transactions:
+${recentTxns || "  None yet"}`;
+
+    const system =
+      `You are BlueLedger AI, an expert personal finance advisor for an Indian user.\n` +
+      `Analyse the spending data and provide a concise, actionable, warm financial advice report.\n\n` +
+      `Structure your response EXACTLY as valid JSON (no markdown fences) with this shape:\n` +
+      `{"summary":"One sentence overall assessment","prediction":{"amount":12500,"reasoning":"Brief reason"},"tips":[{"icon":"fa-fire","color":"#ef4444","title":"Short title","body":"Specific advice"}],"alerts":[{"title":"Anomaly title","body":"Explanation"}]}\n\n` +
+      `Rules:\n- prediction.amount is an integer in rupees\n- Generate 2-4 tips specific to this user's data\n- Generate 0-3 alerts only for genuinely unusual patterns\n- Use ₹ for amounts, Indian formatting\n- Return ONLY the JSON object.`;
+
+    const raw = await _callAI(
+      [{ role: "user", content: dataContext }],
+      system,
+      800,
     );
-  });
+    const parsed = extractJsonFromText(raw);
+    if (!parsed) throw new Error("Could not parse AI insights response");
 
-  const canvas = safeGet("overviewCanvas");
-  const container = safeGet("chartContainer");
+    const alertsHtml = (Array.isArray(parsed.alerts) ? parsed.alerts : [])
+      .map(
+        (a) => `
+      <div class="ai-alert-item">
+        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;flex-shrink:0;margin-top:.15rem"></i>
+        <div><div class="ai-alert-title">${safeText(a.title)}</div><div class="ai-alert-body">${safeText(a.body)}</div></div>
+      </div>`,
+      )
+      .join("");
 
-  // Chart not yet set up — initialise fully
-  if (!canvas) {
-    initOverviewChart();
-    return;
-  }
+    const tipsHtml = (Array.isArray(parsed.tips) ? parsed.tips : [])
+      .map(
+        (t) => `
+      <div class="ai-tip-card">
+        <div class="ai-tip-icon" style="background:${safeText(t.color)}22;color:${safeText(t.color)}"><i class="fas ${safeText(t.icon)}"></i></div>
+        <div><div class="ai-tip-title">${safeText(t.title)}</div><div class="ai-tip-body">${safeText(t.body)}</div></div>
+      </div>`,
+      )
+      .join("");
 
-  if (!_overviewChart) {
-    _buildOverviewChart(canvas);
-    return;
-  }
+    const predAmt = parsed.prediction?.amount;
+    const predOver = spendingLimit > 0 && predAmt > spendingLimit;
+    const predColor = predOver
+      ? "#ef4444"
+      : predAmt > thisMonthExpense * 1.2
+        ? "#f59e0b"
+        : "#10b981";
+    const predHtml = predAmt
+      ? `<div class="ai-prediction-row">
+           <div class="ai-prediction-label"><i class="fas fa-chart-line" style="color:${predColor}"></i> AI Month-end Prediction</div>
+           <div class="ai-prediction-amount" style="color:${predColor}">${formatINR(predAmt)}</div>
+           <div class="ai-prediction-reason">${safeText(parsed.prediction.reasoning)}</div>
+         </div>`
+      : "";
 
-  const data = getChartData(_currentOverviewPeriod);
-  const hasData =
-    Array.isArray(data) &&
-    data.some((d) => (d.income || 0) > 0 || (d.expense || 0) > 0);
-
-  // Handle empty state
-  if (!hasData) {
-    canvas.style.display = "none";
-    if (container && !container.querySelector(".chart-empty-chartjs")) {
-      const empty = document.createElement("div");
-      empty.className = "chart-empty chart-empty-chartjs";
-      empty.innerHTML = `<i class="fas fa-chart-bar"></i><p>Add transactions to see your overview</p>`;
-      container.appendChild(empty);
+    panel.innerHTML = `
+      <div class="ai-insights-result">
+        <div class="ai-insights-summary">
+          <i class="fas fa-robot" style="color:#a78bfa;flex-shrink:0"></i>
+          <span>${safeText(parsed.summary)}</span>
+        </div>
+        ${predHtml}
+        ${alertsHtml ? `<div class="ai-alerts-section">${alertsHtml}</div>` : ""}
+        <div class="ai-tips-grid">${tipsHtml}</div>
+        <div class="ai-insights-footer">
+          <button class="ai-refresh-btn" onclick="runAiInsights()"><i class="fas fa-rotate-right"></i> Refresh</button>
+          <button class="ai-dismiss-btn" onclick="safeGet('aiInsightsPanel').style.display='none'"><i class="fas fa-times"></i> Dismiss</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    if (panel) {
+      panel.innerHTML = `<div class="ai-insights-error"><i class="fas fa-circle-exclamation" style="color:#ef4444"></i> Could not load AI insights. Check your connection and try again.</div>`;
     }
-    return;
-  }
-
-  // Remove empty state if it was shown
-  container?.querySelector(".chart-empty-chartjs")?.remove();
-  canvas.style.display = "block";
-
-  // Update chart data in-place (no full rebuild — smooth animation)
-  const labels = data.map((d) => d.label || "");
-  const incomes = data.map((d) => d.income || 0);
-  const expenses = data.map((d) => d.expense || 0);
-
-  _overviewChart.data.labels = labels;
-  _overviewChart.data.datasets[0].data = incomes;
-  _overviewChart.data.datasets[0].backgroundColor = incomes.map((_, i) =>
-    data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
-  );
-  _overviewChart.data.datasets[1].data = expenses;
-  _overviewChart.data.datasets[1].backgroundColor = expenses.map((_, i) =>
-    data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
-  );
-
-  _overviewChart.update();
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CATEGORY STACKED BAR (thin horizontal bar)
-   ══════════════════════════════════════════════════════════════ */
-
-/**
- * One-time setup: replaces the .color-bar element with a canvas wrapper.
- */
-function initCategoryChart() {
-  if (safeGet("categoryChartWrap")) return; // already initialised
-
-  const colorBar = document.querySelector(".color-bar");
-  if (!colorBar) return;
-
-  colorBar.outerHTML = `<div id="categoryChartWrap" style="position:relative;width:100%;height:8px;margin:.6rem 0 .4rem;overflow:hidden;border-radius:4px;"><canvas id="categoryCanvas" height="8"></canvas></div>`;
-}
-
-/**
- * Update the horizontal stacked category bar.
- * @param {Array<{label:string, value:number, color:string}>} catsData
- */
-function updateCategoryChart(catsData) {
-  const wrap = safeGet("categoryChartWrap");
-  if (!wrap) return;
-
-  const total = (catsData || []).reduce((s, c) => s + (c.value || 0), 0);
-
-  if (total === 0 || !catsData || catsData.length === 0) {
-    if (_categoryChart) {
-      _categoryChart.destroy();
-      _categoryChart = null;
+    console.warn("AI insights failed:", e);
+  } finally {
+    _aiInsightsBusy = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> AI Advice';
     }
-    wrap.innerHTML = `<div class="color-bar" style="display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;background:rgba(148,163,184,0.12)"></div>`;
-    return;
   }
-
-  // Rebuild canvas if the wrapper was replaced
-  let canvas = safeGet("categoryCanvas");
-  if (!canvas) {
-    wrap.innerHTML = `<canvas id="categoryCanvas" height="8"></canvas>`;
-    canvas = safeGet("categoryCanvas");
-    if (!canvas) return;
-  }
-
-  if (_categoryChart) {
-    _categoryChart.destroy();
-    _categoryChart = null;
-  }
-
-  wrap.style.height = "8px";
-  canvas.height = 8;
-
-  _categoryChart = new Chart(canvas.getContext("2d"), {
-    type: "bar",
-    data: {
-      labels: [""],
-      datasets: (catsData || []).map((c) => ({
-        label: c.label,
-        data: [c.value || 0],
-        backgroundColor: c.color,
-        borderRadius: 0,
-        borderSkipped: false,
-      })),
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)",
-          borderWidth: 1,
-          titleColor: "#e2e8f0",
-          bodyColor: "#94a3b8",
-          padding: 10,
-          cornerRadius: 8,
-          callbacks: {
-            title: () => "Category breakdown",
-            label: (item) =>
-              `  ${item.dataset.label || ""}: ₹${(item.raw || 0).toLocaleString("en-IN")}`,
-          },
-        },
-      },
-      scales: {
-        x: { stacked: true, display: false },
-        y: { stacked: true, display: false },
-      },
-      animation: { duration: 400, easing: "easeOutQuart" },
-    },
-  });
-}
-
-/* ══════════════════════════════════════════════════════════════
-   PUBLIC API — called from main.js / script.js
-   ══════════════════════════════════════════════════════════════ */
-
-/**
- * Backward-compatible wrapper. Called by main.js setChartPeriod().
- * @param {string} period
- * @param {Array}  [sourceTxns] — ignored; data fetched internally
- */
-function renderChartJS(period, sourceTxns) {
-  updateOverviewChart(period);
-}
-
-/**
- * Render horizontal category bar from sorted category data.
- * @param {Array<[string, number]>} sortedCats — [categoryName, amount][]
- */
-function renderCategoryChartJS(sortedCats) {
-  const data = (sortedCats || []).map(([name, val]) => ({
-    label: name,
-    value: val || 0,
-    color: getCatColor(name),
-  }));
-  updateCategoryChart(data);
 }
 
 /* ── Expose to global scope ──────────────────────────────────── */
-window.getCatColor = getCatColor;
-window.getChartData = getChartData;
-window.initOverviewChart = initOverviewChart;
-window.updateOverviewChart = updateOverviewChart;
-window.initCategoryChart = initCategoryChart;
-window.updateCategoryChart = updateCategoryChart;
-window.renderChartJS = renderChartJS;
-window.renderCategoryChartJS = renderCategoryChartJS;
+window._callAI = _callAI;
+window._getAiCategories = _getAiCategories;
+window._getAiCatState = _getAiCatState;
+window._localKeywordGuess = _localKeywordGuess;
+window.aiAutoCategory = aiAutoCategory;
+window.aiApplyCategory = aiApplyCategory;
+window.aiDismissBadge = aiDismissBadge;
+window.aiCategorySelectionChanged = aiCategorySelectionChanged;
+window.resetAiCatBadge = resetAiCatBadge;
+window.openAskBl = openAskBl;
+window.closeAskBl = closeAskBl;
+window.askBlSend = askBlSend;
+window.runAiInsights = runAiInsights;
