@@ -39,7 +39,7 @@ export default async function handler(req, res) {
           "X-Title": "BlueLedger",
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1-distill-llama-70b:free",
+          model: "mistralai/mistral-small-3.1-24b-instruct:free",
           messages: formattedMessages,
           max_tokens: 1000,
         }),
