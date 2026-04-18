@@ -1,12 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════
-   chart.js — BlueLedger Chart System (Chart.js powered)
-   Handles: overview bar chart, category stacked bar chart.
+   charts.js — BlueLedger Chart System (Chart.js powered)
+   OWNS: _overviewChart, _categoryChart, _currentOverviewPeriod,
+         all chart colours, getChartData(), initOverviewChart(),
+         updateOverviewChart(), initCategoryChart(), updateCategoryChart(),
+         renderChartJS(), renderCategoryChartJS(), setChartPeriod()
    Depends on: utils.js (must load first), Chart.js global
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
-/* ── Internal state ─────────────────────────────────────────── */
+/* ── Internal state ─────────────────────────────────────────────
+   ONLY declared here. script.js and main.js must NOT re-declare
+   _overviewChart, _categoryChart, or _currentOverviewPeriod.
+   ────────────────────────────────────────────────────────────── */
 let _overviewChart = null;
 let _categoryChart = null;
 let _currentOverviewPeriod = "monthly";
@@ -14,15 +20,14 @@ let _currentOverviewPeriod = "monthly";
 /* ── Theme tokens ────────────────────────────────────────────── */
 const INCOME_COLOR = "#10b981";
 const EXPENSE_COLOR = "#f97316";
-const INCOME_FILL = "rgba(16,185,129,0.15)";
-const EXPENSE_FILL = "rgba(249,115,22,0.15)";
 
 /* ══════════════════════════════════════════════════════════════
    DATA HELPERS
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * Get color for a named category. Consistent hash-based for custom cats.
+ * Get color for a named category. Falls back to hash-based HSL.
+ * Reads window.CAT_COLORS which is set by main.js.
  * @param {string} cat
  * @returns {string} CSS color
  */
@@ -37,9 +42,9 @@ function getCatColor(cat) {
 }
 
 /**
- * Get chart data for the given period.
- * Calls getAnalyticsTransactions() from main.js if available,
- * otherwise falls back to the global `transactions` array.
+ * Build chart data for the given period.
+ * Reads from getAnalyticsTransactions() (provided by main.js / script.js)
+ * or falls back to the global `transactions` array.
  * @param {"daily"|"weekly"|"monthly"} period
  * @returns {Array<{label:string, income:number, expense:number, active:boolean}>}
  */
@@ -149,15 +154,10 @@ function getChartData(period) {
    OVERVIEW BAR CHART
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * First-time initialisation. Creates the canvas, period buttons,
- * and Chart.js instance inside #chartContainer.
- */
 function initOverviewChart() {
   const container = safeGet("chartContainer");
   if (!container) return;
 
-  // Destroy any previous instance
   if (_overviewChart) {
     _overviewChart.destroy();
     _overviewChart = null;
@@ -183,14 +183,12 @@ function initOverviewChart() {
     cardHeader.appendChild(controls);
   }
 
-  // Canvas
   const canvas = document.createElement("canvas");
   canvas.id = "overviewCanvas";
   canvas.style.width = "100%";
   canvas.style.maxHeight = "220px";
   container.appendChild(canvas);
 
-  // Hide legacy labels div if present
   const labelsDiv = safeGet("chartLabels");
   if (labelsDiv) labelsDiv.style.display = "none";
 
@@ -267,8 +265,11 @@ function _buildOverviewChart(canvas) {
           callbacks: {
             title(items) {
               if (!items || !items[0]) return "";
-              const idx = items[0].dataIndex;
-              return _tooltipTitle(_currentOverviewPeriod, data, idx);
+              return _tooltipTitle(
+                _currentOverviewPeriod,
+                data,
+                items[0].dataIndex,
+              );
             },
             label(item) {
               const val = item.raw || 0;
@@ -307,7 +308,6 @@ function _buildOverviewChart(canvas) {
 function _tooltipTitle(period, data, idx) {
   if (!data || !data[idx]) return "";
   const now = new Date();
-
   if (period === "daily") {
     const d = new Date(
       now.getFullYear(),
@@ -321,23 +321,20 @@ function _tooltipTitle(period, data, idx) {
       year: "numeric",
     });
   }
-
   if (period === "weekly") {
     return data[idx]?.label ? `Week of ${data[idx].label}` : "";
   }
-
   return data[idx]?.fullLabel || data[idx]?.label || "";
 }
 
 /**
- * Update chart for a given period (or re-use current if no argument).
- * Safe to call at any time — handles empty data state gracefully.
+ * Public API — update the chart for a given period.
+ * Safe to call at any time from any module.
  * @param {string} [period]
  */
 function updateOverviewChart(period) {
   _currentOverviewPeriod = period || _currentOverviewPeriod;
 
-  // Update period button active states
   document.querySelectorAll(".cpc-btn").forEach((btn) => {
     btn.classList.toggle(
       "cpc-btn--active",
@@ -348,12 +345,10 @@ function updateOverviewChart(period) {
   const canvas = safeGet("overviewCanvas");
   const container = safeGet("chartContainer");
 
-  // Chart not yet set up — initialise fully
   if (!canvas) {
     initOverviewChart();
     return;
   }
-
   if (!_overviewChart) {
     _buildOverviewChart(canvas);
     return;
@@ -364,7 +359,6 @@ function updateOverviewChart(period) {
     Array.isArray(data) &&
     data.some((d) => (d.income || 0) > 0 || (d.expense || 0) > 0);
 
-  // Handle empty state
   if (!hasData) {
     canvas.style.display = "none";
     if (container && !container.querySelector(".chart-empty-chartjs")) {
@@ -376,11 +370,9 @@ function updateOverviewChart(period) {
     return;
   }
 
-  // Remove empty state if it was shown
   container?.querySelector(".chart-empty-chartjs")?.remove();
   canvas.style.display = "block";
 
-  // Update chart data in-place (no full rebuild — smooth animation)
   const labels = data.map((d) => d.label || "");
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
@@ -399,25 +391,32 @@ function updateOverviewChart(period) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CATEGORY STACKED BAR (thin horizontal bar)
+   CHART PERIOD SETTER
+   Single source of truth — owned here because chart state lives here.
+   script.js delegates to this function; it no longer manages chartPeriod.
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * One-time setup: replaces the .color-bar element with a canvas wrapper.
+ * Change the active chart period and redraw.
+ * Called by the period-toggle buttons AND by script.js / main.js.
+ * @param {string} period — "daily" | "weekly" | "monthly"
  */
-function initCategoryChart() {
-  if (safeGet("categoryChartWrap")) return; // already initialised
+function setChartPeriod(period) {
+  _currentOverviewPeriod = period;
+  updateOverviewChart(period);
+}
 
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY STACKED BAR
+   ══════════════════════════════════════════════════════════════ */
+
+function initCategoryChart() {
+  if (safeGet("categoryChartWrap")) return;
   const colorBar = document.querySelector(".color-bar");
   if (!colorBar) return;
-
   colorBar.outerHTML = `<div id="categoryChartWrap" style="position:relative;width:100%;height:8px;margin:.6rem 0 .4rem;overflow:hidden;border-radius:4px;"><canvas id="categoryCanvas" height="8"></canvas></div>`;
 }
 
-/**
- * Update the horizontal stacked category bar.
- * @param {Array<{label:string, value:number, color:string}>} catsData
- */
 function updateCategoryChart(catsData) {
   const wrap = safeGet("categoryChartWrap");
   if (!wrap) return;
@@ -433,7 +432,6 @@ function updateCategoryChart(catsData) {
     return;
   }
 
-  // Rebuild canvas if the wrapper was replaced
   let canvas = safeGet("categoryCanvas");
   if (!canvas) {
     wrap.innerHTML = `<canvas id="categoryCanvas" height="8"></canvas>`;
@@ -492,22 +490,13 @@ function updateCategoryChart(catsData) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PUBLIC API — called from main.js / script.js
+   PUBLIC API — backward-compat wrappers
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Backward-compatible wrapper. Called by main.js setChartPeriod().
- * @param {string} period
- * @param {Array}  [sourceTxns] — ignored; data fetched internally
- */
-function renderChartJS(period, sourceTxns) {
+function renderChartJS(period) {
   updateOverviewChart(period);
 }
 
-/**
- * Render horizontal category bar from sorted category data.
- * @param {Array<[string, number]>} sortedCats — [categoryName, amount][]
- */
 function renderCategoryChartJS(sortedCats) {
   const data = (sortedCats || []).map(([name, val]) => ({
     label: name,
@@ -526,3 +515,4 @@ window.initCategoryChart = initCategoryChart;
 window.updateCategoryChart = updateCategoryChart;
 window.renderChartJS = renderChartJS;
 window.renderCategoryChartJS = renderCategoryChartJS;
+window.setChartPeriod = setChartPeriod; // ← owned here, exposed globally
