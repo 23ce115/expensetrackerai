@@ -2141,10 +2141,11 @@ Rules:
 - notes: any useful extra detail (items, GST, etc.) or empty string.
 - Return ONLY the JSON, no explanation or markdown.`;
 
-throw new Error("AI disabled (requires backend)");      method: "POST",
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY, // ✅ IMPORTANT
+        "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
