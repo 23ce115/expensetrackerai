@@ -1,21 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════
    main.js — BlueLedger App Entry Point
-   Initialises the app, connects all modules, attaches
-   event listeners, and manages global application state.
+   OWNS: global constants (window.*), app state bootstrap,
+         notify(), refreshAll() shim, populateCategorySelects(),
+         chart integration shims, global event listeners.
 
-   LOAD ORDER (in HTML):
-     1. utils.js
-     2. ai.js
-     3. voice.js
-     4. receipt.js
-     5. chart.js  (or charts.js)
-     6. main.js   ← this file
+   DOES NOT OWN:
+     - _overviewChart / chart state → charts.js
+     - chartPeriod                  → charts.js (_currentOverviewPeriod)
+     - MONTH_NAMES const            → exposed as window.MONTH_NAMES only
+     - todayStr()                   → utils.js
+     - safeNumber()                 → utils.js
+
+   LOAD ORDER (HTML):
+     1. Chart.js CDN
+     2. utils.js
+     3. ai.js
+     4. voice.js
+     5. receipt.js
+     6. charts.js    ← chart state lives here
+     7. script.js    ← app logic lives here
+     8. main.js      ← this file (wires everything together)
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
 /* ══════════════════════════════════════════════════════════════
    GLOBAL CONSTANTS
+   Exposed on window so every module can read them without
+   re-declaring them locally and causing "already declared" errors.
    ══════════════════════════════════════════════════════════════ */
 
 window.BASE_INCOME_CATS = [
@@ -34,7 +46,16 @@ window.BASE_EXPENSE_CATS = [
   "Investment",
 ];
 
-const MONTH_NAMES = [
+/*
+ * FIX — MONTH_NAMES:
+ *   Previously MONTH_NAMES was declared as `const MONTH_NAMES = [...]`
+ *   in BOTH main.js AND script.js, causing:
+ *     "Identifier 'MONTH_NAMES' has already been declared"
+ *
+ *   Solution: declare it ONCE as a window property here.
+ *   script.js reads window.MONTH_NAMES (no local const).
+ */
+window.MONTH_NAMES = [
   "January",
   "February",
   "March",
@@ -87,6 +108,7 @@ const BL_SUPABASE_ANON_KEY =
 
 /* ══════════════════════════════════════════════════════════════
    MUTABLE APPLICATION STATE
+   Declared here so every module sees them as globals.
    ══════════════════════════════════════════════════════════════ */
 
 let sessionPin = null;
@@ -99,7 +121,6 @@ let cards = [];
 let activeCardIdx = 0;
 let addingNewCard = false;
 
-// Active card data — synced to/from cards[] by loadActiveCard / syncActiveToCards
 let userData = null;
 let transactions = [];
 let customCategories = [];
@@ -107,7 +128,19 @@ let categoryBudgets = {};
 let recurringTemplates = [];
 
 let currentPeriod = "monthly";
+
+/*
+ * FIX — chartPeriod:
+ *   Previously declared in BOTH script.js AND main.js, causing
+ *   "Identifier 'chartPeriod' has already been declared" and
+ *   "ReferenceError: chartPeriod is not defined".
+ *
+ *   Solution: chartPeriod is now ONLY declared here in main.js.
+ *   charts.js manages the internal _currentOverviewPeriod mirror.
+ *   script.js reads/writes this global — no local re-declaration.
+ */
 let chartPeriod = "monthly";
+
 let sortCfg = { field: "date", order: "desc" };
 let filterCfg = { type: "all", cats: [] };
 let ctxId = null;
@@ -161,15 +194,10 @@ function getBLClient() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ANALYTICS / CHART DATA ACCESSOR
-   Used by chart.js to get the right transaction slice.
+   ANALYTICS ACCESSOR
+   Used by charts.js to get the right transaction slice.
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Returns the transactions that should be used for analytics.
- * Respects the active card context.
- * @returns {Array}
- */
 function getAnalyticsTransactions() {
   return Array.isArray(transactions) ? transactions : [];
 }
@@ -199,7 +227,7 @@ function sumExp(txns) {
 }
 
 function fmt(n) {
-  return formatINR(n);
+  return formatINR(n); // formatINR is declared in utils.js
 }
 
 function getBounds(period) {
@@ -223,7 +251,6 @@ function getBounds(period) {
     );
     return { start, end };
   }
-  // monthly (default)
   return {
     start: new Date(now.getFullYear(), now.getMonth(), 1),
     end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
@@ -239,26 +266,17 @@ function getTxns(period, sourceTxns = transactions) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CHART INTEGRATION
+   CHART INTEGRATION SHIMS
+   Delegates to charts.js — main.js does NOT own chart state.
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Set chart period and trigger a redraw.
- * @param {string} period — "daily" | "weekly" | "monthly"
+/*
+ * NOTE: setChartPeriod is defined (and window-exposed) in charts.js.
+ * main.js calls it but does NOT re-define it, preventing the duplicate
+ * function declaration that caused "chartPeriod is not defined" errors.
  */
-function setChartPeriod(period) {
-  chartPeriod = period;
-  if (typeof updateOverviewChart === "function") {
-    updateOverviewChart(period);
-  } else {
-    console.warn("updateOverviewChart not available");
-  }
-}
 
-/**
- * Backward-compatible chart render shim.
- */
-function renderChart(period, sourceTxns) {
+function renderChart(period) {
   if (typeof updateOverviewChart === "function") {
     updateOverviewChart(period || chartPeriod);
   }
@@ -381,22 +399,14 @@ function hashVaultPayload(payload) {
    NOTIFICATION (toast)
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Show a toast notification. Looks for #notificationToast in the DOM;
- * falls back to console if not found.
- * @param {string} message
- * @param {"info"|"success"|"error"|"warn"} type
- */
 function notify(message, type = "info") {
   const toast = safeGet("notificationToast");
   if (!toast) {
     console.info(`[${type.toUpperCase()}] ${message}`);
     return;
   }
-
   toast.textContent = message;
   toast.className = `notification-toast notification-toast--${type} notification-toast--show`;
-
   clearTimeout(toast._hideTimer);
   toast._hideTimer = setTimeout(() => {
     safeRemoveClass(toast, "notification-toast--show");
@@ -407,33 +417,20 @@ function notify(message, type = "info") {
    GLOBAL REFRESH
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Master refresh — call after any data change.
- * Triggers chart update, category bar update, and all UI renders.
- */
 function refreshAll() {
   try {
-    // Update overview chart
     if (typeof updateOverviewChart === "function") {
       updateOverviewChart(chartPeriod);
     }
-
-    // Update category chart if renderAllExpenses is available
     if (typeof renderAllExpenses === "function") {
       renderAllExpenses(currentPeriod);
     }
-
-    // Render transaction list if available
     if (typeof renderTransactions === "function") {
       renderTransactions();
     }
-
-    // Refresh summary cards if available
     if (typeof renderSummary === "function") {
       renderSummary();
     }
-
-    // Refresh recurring templates if available
     if (typeof renderRecurring === "function") {
       renderRecurring();
     }
@@ -516,13 +513,9 @@ function _attachCursorGradient() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FAB / SYNC VISIBILITY SHIMS
+   FAB / SYNC VISIBILITY SHIM
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Show or hide the sync FAB based on sync state.
- * Delegates to the real implementation in script.js if available.
- */
 function syncFabVisibility() {
   const fab = safeGet("syncFab");
   if (!fab) return;
@@ -534,10 +527,7 @@ function syncFabVisibility() {
    ══════════════════════════════════════════════════════════════ */
 
 function renderCardSwitcher() {
-  // Implemented in the main script; this is a safe no-op if not yet available.
-  if (typeof _renderCardSwitcher === "function") {
-    _renderCardSwitcher();
-  }
+  if (typeof _renderCardSwitcher === "function") _renderCardSwitcher();
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -556,7 +546,6 @@ function updateAddAccountUI() {
    ══════════════════════════════════════════════════════════════ */
 
 function _attachGlobalListeners() {
-  // Ask BlueLedger overlay click → close
   const askBlOverlay = safeGet("askBlOverlay");
   if (askBlOverlay) {
     askBlOverlay.addEventListener("click", () => {
@@ -564,7 +553,6 @@ function _attachGlobalListeners() {
     });
   }
 
-  // Ask BlueLedger input — send on Enter
   const askBlInput = safeGet("askBlInput");
   if (askBlInput) {
     askBlInput.addEventListener("keydown", (e) => {
@@ -575,25 +563,37 @@ function _attachGlobalListeners() {
     });
   }
 
-  // Description inputs → trigger AI auto-category on keyup
   ["income", "expense"].forEach((type) => {
     const descEl = safeGet(`${type}Desc`);
     if (descEl) {
       descEl.addEventListener("input", () => {
-        if (typeof aiAutoCategory === "function") {
+        if (typeof aiAutoCategory === "function")
           aiAutoCategory(type, descEl.value);
-        }
       });
     }
-
     const catEl = safeGet(`${type}Category`);
     if (catEl) {
       catEl.addEventListener("change", () => {
-        if (typeof aiCategorySelectionChanged === "function") {
+        if (typeof aiCategorySelectionChanged === "function")
           aiCategorySelectionChanged(type);
-        }
       });
     }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SERVICE WORKER — SAFE REGISTRATION
+   FIX: The previous SW implementation threw
+   "Failed to convert value to 'Response'" because fetch events
+   for third-party URLs (adsense, wsimg, etc.) were not handled.
+   Solution: register SW only when the file exists; the sw.js
+   itself (below) must use a safe passthrough fallback.
+   ══════════════════════════════════════════════════════════════ */
+
+function _registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("sw.js").catch(() => {
+    // SW file may not exist in dev — silent fail is intentional
   });
 }
 
@@ -601,39 +601,23 @@ function _attachGlobalListeners() {
    INITIALISATION
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * Bootstrap the app on first load.
- * Waits for DOM ready before touching any elements.
- */
 function _bootApp() {
   try {
-    // Cursor gradient
     _attachCursorGradient();
-
-    // Auto-lock activity listeners
     _attachAutoLockListeners();
-
-    // Global event listeners for modules
     _attachGlobalListeners();
 
-    // Initialise chart system
-    if (typeof initOverviewChart === "function") {
-      initOverviewChart();
-    }
-    if (typeof initCategoryChart === "function") {
-      initCategoryChart();
-    }
+    if (typeof initOverviewChart === "function") initOverviewChart();
+    if (typeof initCategoryChart === "function") initCategoryChart();
 
-    // Populate category dropdowns
     populateCategorySelects();
 
-    // Set initial chart period
-    setChartPeriod(chartPeriod);
+    // setChartPeriod is defined in charts.js — call it safely
+    if (typeof setChartPeriod === "function") {
+      setChartPeriod(chartPeriod);
+    }
 
-    // Refresh all UI panels
     refreshAll();
-
-    // Sync FAB
     syncFabVisibility();
 
     console.info("BlueLedger: modules initialised");
@@ -646,7 +630,6 @@ function _bootApp() {
 window.addEventListener("load", () => {
   document.body.style.setProperty("--x", "50%");
   document.body.style.setProperty("--y", "50%");
-
   try {
     if (typeof initOverviewChart === "function") {
       initOverviewChart();
@@ -666,13 +649,10 @@ if (document.readyState === "loading") {
 
 /* ══════════════════════════════════════════════════════════════
    GLOBAL EXPORTS
-   Functions that need to be accessible from inline HTML onclick
-   handlers or other scripts.
    ══════════════════════════════════════════════════════════════ */
 
 window.notify = notify;
 window.refreshAll = refreshAll;
-window.setChartPeriod = setChartPeriod;
 window.renderChart = renderChart;
 window.populateCategorySelects = populateCategorySelects;
 window.getAllCategories = getAllCategories;
@@ -702,7 +682,8 @@ window.defaultSyncConfig = defaultSyncConfig;
 window.cleanSyncConfig = cleanSyncConfig;
 window.getDeviceId = getDeviceId;
 window.resetAutoLock = resetAutoLock;
-window.MONTH_NAMES = MONTH_NAMES;
+// Constants
+window.MONTH_NAMES = window.MONTH_NAMES; // already set above
 window.STORAGE_KEY = STORAGE_KEY;
 window.VERIFY_TOKEN = VERIFY_TOKEN;
 window.VERIFY_TOKEN_V2 = VERIFY_TOKEN_V2;
