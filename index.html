@@ -32,6 +32,71 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+      /* ── Period toggle controls (glassmorphism) ───────────────── */
+      .chart-period-controls {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .cpc-btn {
+        padding: 4px 12px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border: 1px solid rgba(148,163,184,0.18);
+        border-radius: 20px;
+        background: rgba(148,163,184,0.07);
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        letter-spacing: 0.02em;
+      }
+      .cpc-btn:hover {
+        background: rgba(59,130,246,0.12);
+        border-color: rgba(59,130,246,0.3);
+        color: #93c5fd;
+      }
+      .cpc-btn--active {
+        background: rgba(59,130,246,0.18) !important;
+        border-color: rgba(59,130,246,0.45) !important;
+        color: #60a5fa !important;
+        box-shadow: 0 0 12px rgba(59,130,246,0.15);
+      }
+      [data-theme="light"] .cpc-btn {
+        background: rgba(0,0,0,0.04);
+        border-color: rgba(0,0,0,0.1);
+        color: #64748b;
+      }
+      [data-theme="light"] .cpc-btn:hover {
+        background: rgba(59,130,246,0.08);
+        border-color: rgba(59,130,246,0.25);
+        color: #3b82f6;
+      }
+      [data-theme="light"] .cpc-btn--active {
+        background: rgba(59,130,246,0.12) !important;
+        border-color: rgba(59,130,246,0.35) !important;
+        color: #2563eb !important;
+      }
+      /* ── Canvas container ──────────────────────────────────────── */
+      #chartContainer {
+        min-height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #overviewCanvas {
+        width: 100% !important;
+      }
+      /* ── Category chart wrap ───────────────────────────────────── */
+      #categoryChartWrap {
+        border-radius: 4px;
+        overflow: hidden;
+      }
+    </style>
   </head>
   <body class="modal-open">
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOCK SCREEN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
@@ -476,18 +541,7 @@
         <!-- Income Card -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">
-              Income &nbsp;<span
-                id="badge1"
-                style="
-                  text-transform: none;
-                  font-size: 0.68rem;
-                  color: #94a3b8;
-                  font-weight: 400;
-                "
-                ></span
-              >
-            </h3>
+            <h3 class="card-title">Income</h3>
             <button
               class="card-menu-btn"
               title="Card info"
@@ -505,18 +559,7 @@
         <!-- Expense Card -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">
-              Expenses &nbsp;<span
-                id="badge2"
-                style="
-                  text-transform: none;
-                  font-size: 0.68rem;
-                  color: #94a3b8;
-                  font-weight: 400;
-                "
-                ></span
-              >
-            </h3>
+            <h3 class="card-title">Expenses</h3>
             <button
               class="card-menu-btn"
               title="Card info"
@@ -534,18 +577,7 @@
         <!-- Net Balance Card -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">
-              Net Balance &nbsp;<span
-                id="badge3"
-                style="
-                  text-transform: none;
-                  font-size: 0.68rem;
-                  color: #94a3b8;
-                  font-weight: 400;
-                "
-                ></span
-              >
-            </h3>
+            <h3 class="card-title">Net Balance</h3>
             <button
               class="card-menu-btn"
               title="Card info"
@@ -772,29 +804,7 @@
       </div>
     </div>
 
-    <!-- Income Card -->
-    <div class="card-header">
-      <h3 class="card-title">Income</h3>
-      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('income')">
-        <!-- <i class="fas fa-ellipsis-h"></i> -->
-      </button>
-    </div>
-
-    <!-- Expense Card -->
-    <div class="card-header">
-      <h3 class="card-title">Expenses</h3>
-      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('expense')">
-        <!-- <i class="fas fa-ellipsis-h"></i> -->
-      </button>
-    </div>
-
-    <!-- Net Balance Card -->
-    <div class="card-header">
-      <h3 class="card-title">Net Balance</h3>
-      <button class="card-menu-btn" title="Card info" onclick="showCardInfo('net')">
-        <!-- <i class="fas fa-ellipsis-h"></i> -->
-      </button>
-    </div>
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• 5-TAB BOTTOM NAV (mobile) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <nav class="bottom-nav" id="bottomNav" style="display: none">
       <button
         class="bn-tab bn-tab--active"
@@ -2363,6 +2373,7 @@
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
 
+    <script src="charts.js" defer></script>
     <script src="script.js" defer></script>
   </body>
 </html>
