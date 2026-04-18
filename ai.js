@@ -477,7 +477,12 @@ const _AI_CATEGORY_SEEDS = {
  * @returns {Promise<string>}
  */
 async function _callAI(messages, systemPrompt, maxTokens = 300) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  /* ── Proxy route: browser → /api/ai (Vercel fn) → Anthropic ──
+     Direct browser→Anthropic calls are blocked by CORS (by design).
+     /api/ai holds the API key server-side and forwards the request.
+     See /api/ai.js for setup instructions.
+  ── */
+  const res = await fetch("/api/ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -487,7 +492,10 @@ async function _callAI(messages, systemPrompt, maxTokens = 300) {
       messages,
     }),
   });
-  if (!res.ok) throw new Error(`AI API error ${res.status}`);
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || `AI API error ${res.status}`);
+  }
   const data = await res.json();
   return (data.content || []).map((b) => b.text || "").join("") || "";
 }
