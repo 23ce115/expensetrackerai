@@ -2310,14 +2310,18 @@
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <!-- Chart.js CDN is already loaded in <head> — do NOT load it again -->
     <script src="utils.js"></script>
     <script src="ai.js"></script>
     <script src="voice.js"></script>
     <script src="receipt.js"></script>
-    <script src="charts.js"></script>   <!-- setChartPeriod lives here -->
-    <script src="script.js"></script>       <!-- all app state lives here -->
-    <script src="main.js"></script>      <!-- wires everything, runs last -->
+    <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
+
+    <!-- CORE APP -->
+    <script src="script.js"></script>
+
+    <!-- INIT -->
+    <script src="main.js"></script>
   </body>
 </html>
 
