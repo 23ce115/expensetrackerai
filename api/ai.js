@@ -39,7 +39,7 @@ export default async function handler(req, res) {
           "X-Title": "BlueLedger",
         },
         body: JSON.stringify({
-          model: "mistralai/mistral-small-3.1-24b-instruct:free",
+          model: "openrouter/auto",
           messages: formattedMessages,
           max_tokens: 1000,
         }),
