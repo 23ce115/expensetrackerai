@@ -4929,7 +4929,7 @@ const localDateStr = (d) => {
   const day = String(d.getDate()).padStart(2, "0");
   return y + "-" + m + "-" + day;
 };
-const todayStr = () => localDateStr(new Date());
+// const todayStr = () => localDateStr(new Date());
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    MONTH PICKER — view any past month in full
