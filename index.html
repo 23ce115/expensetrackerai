@@ -1126,37 +1126,14 @@
                 oninput="aiAutoCategory('income', this.value)"
                 style="flex:1"
               />
+              <button class="btn-receipt" id="incomeVoiceBtn" onclick="startVoiceLog('income')" title="Log by voice" data-state="idle">
+                <i class="fas fa-microphone"></i>
+              </button>
               <button class="btn-receipt" id="incomeReceiptBtn" onclick="openReceiptScanner('income')" title="Scan receipt">
                 <i class="fas fa-camera"></i>
               </button>
             </div>
-            <div class="smart-entry-tools">
-              <button
-                type="button"
-                class="btn btn-voice"
-                id="incomeVoiceBtn"
-                onclick="startVoiceLog('income')"
-                aria-describedby="incomeVoiceStatus"
-                data-state="idle"
-              >
-                <span class="voice-btn-icon">
-                  <i class="fas fa-microphone"></i>
-                </span>
-                <span class="voice-btn-copy">
-                  <span class="voice-btn-title">Log by voice</span>
-                  <span class="voice-btn-hint">Say "Received 5000 salary" or "Freelance payment 1200"</span>
-                </span>
-              </button>
-              <div
-                id="incomeVoiceStatus"
-                class="voice-status"
-                data-state="idle"
-                aria-live="polite"
-              >
-                Tap the mic and speak a transaction. We'll fill the draft for you.
-              </div>
-              <!-- FIX 3A: Removed "Latest transcript" voice preview section -->
-            </div>
+            <div id="incomeVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
             <div class="form-hint">AI can suggest a category from what you type. It will only apply if you confirm.</div>
             <div id="incomeAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
           </div>
@@ -1264,37 +1241,14 @@
                 oninput="aiAutoCategory('expense', this.value)"
                 style="flex:1"
               />
+              <button class="btn-receipt" id="expenseVoiceBtn" onclick="startVoiceLog('expense')" title="Log by voice" data-state="idle">
+                <i class="fas fa-microphone"></i>
+              </button>
               <button class="btn-receipt" id="expenseReceiptBtn" onclick="openReceiptScanner('expense')" title="Scan receipt">
                 <i class="fas fa-camera"></i>
               </button>
             </div>
-            <div class="smart-entry-tools">
-              <button
-                type="button"
-                class="btn btn-voice"
-                id="expenseVoiceBtn"
-                onclick="startVoiceLog('expense')"
-                aria-describedby="expenseVoiceStatus"
-                data-state="idle"
-              >
-                <span class="voice-btn-icon">
-                  <i class="fas fa-microphone"></i>
-                </span>
-                <span class="voice-btn-copy">
-                  <span class="voice-btn-title">Log by voice</span>
-                  <span class="voice-btn-hint">Say "Spent 200 rupees on lunch" or "Paid 450 for cab"</span>
-                </span>
-              </button>
-              <div
-                id="expenseVoiceStatus"
-                class="voice-status"
-                data-state="idle"
-                aria-live="polite"
-              >
-                Tap the mic and speak a transaction. We'll fill the draft for you.
-              </div>
-              <!-- FIX 3A: Removed "Latest transcript" voice preview section -->
-            </div>
+            <div id="expenseVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
             <div class="form-hint">AI can suggest a category from what you type. It will only apply if you confirm.</div>
             <div id="expenseAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
           </div>
