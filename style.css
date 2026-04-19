@@ -187,20 +187,24 @@ body::before {
 }
 /* ✦ Report button */
 .report-btn {
-  background: #6d28d9;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  background: rgba(109, 40, 217, 0.18);
+  color: #c4b5fd;
+  border: 1.5px solid rgba(139, 92, 246, 0.35);
+  border-radius: 10px;
   padding: 0.45rem 1rem;
   font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s;
 }
 .report-btn:hover {
-  opacity: 0.85;
+  background: rgba(109, 40, 217, 0.32);
+  border-color: rgba(139, 92, 246, 0.6);
+  color: #ddd6fe;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -6903,80 +6907,69 @@ body::after {
   margin-bottom: 0.9rem;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MOBILE OVERFLOW FIX — overview & expense cards
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ── Glass Header Buttons ─────────────────────── */
+.hdr-income-btn {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1.5px solid rgba(16, 185, 129, 0.32);
+  border-radius: 10px;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.hdr-income-btn:hover {
+  background: rgba(16, 185, 129, 0.24);
+  border-color: rgba(16, 185, 129, 0.55);
+  color: #6ee7b7;
+}
 
-@media (max-width: 600px) {
-  .main-content {
-    padding: 1rem 0.75rem;
-    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-  }
+.hdr-expense-btn {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1.5px solid rgba(239, 68, 68, 0.32);
+  border-radius: 10px;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.hdr-expense-btn:hover {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: rgba(239, 68, 68, 0.55);
+  color: #fca5a5;
+}
 
-  /* Stack dashboard grid to single column */
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 0.85rem;
-    margin-bottom: 0.85rem;
-  }
-
-  /* Stack chart section to single column */
-  .chart-section {
-    grid-template-columns: 1fr;
-    gap: 0.85rem;
-    margin-bottom: 0.85rem;
-  }
-
-  /* Prevent cards from overflowing viewport */
-  .card {
-    width: 100%;
-    min-width: 0;
-    overflow: hidden;
-    border-radius: 16px;
-  }
-
-  /* Card header wrapping on small screens */
-  .card-header {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  /* Period controls wrap nicely */
-  .chart-period-controls {
-    margin-left: 0;
-    flex-wrap: wrap;
-  }
-
-  /* Transaction list rows don't overflow */
-  .transaction-item,
-  .tx-row {
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .tx-desc,
-  .transaction-desc {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
-  }
-
-  /* Overview chart max height on mobile */
-  #overviewCanvas {
-    max-height: 180px !important;
-  }
-
-  /* Stat cards full width */
-  .stat-card,
-  .summary-card {
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* Ask AI button stays visible */
-  .ask-bl-fab {
-    right: 1rem;
-    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  }
+.hdr-cat-btn {
+  background: rgba(96, 165, 250, 0.1);
+  color: #93c5fd;
+  border: 1.5px solid rgba(96, 165, 250, 0.28);
+  border-radius: 10px;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.hdr-cat-btn:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: #bfdbfe;
 }
