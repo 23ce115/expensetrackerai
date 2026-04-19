@@ -4962,10 +4962,7 @@ function getBounds(period) {
 function getAnalyticsTransactions() {
   if (!cards.length) return [...transactions];
   syncActiveToCards();
-  return cards.reduce((all, card) => {
-    const txns = Array.isArray(card?.transactions) ? card.transactions : [];
-    return all.concat(txns);
-  }, []);
+  return [...(cards[activeCardIdx]?.transactions || transactions)];
 }
 
 function getTxns(period, sourceTxns = transactions) {
