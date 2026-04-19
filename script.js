@@ -6207,35 +6207,122 @@ function renderMonthlySummary() {
     (net >= 0 ? "+" : "-") + fmt(Math.abs(net));
   document.getElementById("summaryNet").className =
     "summary-value " + (net >= 0 ? "positive" : "negative");
-  document.getElementById("summaryRate").textContent = rate + "%";
-  document.getElementById("summaryRate").className =
-    "summary-value " + (rate >= 0 ? "positive" : "negative");
+  const surplusEl = document.getElementById("summaryRate");
+  if (net >= 0) {
+    surplusEl.textContent = "+" + fmt(net) + " Surplus";
+    surplusEl.className = "summary-value positive";
+  } else {
+    surplusEl.textContent = "-" + fmt(Math.abs(net)) + " Deficit";
+    surplusEl.className = "summary-value negative";
+  }
   document.getElementById("summaryTopCat").textContent = topCat
     ? `${topCat[0]} (${fmt(topCat[1])})`
     : "—";
   document.getElementById("summaryBiggest").textContent = biggest
     ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
     : "—";
+  // Pie chart
+  const pieCanvas = document.getElementById("summaryPieCanvas");
+  if (pieCanvas) {
+    if (window._summaryPieChart) {
+      window._summaryPieChart.destroy();
+      window._summaryPieChart = null;
+    }
+    if (sortedCats.length > 0) {
+      pieCanvas.style.display = "block";
+      window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
+        type: "pie",
+        data: {
+          labels: sortedCats.map(([c]) => c),
+          datasets: [
+            {
+              data: sortedCats.map(([, a]) => a),
+              backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
+              borderColor: "rgba(15,23,42,0.6)",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              backgroundColor: "rgba(15,23,42,0.92)",
+              borderColor: "rgba(148,163,184,0.15)",
+              borderWidth: 1,
+              titleColor: "#e2e8f0",
+              bodyColor: "#94a3b8",
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                label: (item) => {
+                  const pct = exp > 0 ? Math.round((item.raw / exp) * 100) : 0;
+                  return `  ${item.label}: ${fmt(item.raw)} (${pct}%)`;
+                },
+              },
+            },
+          },
+        },
+      });
+    } else {
+      pieCanvas.style.display = "none";
+    }
+  }
+
+  // Legend list below pie
   document.getElementById("summaryCatList").innerHTML =
     sortedCats.length === 0
       ? '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem 0;">No expenses this month</p>'
       : sortedCats
           .map(([c, a]) => {
             const pct = exp > 0 ? Math.round((a / exp) * 100) : 0;
-            return `<div class="summary-cat-row">
-          <div style="display:flex;align-items:center;gap:.5rem;min-width:110px;">
-            <span style="width:8px;height:8px;border-radius:50%;background:${getCatColor(c)};display:inline-block;flex-shrink:0;"></span>
-            <span style="font-size:.82rem;">${c}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:flex-end;">
-            <div class="summary-cat-bar-bg"><div class="summary-cat-bar-fill" style="width:${pct}%;background:${getCatColor(c)};"></div></div>
-            <span style="font-size:.8rem;font-weight:600;min-width:75px;text-align:right;">${fmt(a)}</span>
-            <span style="font-size:.75rem;color:#64748b;min-width:32px;text-align:right;">${pct}%</span>
-          </div>
-        </div>`;
+            return `<div style="display:flex;align-items:center;gap:.6rem;padding:.3rem 0;border-bottom:1px solid rgba(148,163,184,0.08);">
+            <span style="width:10px;height:10px;border-radius:50%;background:${getCatColor(c)};flex-shrink:0;"></span>
+            <span style="font-size:.82rem;flex:1;">${c}</span>
+            <span style="font-size:.8rem;font-weight:600;">${fmt(a)}</span>
+            <span style="font-size:.75rem;color:#64748b;min-width:36px;text-align:right;">${pct}%</span>
+          </div>`;
           })
           .join("");
 }
+
+async function downloadReport() {
+  const modal = document.querySelector("#summaryModal .modal-content");
+  if (!modal) return;
+
+  // Use html2canvas to capture the modal
+  const script = document.createElement("script");
+  script.src =
+    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+  document.head.appendChild(script);
+
+  script.onload = async () => {
+    notify("Generating PDF...", "info");
+    try {
+      const canvas = await html2canvas(modal, {
+        backgroundColor: "#0f172a",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      const month =
+        document.getElementById("summaryMonthTitle")?.textContent || "report";
+      link.download = `BlueLedger-Report-${month.replace(" ", "-")}.png`;
+      link.href = imgData;
+      link.click();
+      notify("Report downloaded!", "success");
+    } catch (e) {
+      notify("Download failed. Try again.", "error");
+    }
+  };
+}
+window.downloadReport = downloadReport;
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    EXPORT CSV
@@ -6555,9 +6642,14 @@ function openPeriodReport(period) {
     (net >= 0 ? "+" : "-") + fmt(Math.abs(net));
   document.getElementById("summaryNet").className =
     "summary-value " + (net >= 0 ? "positive" : "negative");
-  document.getElementById("summaryRate").textContent = rate + "%";
-  document.getElementById("summaryRate").className =
-    "summary-value " + (rate >= 0 ? "positive" : "negative");
+  const surplusEl = document.getElementById("summaryRate");
+  if (net >= 0) {
+    surplusEl.textContent = "+" + fmt(net) + " Surplus";
+    surplusEl.className = "summary-value positive";
+  } else {
+    surplusEl.textContent = "-" + fmt(Math.abs(net)) + " Deficit";
+    surplusEl.className = "summary-value negative";
+  }
   document.getElementById("summaryTopCat").textContent = topCat
     ? topCat[0] + " (" + fmt(topCat[1]) + ")"
     : "—";
