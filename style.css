@@ -6902,3 +6902,81 @@ body::after {
   overflow: hidden;
   margin-bottom: 0.9rem;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE OVERFLOW FIX — overview & expense cards
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 1rem 0.75rem;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Stack dashboard grid to single column */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+
+  /* Stack chart section to single column */
+  .chart-section {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+
+  /* Prevent cards from overflowing viewport */
+  .card {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+
+  /* Card header wrapping on small screens */
+  .card-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Period controls wrap nicely */
+  .chart-period-controls {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  /* Transaction list rows don't overflow */
+  .transaction-item,
+  .tx-row {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .tx-desc,
+  .transaction-desc {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  /* Overview chart max height on mobile */
+  #overviewCanvas {
+    max-height: 180px !important;
+  }
+
+  /* Stat cards full width */
+  .stat-card,
+  .summary-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Ask AI button stays visible */
+  .ask-bl-fab {
+    right: 1rem;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+}
