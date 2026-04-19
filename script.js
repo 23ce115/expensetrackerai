@@ -6221,7 +6221,6 @@ function renderMonthlySummary() {
   document.getElementById("summaryBiggest").textContent = biggest
     ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
     : "—";
-}
   // Pie chart
   const pieCanvas = document.getElementById("summaryPieCanvas");
   if (pieCanvas) {
@@ -6230,37 +6229,47 @@ function renderMonthlySummary() {
       window._summaryPieChart = null;
     }
     if (sortedCats.length > 0) {
-      pieCanvas.style.display = "block";
-     window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
-        type: "pie",
-        data: {
-          labels: sortedCats.map(([c]) => c),
-          datasets: [{
+    pieCanvas.style.display = "block";
+    window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
+      type: "pie",
+      data: {
+        labels: sortedCats.map(([c]) => c),
+        datasets: [
+          {
             data: sortedCats.map(([, a]) => a),
             backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
             borderColor: "#0f172a",
             borderWidth: 3,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 600 },
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-            datalabels: { display: false },
           },
-          layout: { padding: 28 },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600 },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+          datalabels: { display: false },
         },
-        plugins: [{
+        layout: { padding: 28 },
+      },
+      plugins: [
+        {
           id: "sliceLabels",
           afterDraw(chart) {
-            const { ctx, data, chartArea: { width, height } } = chart;
+            const {
+              ctx,
+              data,
+              chartArea: { width, height },
+            } = chart;
             const meta = chart.getDatasetMeta(0);
             ctx.save();
             meta.data.forEach((arc, i) => {
-              const pct = exp > 0 ? Math.round((data.datasets[0].data[i] / exp) * 100) : 0;
+              const pct =
+                exp > 0
+                  ? Math.round((data.datasets[0].data[i] / exp) * 100)
+                  : 0;
               if (pct < 4) return; // skip tiny slices
               const label = data.labels[i];
               const angle = (arc.startAngle + arc.endAngle) / 2;
@@ -6279,19 +6288,20 @@ function renderMonthlySummary() {
               ctx.fillText(pct + "%", x, y + 7);
             });
             ctx.restore();
-          }
-        }]
-      });
+          },
+        },
+      ],
+    });
     } else {
       pieCanvas.style.display = "none";
     }
   }
-
   // Legend list below pie
   document.getElementById("summaryCatList").innerHTML =
     sortedCats.length === 0
       ? '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem 0;">No expenses this month</p>'
       : "";
+}
 async function downloadReport() {
   const modal = document.querySelector("#summaryModal .modal-content");
   if (!modal) return;
