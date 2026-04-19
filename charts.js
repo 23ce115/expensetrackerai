@@ -93,7 +93,7 @@ function _buildOverviewChart(canvas) {
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
- _overviewChart = new Chart(ctx, {
+  _overviewChart = new Chart(ctx, {
     type: "line",
     data: {
       labels,
@@ -102,30 +102,33 @@ function _buildOverviewChart(canvas) {
           label: "Income",
           data: incomes,
           borderColor: INCOME_COLOR,
-          backgroundColor: "rgba(16,185,129,0.08)",
+          backgroundColor: "rgba(16,185,129,0.0)",
           pointBackgroundColor: INCOME_COLOR,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          pointBorderColor: INCOME_COLOR,
           borderWidth: 2.5,
-          fill: true,
-          tension: 0.4,
+          fill: false,
+          tension: 0.3,
         },
         {
           label: "Expense",
           data: expenses,
           borderColor: EXPENSE_COLOR,
-          backgroundColor: "rgba(249,115,22,0.08)",
+          backgroundColor: "rgba(249,115,22,0.0)",
           pointBackgroundColor: EXPENSE_COLOR,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          pointBorderColor: EXPENSE_COLOR,
           borderWidth: 2.5,
-          fill: true,
-          tension: 0.4,
+          fill: false,
+          tension: 0.3,
         },
       ],
-    },    options: {
+    },
+    options: {
       responsive: true,
       maintainAspectRatio: true,
+      elements: {
+        line: { borderWidth: 2.5 },
+        point: { radius: 4, hoverRadius: 6 },
+      },
       interaction: { mode: "index", intersect: false },
       plugins: {
         legend: { display: false },
