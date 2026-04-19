@@ -94,7 +94,7 @@ function _buildOverviewChart(canvas) {
   const expenses = data.map((d) => d.expense || 0);
 
   _overviewChart = new Chart(ctx, {
-    type: "bar",
+    type: "line",
     data: {
       labels,
       datasets: [
