@@ -5135,8 +5135,8 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
     "Nov",
     "Dec",
   ];
-  return Array.from({ length: 6 }, (_, i) => {
-    const offset = 5 - i; // 5 months ago → now
+  return Array.from({ length: 12 }, (_, i) => {
+    const offset = 11 - i; // 11 months ago → now
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
     const yr2 = d.getFullYear(),
       mi = d.getMonth();
