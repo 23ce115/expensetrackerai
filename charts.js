@@ -101,85 +101,29 @@ function _buildOverviewChart(canvas) {
         {
           label: "Income",
           data: incomes,
-          backgroundColor: incomes.map((_, i) =>
-            data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
-          ),
-          borderRadius: 6,
-          borderSkipped: false,
-          barPercentage: 0.55,
-          categoryPercentage: 0.7,
+          borderColor: INCOME_COLOR,
+          backgroundColor: "rgba(16,185,129,0.08)",
+          pointBackgroundColor: INCOME_COLOR,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
         },
         {
           label: "Expense",
           data: expenses,
-          backgroundColor: expenses.map((_, i) =>
-            data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
-          ),
-          borderRadius: 6,
-          borderSkipped: false,
-          barPercentage: 0.55,
-          categoryPercentage: 0.7,
+          borderColor: EXPENSE_COLOR,
+          backgroundColor: "rgba(249,115,22,0.08)",
+          pointBackgroundColor: EXPENSE_COLOR,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
         },
       ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)",
-          borderWidth: 1,
-          titleColor: "#e2e8f0",
-          bodyColor: "#94a3b8",
-          padding: 12,
-          cornerRadius: 10,
-          callbacks: {
-            title(items) {
-              if (!items?.[0]) return "";
-              return _tooltipTitle(
-                _currentOverviewPeriod,
-                data,
-                items[0].dataIndex,
-              );
-            },
-            label(item) {
-              const val = item.raw || 0;
-              const sym = item.datasetIndex === 0 ? "↑" : "↓";
-              const col = item.datasetIndex === 0 ? "Income " : "Expense";
-              return `  ${sym} ${col}: ₹${val.toLocaleString("en-IN")}`;
-            },
-          },
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: tickCol, font: { size: 11 } },
-          border: { display: false },
-        },
-        y: {
-          grid: { color: gridCol, drawBorder: false },
-          ticks: {
-            color: tickCol,
-            font: { size: 11 },
-            callback: (v) =>
-              v === 0
-                ? "₹0"
-                : v >= 1000
-                  ? "₹" + (v / 1000).toFixed(0) + "k"
-                  : "₹" + v,
-          },
-          border: { display: false },
-        },
-      },
-    },
-  });
-}
-
-function _tooltipTitle(period, data, idx) {
+    },function _tooltipTitle(period, data, idx) {
   if (!data?.[idx]) return "";
   const now = new Date();
   if (period === "daily") {
