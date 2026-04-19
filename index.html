@@ -1617,9 +1617,9 @@
               <div class="summary-label">Net Balance</div>
               <div class="summary-value positive" id="summaryNet">₹0</div>
             </div>
-            <div class="summary-stat">
-              <div class="summary-label">Savings Rate</div>
-              <div class="summary-value positive" id="summaryRate">0%</div>
+           <div class="summary-stat">
+              <div class="summary-label">Surplus / Deficit</div>
+              <div class="summary-value positive" id="summaryRate">—</div>
             </div>
           </div>
           <div class="summary-grid" style="margin-bottom: 0.75rem">
@@ -1661,14 +1661,17 @@
           >
             Expense Breakdown
           </div>
-          <div
-            id="summaryCatList"
-            style="max-height: 200px; overflow-y: auto"
-          ></div>
+          <div style="position:relative;width:100%;max-width:260px;margin:0 auto 0.5rem;">
+            <canvas id="summaryPieCanvas" height="260"></canvas>
+          </div>
+          <div id="summaryCatList" style="margin-top:0.5rem;"></div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" onclick="closeModal('summaryModal')">
+        <div class="modal-footer" style="gap:0.75rem;">
+          <button class="btn btn-secondary" onclick="closeModal('summaryModal')">
             Close
+          </button>
+          <button class="btn btn-primary" onclick="downloadReport()">
+            <i class="fas fa-download"></i> Download PDF
           </button>
         </div>
       </div>
