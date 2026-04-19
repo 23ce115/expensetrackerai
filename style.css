@@ -6973,3 +6973,121 @@ body::after {
   border-color: rgba(96, 165, 250, 0.5);
   color: #bfdbfe;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLASSMORPHISM — Header & Bottom Nav Buttons
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Desktop header buttons */
+.hdr-income-btn,
+.hdr-expense-btn,
+.hdr-cat-btn,
+.report-btn {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 16px rgba(0,0,0,0.2) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease !important;
+}
+
+.report-btn {
+  background: rgba(109, 40, 217, 0.18) !important;
+  color: #c4b5fd !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.4) !important;
+  border-radius: 10px !important;
+}
+.report-btn:hover {
+  background: rgba(109, 40, 217, 0.32) !important;
+  border-color: rgba(139, 92, 246, 0.65) !important;
+  color: #ddd6fe !important;
+  box-shadow: 0 0 16px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+.hdr-income-btn {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #34d399 !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  border-radius: 10px !important;
+}
+.hdr-income-btn:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  color: #6ee7b7 !important;
+  box-shadow: 0 0 16px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.hdr-expense-btn {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #f87171 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
+  border-radius: 10px !important;
+}
+.hdr-expense-btn:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 0 16px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.hdr-cat-btn {
+  background: rgba(96, 165, 250, 0.1) !important;
+  color: #93c5fd !important;
+  border: 1.5px solid rgba(96, 165, 250, 0.3) !important;
+  border-radius: 10px !important;
+}
+.hdr-cat-btn:hover {
+  background: rgba(96, 165, 250, 0.22) !important;
+  border-color: rgba(96, 165, 250, 0.55) !important;
+  color: #bfdbfe !important;
+  box-shadow: 0 0 16px rgba(96,165,250,0.18), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Mobile bottom nav glassmorphism */
+.bottom-nav {
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-top: 1px solid rgba(96, 165, 250, 0.15) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.3) !important;
+}
+
+.bn-tab {
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.bn-tab--active {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-radius: 12px;
+  color: #60a5fa !important;
+}
+
+.bn-tab--active i,
+.bn-tab--active span {
+  color: #60a5fa !important;
+}
+
+/* Mobile add sheet glass */
+.bn-sheet {
+  background: rgba(15, 23, 42, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-top: 1.5px solid rgba(96, 165, 250, 0.18) !important;
+}
+
+.bn-ring-card {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+
+.bn-ring-income {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.bn-ring-expense {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.3) !important;
+}
