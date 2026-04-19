@@ -6221,6 +6221,7 @@ function renderMonthlySummary() {
   document.getElementById("summaryBiggest").textContent = biggest
     ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
     : "—";
+}
   // Pie chart
   const pieCanvas = document.getElementById("summaryPieCanvas");
   if (pieCanvas) {
@@ -6230,43 +6231,56 @@ function renderMonthlySummary() {
     }
     if (sortedCats.length > 0) {
       pieCanvas.style.display = "block";
-      window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
+     window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
         type: "pie",
         data: {
           labels: sortedCats.map(([c]) => c),
-          datasets: [
-            {
-              data: sortedCats.map(([, a]) => a),
-              backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
-              borderColor: "rgba(15,23,42,0.6)",
-              borderWidth: 2,
-            },
-          ],
+          datasets: [{
+            data: sortedCats.map(([, a]) => a),
+            backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
+            borderColor: "#0f172a",
+            borderWidth: 3,
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: { duration: 600 },
           plugins: {
-            legend: {
-              display: false,
-            },
-            tooltip: {
-              backgroundColor: "rgba(15,23,42,0.92)",
-              borderColor: "rgba(148,163,184,0.15)",
-              borderWidth: 1,
-              titleColor: "#e2e8f0",
-              bodyColor: "#94a3b8",
-              padding: 10,
-              cornerRadius: 8,
-              callbacks: {
-                label: (item) => {
-                  const pct = exp > 0 ? Math.round((item.raw / exp) * 100) : 0;
-                  return `  ${item.label}: ${fmt(item.raw)} (${pct}%)`;
-                },
-              },
-            },
+            legend: { display: false },
+            tooltip: { enabled: false },
+            datalabels: { display: false },
           },
+          layout: { padding: 28 },
         },
+        plugins: [{
+          id: "sliceLabels",
+          afterDraw(chart) {
+            const { ctx, data, chartArea: { width, height } } = chart;
+            const meta = chart.getDatasetMeta(0);
+            ctx.save();
+            meta.data.forEach((arc, i) => {
+              const pct = exp > 0 ? Math.round((data.datasets[0].data[i] / exp) * 100) : 0;
+              if (pct < 4) return; // skip tiny slices
+              const label = data.labels[i];
+              const angle = (arc.startAngle + arc.endAngle) / 2;
+              const r = arc.outerRadius * 0.72;
+              const x = arc.x + Math.cos(angle) * r;
+              const y = arc.y + Math.sin(angle) * r;
+              // label name
+              ctx.font = "bold 11px system-ui, sans-serif";
+              ctx.fillStyle = "#ffffff";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(label, x, y - 7);
+              // percentage
+              ctx.font = "10px system-ui, sans-serif";
+              ctx.fillStyle = "rgba(255,255,255,0.85)";
+              ctx.fillText(pct + "%", x, y + 7);
+            });
+            ctx.restore();
+          }
+        }]
       });
     } else {
       pieCanvas.style.display = "none";
@@ -6277,19 +6291,7 @@ function renderMonthlySummary() {
   document.getElementById("summaryCatList").innerHTML =
     sortedCats.length === 0
       ? '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem 0;">No expenses this month</p>'
-      : sortedCats
-          .map(([c, a]) => {
-            const pct = exp > 0 ? Math.round((a / exp) * 100) : 0;
-            return `<div style="display:flex;align-items:center;gap:.6rem;padding:.3rem 0;border-bottom:1px solid rgba(148,163,184,0.08);">
-            <span style="width:10px;height:10px;border-radius:50%;background:${getCatColor(c)};flex-shrink:0;"></span>
-            <span style="font-size:.82rem;flex:1;">${c}</span>
-            <span style="font-size:.8rem;font-weight:600;">${fmt(a)}</span>
-            <span style="font-size:.75rem;color:#64748b;min-width:36px;text-align:right;">${pct}%</span>
-          </div>`;
-          })
-          .join("");
-}
-
+      : "";
 async function downloadReport() {
   const modal = document.querySelector("#summaryModal .modal-content");
   if (!modal) return;
