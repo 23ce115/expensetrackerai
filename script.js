@@ -4662,13 +4662,8 @@ function switchCard(idx) {
   const si = document.getElementById("txnSearch");
   if (si) si.value = "";
   filterCfg = { type: "all", cats: [] };
+  if (typeof initOverviewChart === "function") initOverviewChart();
   refreshAll();
-  const cardLabel =
-    userData?.nickname?.trim() ||
-    (userData?.cardNumber
-      ? `Card ending ${userData.cardNumber.slice(-4)}`
-      : "card");
-  notify(`Switched to ${cardLabel}`, "info");
 }
 
 function addNewCard() {
