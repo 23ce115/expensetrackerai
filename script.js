@@ -5136,19 +5136,16 @@ function getChartData(period, sourceTxns = getAnalyticsTransactions()) {
     "Dec",
   ];
   return Array.from({ length: 12 }, (_, i) => {
-    const offset = 11 - i; // 11 months ago → now
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    const yr2 = d.getFullYear(),
-      mi = d.getMonth();
+    const yr = now.getFullYear();
     const tx = sourceTxns.filter((t) => {
       const td = new Date(t.date + "T00:00:00");
-      return td.getFullYear() === yr2 && td.getMonth() === mi;
+      return td.getFullYear() === yr && td.getMonth() === i;
     });
     return {
-      label: monthLabels[mi],
+      label: monthLabels[i],
       income: sumInc(tx),
       expense: sumExp(tx),
-      active: offset === 0,
+      active: i === now.getMonth(),
     };
   });
 }
