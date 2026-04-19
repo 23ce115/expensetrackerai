@@ -7091,3 +7091,80 @@ body::after {
   background: rgba(239, 68, 68, 0.12) !important;
   border: 1.5px solid rgba(239, 68, 68, 0.3) !important;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLASSMORPHISM MODALS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.modal-content {
+  background: rgba(15, 23, 42, 0.82) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1.5px solid rgba(96, 165, 250, 0.18) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07) !important;
+}
+
+.modal-header {
+  background: rgba(255,255,255,0.03) !important;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.12) !important;
+}
+
+.modal-footer {
+  background: rgba(255,255,255,0.02) !important;
+  border-top: 1px solid rgba(96, 165, 250, 0.12) !important;
+}
+
+.form-input, .form-select {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: #f1f5f9 !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: rgba(96, 165, 250, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
+  outline: none !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   COMPACT ACCOUNT ROW
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.modal-account-group {
+  margin-bottom: 0.6rem !important;
+}
+
+.modal-account-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.5rem 0.75rem !important;
+  background: rgba(96, 165, 250, 0.06) !important;
+  border: 1px solid rgba(96, 165, 250, 0.15) !important;
+  border-radius: 10px !important;
+  gap: 0.5rem !important;
+}
+
+.modal-account-name {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #e2e8f0 !important;
+}
+
+.modal-account-sub {
+  display: none !important;
+}
+
+.modal-account-switch {
+  font-size: 0.72rem !important;
+  padding: 0.28rem 0.65rem !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  background: rgba(148,163,184,0.1) !important;
+  border: 1px solid rgba(148,163,184,0.2) !important;
+  color: #94a3b8 !important;
+}
