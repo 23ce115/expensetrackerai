@@ -6974,197 +6974,23 @@ body::after {
   color: #bfdbfe;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GLASSMORPHISM — Header & Bottom Nav Buttons
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* Desktop header buttons */
-.hdr-income-btn,
-.hdr-expense-btn,
-.hdr-cat-btn,
-.report-btn {
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 16px rgba(0,0,0,0.2) !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.01em;
-  transition: all 0.2s ease !important;
+/* ── Settings menu: limit height so it doesn't overlap Ask AI fab ── */
+.settings-menu {
+  max-height: calc(100vh - 140px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.2) transparent !important;
 }
 
-.report-btn {
-  background: rgba(109, 40, 217, 0.18) !important;
-  color: #c4b5fd !important;
-  border: 1.5px solid rgba(139, 92, 246, 0.4) !important;
-  border-radius: 10px !important;
-}
-.report-btn:hover {
-  background: rgba(109, 40, 217, 0.32) !important;
-  border-color: rgba(139, 92, 246, 0.65) !important;
-  color: #ddd6fe !important;
-  box-shadow: 0 0 16px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+/* Ask AI fab — keep above bottom nav on mobile */
+.ask-bl-fab {
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+  z-index: 990 !important;
 }
 
-.hdr-income-btn {
-  background: rgba(16, 185, 129, 0.12) !important;
-  color: #34d399 !important;
-  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
-  border-radius: 10px !important;
-}
-.hdr-income-btn:hover {
-  background: rgba(16, 185, 129, 0.25) !important;
-  border-color: rgba(16, 185, 129, 0.6) !important;
-  color: #6ee7b7 !important;
-  box-shadow: 0 0 16px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
-}
-
-.hdr-expense-btn {
-  background: rgba(239, 68, 68, 0.12) !important;
-  color: #f87171 !important;
-  border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
-  border-radius: 10px !important;
-}
-.hdr-expense-btn:hover {
-  background: rgba(239, 68, 68, 0.25) !important;
-  border-color: rgba(239, 68, 68, 0.6) !important;
-  color: #fca5a5 !important;
-  box-shadow: 0 0 16px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
-}
-
-.hdr-cat-btn {
-  background: rgba(96, 165, 250, 0.1) !important;
-  color: #93c5fd !important;
-  border: 1.5px solid rgba(96, 165, 250, 0.3) !important;
-  border-radius: 10px !important;
-}
-.hdr-cat-btn:hover {
-  background: rgba(96, 165, 250, 0.22) !important;
-  border-color: rgba(96, 165, 250, 0.55) !important;
-  color: #bfdbfe !important;
-  box-shadow: 0 0 16px rgba(96,165,250,0.18), inset 0 1px 0 rgba(255,255,255,0.1) !important;
-}
-
-/* Mobile bottom nav glassmorphism */
-.bottom-nav {
-  background: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border-top: 1px solid rgba(96, 165, 250, 0.15) !important;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.3) !important;
-}
-
-.bn-tab {
-  background: transparent;
-  transition: all 0.2s ease;
-}
-
-.bn-tab--active {
-  background: rgba(59, 130, 246, 0.12) !important;
-  border-radius: 12px;
-  color: #60a5fa !important;
-}
-
-.bn-tab--active i,
-.bn-tab--active span {
-  color: #60a5fa !important;
-}
-
-/* Mobile add sheet glass */
-.bn-sheet {
-  background: rgba(15, 23, 42, 0.88) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border-top: 1.5px solid rgba(96, 165, 250, 0.18) !important;
-}
-
-.bn-ring-card {
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.25) !important;
-}
-
-.bn-ring-income {
-  background: rgba(16, 185, 129, 0.12) !important;
-  border: 1.5px solid rgba(16, 185, 129, 0.3) !important;
-}
-
-.bn-ring-expense {
-  background: rgba(239, 68, 68, 0.12) !important;
-  border: 1.5px solid rgba(239, 68, 68, 0.3) !important;
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GLASSMORPHISM MODALS
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.modal-content {
-  background: rgba(15, 23, 42, 0.82) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1.5px solid rgba(96, 165, 250, 0.18) !important;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07) !important;
-}
-
-.modal-header {
-  background: rgba(255,255,255,0.03) !important;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.12) !important;
-}
-
-.modal-footer {
-  background: rgba(255,255,255,0.02) !important;
-  border-top: 1px solid rgba(96, 165, 250, 0.12) !important;
-}
-
-.form-input, .form-select {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(148, 163, 184, 0.18) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  color: #f1f5f9 !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-}
-
-.form-input:focus, .form-select:focus {
-  border-color: rgba(96, 165, 250, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
-  outline: none !important;
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   COMPACT ACCOUNT ROW
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.modal-account-group {
-  margin-bottom: 0.6rem !important;
-}
-
-.modal-account-card {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 0.5rem 0.75rem !important;
-  background: rgba(96, 165, 250, 0.06) !important;
-  border: 1px solid rgba(96, 165, 250, 0.15) !important;
-  border-radius: 10px !important;
-  gap: 0.5rem !important;
-}
-
-.modal-account-name {
-  font-size: 0.82rem !important;
-  font-weight: 700 !important;
-  color: #e2e8f0 !important;
-}
-
-.modal-account-sub {
-  display: none !important;
-}
-
-.modal-account-switch {
-  font-size: 0.72rem !important;
-  padding: 0.28rem 0.65rem !important;
-  border-radius: 6px !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  background: rgba(148,163,184,0.1) !important;
-  border: 1px solid rgba(148,163,184,0.2) !important;
-  color: #94a3b8 !important;
+@media (min-width: 769px) {
+  .ask-bl-fab {
+    bottom: 2rem !important;
+  }
 }
