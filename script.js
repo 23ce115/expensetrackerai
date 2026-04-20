@@ -7733,8 +7733,10 @@ async function confirmReset() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
+              apikey: BL_SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${BL_SUPABASE_ANON_KEY}`,
             },
+            body: JSON.stringify({ user_id: userId }),
           },
         );
         if (!res.ok) {
