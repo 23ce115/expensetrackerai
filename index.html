@@ -1079,25 +1079,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group modal-account-group">
-            <label class="form-label">Account</label>
-            <div class="modal-account-card">
-              <div>
-                <div class="modal-account-name" id="incomeAccountName">
-                  This account
-                </div>
-                <div class="modal-account-sub">
-                  This income will be added to the current account.
-                </div>
-              </div>
-              <button
-                type="button"
-                class="btn btn-secondary modal-account-switch"
-                onclick="openAddTargetPicker('income', 'modal')"
-              >
-                Use another account
-              </button>
-            </div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;padding:.4rem .6rem;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:10px;">
+            <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
+            <span id="incomeAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
+            <button type="button" onclick="openAddTargetPicker('income', 'modal')" style="font-size:.7rem;padding:.22rem .55rem;border-radius:6px;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.2);color:#94a3b8;cursor:pointer;white-space:nowrap;">Switch</button>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -1191,25 +1176,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group modal-account-group">
-            <label class="form-label">Account</label>
-            <div class="modal-account-card">
-              <div>
-                <div class="modal-account-name" id="expenseAccountName">
-                  This account
-                </div>
-                <div class="modal-account-sub">
-                  This expense will be added to the current account.
-                </div>
-              </div>
-              <button
-                type="button"
-                class="btn btn-secondary modal-account-switch"
-                onclick="openAddTargetPicker('expense', 'modal')"
-              >
-                Use another account
-              </button>
-            </div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;padding:.4rem .6rem;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:10px;">
+            <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
+            <span id="expenseAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
+            <button type="button" onclick="openAddTargetPicker('expense', 'modal')" style="font-size:.7rem;padding:.22rem .55rem;border-radius:6px;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.2);color:#94a3b8;cursor:pointer;white-space:nowrap;">Switch</button>
           </div>
           <div class="form-row">
             <div class="form-group">
