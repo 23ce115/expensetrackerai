@@ -1126,11 +1126,8 @@
                 oninput="aiAutoCategory('income', this.value)"
                 style="flex:1"
               />
-              <button class="btn-receipt" id="incomeVoiceBtn" onclick="startVoiceLog('income')" title="Log by voice" data-state="idle">
+              <button class="btn-voice-lg" id="incomeVoiceBtn" onclick="startVoiceLog('income')" title="Log by voice" data-state="idle">
                 <i class="fas fa-microphone"></i>
-              </button>
-              <button class="btn-receipt" id="incomeReceiptBtn" onclick="openReceiptScanner('income')" title="Scan receipt">
-                <i class="fas fa-camera"></i>
               </button>
             </div>
             <div id="incomeVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
@@ -1241,11 +1238,8 @@
                 oninput="aiAutoCategory('expense', this.value)"
                 style="flex:1"
               />
-              <button class="btn-receipt" id="expenseVoiceBtn" onclick="startVoiceLog('expense')" title="Log by voice" data-state="idle">
+              <button class="btn-voice-lg" id="expenseVoiceBtn" onclick="startVoiceLog('expense')" title="Log by voice" data-state="idle">
                 <i class="fas fa-microphone"></i>
-              </button>
-              <button class="btn-receipt" id="expenseReceiptBtn" onclick="openReceiptScanner('expense')" title="Scan receipt">
-                <i class="fas fa-camera"></i>
               </button>
             </div>
             <div id="expenseVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
@@ -2265,7 +2259,6 @@
     <script src="utils.js"></script>
     <script src="ai.js"></script>
     <script src="voice.js"></script>
-    <script src="receipt.js"></script>
     <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
 
     <!-- CORE APP -->
