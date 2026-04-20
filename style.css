@@ -6994,3 +6994,41 @@ body::after {
     bottom: 2rem !important;
   }
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ASK AI — mobile input fix
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (max-width: 768px) {
+  /* Panel clears the bottom nav */
+  .ask-bl-panel--open {
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Panel takes up more screen height on mobile */
+  .ask-bl-panel {
+    height: 70vh !important;
+    max-height: 70vh !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  /* Input row always visible and tappable */
+  .ask-bl-input-row {
+    padding: 0.75rem 0.85rem !important;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Bigger touch target for input on mobile */
+  .ask-bl-input {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+    padding: 0.75rem 0.9rem !important;
+  }
+
+  /* Bigger send button for touch */
+  .ask-bl-send {
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
