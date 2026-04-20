@@ -7700,35 +7700,56 @@ function confirmImport() {
 async function confirmReset() {
   try {
     stopCloudSync();
-
     const client = getBLClient();
 
-    // FIX 5a: Delete the encrypted vault row from the cloud database
-    // so no ciphertext remains on the server for this account.
+    // Step 1: Get current user
+    let userId = null;
     try {
       const {
         data: { user },
       } = await client.auth.getUser();
-      if (user?.id) {
-        await client
-          .from(SYNC_TABLE) // "encrypted_vaults"
-          .delete()
-          .eq("user_id", user.id);
-      }
+      userId = user?.id || null;
     } catch (e) {
-      // Non-fatal — vault may not exist in cloud (local-only user)
-      console.warn("Cloud vault deletion failed (non-fatal):", e);
+      console.warn("Could not get user:", e);
     }
 
-    // FIX 5b: Sign out from Supabase auth session
+    // Step 2: Delete vault data from cloud
+    if (userId) {
+      try {
+        await client.from(SYNC_TABLE).delete().eq("user_id", userId);
+      } catch (e) {
+        console.warn("Cloud vault deletion failed (non-fatal):", e);
+      }
+    }
+
+    // Step 3: Delete the auth account itself via edge function
+    // This removes the email/account from Supabase auth permanently
+    if (userId) {
+      try {
+        const {
+          data: { session },
+        } = await client.auth.getSession();
+        await fetch(`${client.supabaseUrl}/functions/v1/delete-user`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+        });
+      } catch (e) {
+        // Non-fatal — sign out still proceeds even if account deletion fails
+        console.warn("Auth account deletion failed (non-fatal):", e);
+      }
+    }
+
+    // Step 4: Sign out session
     try {
       await client.auth.signOut();
     } catch (e) {
-      console.warn("Sign out during reset failed:", e);
+      console.warn("Sign out failed:", e);
     }
 
-    // FIX 5c: Wipe ALL sensitive in-RAM state so no data leaks
-    // if the page doesn't fully reload (e.g. back/forward cache)
+    // Step 5: Wipe all in-RAM state
     sessionPin = null;
     cards = [];
     activeCardIdx = 0;
@@ -7739,15 +7760,15 @@ async function confirmReset() {
     recurringTemplates = [];
     syncConfig = defaultSyncConfig();
 
-    // FIX 5d: Clear ALL localStorage keys — not just the vault
+    // Step 6: Clear all local storage
     localStorage.clear();
 
     closeModal("resetModal");
-    notify("Signed out and all data deleted. Reloading...", "info");
+    notify("Account deleted and signed out. Reloading...", "info");
     setTimeout(() => location.reload(), 900);
   } catch (e) {
     console.warn("confirmReset failed", e);
-    notify("Could not complete sign out. Please try again.", "error");
+    notify("Could not complete. Please try again.", "error");
   }
 }
 
