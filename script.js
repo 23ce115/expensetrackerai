@@ -7702,18 +7702,20 @@ async function confirmReset() {
     stopCloudSync();
     const client = getBLClient();
 
-    // Step 1: Get current user
+    // Get session token FIRST before anything is cleared
+    let accessToken = null;
     let userId = null;
     try {
       const {
-        data: { user },
-      } = await client.auth.getUser();
-      userId = user?.id || null;
+        data: { session },
+      } = await client.auth.getSession();
+      accessToken = session?.access_token || null;
+      userId = session?.user?.id || null;
     } catch (e) {
-      console.warn("Could not get user:", e);
+      console.warn("Could not get session:", e);
     }
 
-    // Step 2: Delete vault data from cloud
+    // Delete vault data from cloud
     if (userId) {
       try {
         await client.from(SYNC_TABLE).delete().eq("user_id", userId);
@@ -7722,34 +7724,36 @@ async function confirmReset() {
       }
     }
 
-    // Step 3: Delete the auth account itself via edge function
-    // This removes the email/account from Supabase auth permanently
-    if (userId) {
+    // Delete auth account via Edge Function using the token
+    if (accessToken) {
       try {
-        const {
-          data: { session },
-        } = await client.auth.getSession();
-        await fetch(`${client.supabaseUrl}/functions/v1/delete-user`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
+        const res = await fetch(
+          "https://fptiscqzzimxxtgjejhz.supabase.co/functions/v1/delete-user",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        });
+        );
+        if (!res.ok) {
+          const err = await res.json();
+          console.warn("Delete user failed:", err);
+        }
       } catch (e) {
-        // Non-fatal — sign out still proceeds even if account deletion fails
         console.warn("Auth account deletion failed (non-fatal):", e);
       }
     }
 
-    // Step 4: Sign out session
+    // Sign out
     try {
       await client.auth.signOut();
     } catch (e) {
       console.warn("Sign out failed:", e);
     }
 
-    // Step 5: Wipe all in-RAM state
+    // Wipe RAM
     sessionPin = null;
     cards = [];
     activeCardIdx = 0;
@@ -7760,7 +7764,7 @@ async function confirmReset() {
     recurringTemplates = [];
     syncConfig = defaultSyncConfig();
 
-    // Step 6: Clear all local storage
+    // Clear local storage
     localStorage.clear();
 
     closeModal("resetModal");
