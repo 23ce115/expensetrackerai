@@ -391,30 +391,38 @@ body::before {
    CARD
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+/* Refined Flat Stat Cards */
 .card {
-  background: rgba(30, 41, 59, 0.55);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate));
-  color: #f1f5f9;
-  border-radius: 20px;
-  border: 1.5px solid rgba(96, 165, 250, 0.22);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease;
-  padding: 1.5rem;
+  background: #111827 !important; /* Flat dark card */
+  border: 1px solid #1f2937 !important;
+  border-top: 3px solid #3b82f6 !important; /* Default blue border */
+  border-radius: 12px !important; /* Sharper, cleaner corners */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  backdrop-filter: none !important;
+  transition: transform 0.15s ease;
+  padding: 1.25rem;
 }
 .card:hover {
-  transform: translateY(-3px);
-  background: rgba(36, 51, 73, 0.7);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border-color: rgba(96, 165, 250, 0.38);
+  transform: translateY(-2px);
+  background: #151d2e !important;
+}
+/* Color-coded top borders */
+.card--income {
+  border-top-color: #10b981 !important;
+}
+.card--expense {
+  border-top-color: #ef4444 !important;
+}
+.card--balance {
+  border-top-color: #3b82f6 !important;
+}
+
+/* Prominent Numbers */
+.amount {
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  margin: 0.5rem 0;
+  letter-spacing: -0.02em;
 }
 .card-header {
   display: flex;
@@ -2143,16 +2151,28 @@ body::before {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    LOCK SCREEN
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.lock-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: linear-gradient(135deg, #0a1628 0%, #0f2044 50%, #0a1628 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.3s ease;
+.lock-screen,
+.auth-screen {
+  background: #0f172a !important; /* Flattened: removed radial glow/gradient */
+}
+.lock-card,
+.auth-card {
+  background: #111827 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+.form-input {
+  border-radius: 6px !important; /* Sharper borders */
+  border: 1px solid #334155 !important;
+  background: #1e293b !important;
+  padding: 0.75rem !important;
+}
+.btn-primary {
+  background: #2563eb !important; /* Solid color instead of murky gradient */
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
 }
 
 .lock-card {
@@ -7066,5 +7086,63 @@ body::after {
   }
   50% {
     box-shadow: 0 0 0 10px rgba(248, 113, 113, 0);
+  }
+}
+
+/* Desktop Sidebar Logic */
+@media (min-width: 769px) {
+  body {
+    display: block;
+    overflow: hidden;
+  }
+  .app-container {
+    display: flex;
+    height: 100vh;
+    background: #0f172a;
+  }
+  .sidebar {
+    width: 240px;
+    background: #060914; /* Slightly darker for contrast */
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 0;
+    flex-shrink: 0;
+  }
+  .sidebar-logo {
+    padding: 0 1.5rem 2rem;
+  }
+  .sidebar-logo img {
+    height: 40px;
+  }
+  .nav-item {
+    padding: 0.85rem 1.5rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .nav-item:hover {
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .nav-item.active {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid #3b82f6; /* Solid left accent bar */
+  }
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .main-content {
+    padding-top: 1rem !important;
   }
 }
