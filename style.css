@@ -48,23 +48,12 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    circle 180px at var(--x, 50%) var(--y, 50%),
-    rgba(96, 165, 250, 0.18),
-    rgba(96, 165, 250, 0.05) 55%,
-    transparent 75%
-  );
+  background: none;
   z-index: -1;
-  transition: background 0.08s ease;
 }
 
 [data-theme="light"] body::before {
-  background: radial-gradient(
-    circle 180px at var(--x, 50%) var(--y, 50%),
-    rgba(59, 130, 246, 0.32),
-    rgba(99, 102, 241, 0.08) 55%,
-    transparent 75%
-  );
+  background: none;
 }
 
 .main-content,
@@ -78,16 +67,13 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .header {
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate));
-  padding: 0 2rem;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.12);
+  background: #0d1117;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 66px;
+  height: 58px;
   position: relative;
   z-index: 999;
   flex-shrink: 0;
@@ -187,24 +173,23 @@ body::before {
 }
 /* ✦ Report button */
 .report-btn {
-  background: rgba(109, 40, 217, 0.18);
-  color: #c4b5fd;
-  border: 1.5px solid rgba(139, 92, 246, 0.35);
-  border-radius: 10px;
-  padding: 0.45rem 1rem;
-  font-size: 0.875rem;
+  background: rgba(139, 92, 246, 0.1);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s;
+  transition: background 0.15s;
+  font-weight: 600;
 }
 .report-btn:hover {
-  background: rgba(109, 40, 217, 0.32);
-  border-color: rgba(139, 92, 246, 0.6);
-  color: #ddd6fe;
+  background: rgba(139, 92, 246, 0.18);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -392,29 +377,20 @@ body::before {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .card {
-  background: rgba(30, 41, 59, 0.55);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate));
+  background: #161b22;
   color: #f1f5f9;
-  border-radius: 20px;
-  border: 1.5px solid rgba(96, 165, 250, 0.22);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   transition:
     transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease;
+    box-shadow 0.12s ease;
   padding: 1.5rem;
 }
 .card:hover {
-  transform: translateY(-3px);
-  background: rgba(36, 51, 73, 0.7);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border-color: rgba(96, 165, 250, 0.38);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 .card-header {
   display: flex;
@@ -423,11 +399,11 @@ body::before {
   margin-bottom: 14.4px;
 }
 .card-title {
-  font-weight: 700;
-  color: #60a5fa;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 .card-menu-btn {
   background: none;
@@ -459,15 +435,15 @@ body::before {
   letter-spacing: 0.5px;
 }
 .income-amount {
-  color: #34d399;
+  color: #22c55e;
 }
 .expense-amount {
-  color: #f87171;
+  color: #ef4444;
 }
 
 /* ✦ Net balance colours */
 .net-positive {
-  color: #60a5fa;
+  color: #f1f5f9;
 }
 .net-negative {
   color: #f87171;
@@ -489,18 +465,10 @@ body::before {
 
 /* MY CARD */
 .my-card {
-  background: linear-gradient(
-    135deg,
-    #065f46 0%,
-    #059669 40%,
-    #10b981 75%,
-    #34d399 100%
-  ) !important;
-  border-color: rgba(52, 211, 153, 0.6) !important;
-  box-shadow:
-    0 12px 40px rgba(5, 150, 105, 0.55),
-    0 4px 16px rgba(52, 211, 153, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  background: #1c2333 !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-top: 2px solid #3b82f6 !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   color: white;
@@ -508,46 +476,22 @@ body::before {
   overflow: visible;
 }
 .my-card:hover {
-  background: linear-gradient(
-    135deg,
-    #047857 0%,
-    #059669 35%,
-    #10b981 70%,
-    #6ee7b7 100%
-  ) !important;
-  box-shadow:
-    0 18px 50px rgba(5, 150, 105, 0.65),
-    0 6px 20px rgba(52, 211, 153, 0.45) !important;
-  border-color: rgba(52, 211, 153, 0.8) !important;
+  background: #1e2840 !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
 }
 
-/* ── Dark mode: blue card matching the light-mode card colour ── */
+/* ── Dark mode: same as default (we're already dark) ── */
 [data-theme="dark"] .my-card {
-  background: linear-gradient(
-    135deg,
-    #1249a8 0%,
-    #1a6fd4 35%,
-    #2563eb 70%,
-    #3b82f6 100%
-  ) !important;
-  border-color: rgba(59, 130, 246, 0.6) !important;
-  box-shadow:
-    0 12px 40px rgba(26, 111, 212, 0.6),
-    0 4px 16px rgba(59, 130, 246, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  background: #1c2333 !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-top: 2px solid #3b82f6 !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
 }
 [data-theme="dark"] .my-card:hover {
-  background: linear-gradient(
-    135deg,
-    #1558c0 0%,
-    #1d7ae0 35%,
-    #2d6ff0 70%,
-    #60a5fa 100%
-  ) !important;
-  box-shadow:
-    0 18px 50px rgba(26, 111, 212, 0.7),
-    0 6px 20px rgba(59, 130, 246, 0.45) !important;
-  border-color: rgba(96, 165, 250, 0.8) !important;
+  background: #1e2840 !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
 }
 .my-card .card-title {
   color: rgba(255, 255, 255, 0.9);
@@ -2148,7 +2092,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: linear-gradient(135deg, #0a1628 0%, #0f2044 50%, #0a1628 100%);
+  background: #0d1117;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2162,21 +2106,16 @@ body::before {
   gap: 1rem;
   padding: 2.5rem 2rem;
   width: min(320px, 92vw);
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(99, 130, 246, 0.18);
-  border-radius: 28px;
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  box-shadow:
-    0 8px 48px rgba(0, 0, 0, 0.45),
-    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .lock-logo img {
   height: 72px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 18px rgba(59, 130, 246, 0.4));
 }
 .lock-title {
   font-size: 1.5rem;
@@ -2702,22 +2641,17 @@ body::before {
   color: #64748b;
 }
 [data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: #334155;
-  border: 1.5px solid rgba(59, 130, 246, 0.16);
-  box-shadow:
-    0 4px 20px rgba(15, 23, 42, 0.08),
-    0 1px 4px rgba(59, 130, 246, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 [data-theme="light"] .card:not(.my-card):hover {
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow:
-    0 8px 32px rgba(15, 23, 42, 0.12),
-    0 2px 8px rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.32);
+  background: #f9fafb;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.12);
 }
 [data-theme="light"] .my-card {
   background: linear-gradient(135deg, #1e40af, #2563eb 55%, #0ea5e9) !important;
@@ -3740,7 +3674,7 @@ body::before {
 }
 .bn-tab--active {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.06);
+  background: none;
 }
 .bn-tab:active {
   opacity: 0.7;
@@ -3760,16 +3694,20 @@ body::before {
 }
 
 #bnHome.bn-tab--active {
-  background: rgba(96, 165, 250, 0.14);
+  background: none;
+  box-shadow: inset 0 3px 0 #60a5fa;
 }
 #bnReport.bn-tab--active {
-  background: rgba(167, 139, 250, 0.14);
+  background: none;
+  box-shadow: inset 0 3px 0 #a78bfa;
 }
 #bnCat.bn-tab--active {
-  background: rgba(52, 211, 153, 0.14);
+  background: none;
+  box-shadow: inset 0 3px 0 #34d399;
 }
 #bnSettings.bn-tab--active {
-  background: rgba(239, 68, 68, 0.14);
+  background: none;
+  box-shadow: inset 0 3px 0 #ef4444;
 }
 
 /* Add button centre ring */
@@ -4360,20 +4298,23 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #0a0d14 0%, #0f1a2e 50%, #111827 100%);
+  background: #0d1117;
   padding: 1.5rem;
   overflow-y: auto;
 }
 
 /* Landing card — compact, centered */
 .auth-card {
-  border-radius: 24px;
+  border-radius: 16px;
   padding: 2.5rem 2rem 2rem;
   width: 100%;
   max-width: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 /* Auth action buttons — large pill buttons */
@@ -4408,11 +4349,11 @@ body::before {
 .auth-btn-login {
   background: #3b82f6;
   color: #fff;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
+  box-shadow: none;
 }
 .auth-btn-login:hover {
   background: #2563eb;
-  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.45);
+  box-shadow: none;
 }
 
 .auth-btn-signup {
@@ -4831,150 +4772,111 @@ body::before {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GLASSMORPHISM — full system
+   FLAT DARK SYSTEM — replaces glassmorphism
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* Dashboard card glass — responds to glass opacity slider */
+/* Dashboard card — flat dark */
 .card {
-  background: rgba(
-    20,
-    30,
-    50,
-    calc(var(--glass-opacity) * 4 + 0.38)
-  ) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate)) !important;
-  border: 1.5px solid rgba(96, 165, 250, calc(var(--glass-border) + 0.06)) !important;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, var(--glass-shadow)),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--glass-opacity) + 0.04)) !important;
+  background: #161b22 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
 }
 .card:hover {
-  background: rgba(
-    25,
-    38,
-    60,
-    calc(var(--glass-opacity) * 4 + 0.48)
-  ) !important;
-  border-color: rgba(96, 165, 250, calc(var(--glass-border) + 0.18)) !important;
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, calc(var(--glass-shadow) + 0.08)),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--glass-opacity) + 0.08)) !important;
+  background: #1c2230 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Auth card glass — minimal landing, subtle */
+/* Auth card — flat dark */
 .auth-card {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) + 0.04)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate)) !important;
-  border: 1px solid rgba(255, 255, 255, calc(var(--glass-border) + 0.05)) !important;
-  box-shadow:
-    0 24px 80px rgba(0, 0, 0, calc(var(--glass-shadow) * 0.6)),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  background: #161b22 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Lock card glass */
+/* Lock card — flat dark */
 .lock-card {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) + 0.02)) !important;
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur))
-    saturate(var(--glass-saturate)) !important;
-  border: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, var(--glass-shadow)) !important;
+  background: #161b22 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Card switcher bar */
+/* Card switcher bar — flat */
 .card-switcher-bar {
-  background: rgba(15, 23, 42, 0) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
+  background: #0d1117 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Card tabs — pill shape with full glass */
+/* Card tabs — flat underline style (no pill) */
 .card-tab {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) - 0.02)) !important;
-  border: 1px solid rgba(255, 255, 255, calc(var(--glass-border) - 0.04)) !important;
-  border-radius: 999px !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  padding: 0.42rem 1rem !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0.6rem 0.9rem !important;
+  border-bottom: 2px solid transparent !important;
 }
 .card-tab--active {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.3),
-    rgba(99, 102, 241, 0.24)
-  ) !important;
-  border-color: rgba(99, 102, 241, 0.5) !important;
-  box-shadow:
-    0 0 0 1px rgba(99, 102, 241, 0.25),
-    0 4px 20px rgba(59, 130, 246, 0.2) !important;
+  background: none !important;
+  border-bottom-color: #3b82f6 !important;
+  box-shadow: none !important;
 }
 
-/* Settings menu glass */
+/* Settings menu — flat dark */
 .settings-menu {
-  background: rgba(10, 13, 20, 0.85) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+  background: #161b22 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Bottom nav glass */
+/* Bottom nav — flat dark */
 .bottom-nav {
-  background: rgba(10, 13, 20, 0.8) !important;
-  backdrop-filter: blur(20px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-  border-top: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
+  background: #0d1117 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Sync status card glass */
+/* Sync status card */
 .sync-status-card {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) - 0.02)) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, var(--glass-border)) !important;
+  background: #1c2230 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Transaction mobile card glass */
+/* Transaction mobile card */
 .txn-mobile-card {
-  background: rgba(255, 255, 255, calc(var(--glass-opacity) - 0.01)) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, calc(var(--glass-border) - 0.04)) !important;
+  background: #1c2230 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-/* My wallet card glass */
+/* My wallet card — no extra blur */
 .my-card-widget {
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Glass decorative blobs in background for depth */
+/* Remove background blobs */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 60% 40% at 20% 20%,
-      rgba(59, 130, 246, 0.06) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 50% 40% at 80% 80%,
-      rgba(16, 185, 129, 0.05) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 40% 30% at 50% 50%,
-      rgba(139, 92, 246, 0.04) 0%,
-      transparent 60%
-    );
+  background: none;
   z-index: -1;
 }
 
@@ -5041,40 +4943,32 @@ body::after {
   border-color: rgba(59, 130, 246, 0.2);
 }
 
-/* ── Light mode glass — these are handled in the theme section above ── */
+/* ── Light mode — flat cards ── */
 [data-theme="light"] .card {
-  background: rgba(240, 245, 255, 0.85) !important;
-  backdrop-filter: blur(20px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   color: #334155 !important;
-  border: 1.5px solid rgba(59, 130, 246, 0.18) !important;
-  box-shadow:
-    0 4px 20px rgba(15, 23, 42, 0.08),
-    0 1px 4px rgba(59, 130, 246, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07) !important;
 }
 [data-theme="light"] .card:not(.my-card):hover {
-  background: rgba(235, 242, 255, 0.95) !important;
-  box-shadow:
-    0 8px 32px rgba(15, 23, 42, 0.12),
-    0 2px 8px rgba(59, 130, 246, 0.1) !important;
-  border-color: rgba(59, 130, 246, 0.32) !important;
+  background: #f9fafb !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 [data-theme="light"] .my-card {
-  background: linear-gradient(135deg, #1e40af, #2563eb 55%, #0ea5e9) !important;
-  border-color: rgba(37, 99, 235, 0.4) !important;
-  box-shadow:
-    0 12px 40px rgba(37, 99, 235, 0.35),
-    0 4px 16px rgba(14, 165, 233, 0.2) !important;
+  background: #1c2333 !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-top: 2px solid #3b82f6 !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 [data-theme="light"] .my-card:hover {
-  background: linear-gradient(135deg, #1e3a8a, #1d4ed8 55%, #0284c7) !important;
-  box-shadow:
-    0 18px 50px rgba(37, 99, 235, 0.5),
-    0 6px 20px rgba(14, 165, 233, 0.3) !important;
-  border-color: rgba(37, 99, 235, 0.6) !important;
+  background: #1e2840 !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
 }
 [data-theme="light"] .auth-card {
   background: #ffffff !important;
@@ -6909,69 +6803,63 @@ body::after {
 
 /* ── Glass Header Buttons ─────────────────────── */
 .hdr-income-btn {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border: 1.5px solid rgba(16, 185, 129, 0.32);
-  border-radius: 10px;
-  padding: 0.45rem 1rem;
-  font-size: 0.875rem;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s;
+  transition: background 0.15s;
   font-weight: 600;
 }
 .hdr-income-btn:hover {
-  background: rgba(16, 185, 129, 0.24);
-  border-color: rgba(16, 185, 129, 0.55);
-  color: #6ee7b7;
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #4ade80;
 }
 
 .hdr-expense-btn {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-  border: 1.5px solid rgba(239, 68, 68, 0.32);
-  border-radius: 10px;
-  padding: 0.45rem 1rem;
-  font-size: 0.875rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s;
+  transition: background 0.15s;
   font-weight: 600;
 }
 .hdr-expense-btn:hover {
-  background: rgba(239, 68, 68, 0.24);
-  border-color: rgba(239, 68, 68, 0.55);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
 }
 
 .hdr-cat-btn {
-  background: rgba(96, 165, 250, 0.1);
-  color: #93c5fd;
-  border: 1.5px solid rgba(96, 165, 250, 0.28);
-  border-radius: 10px;
-  padding: 0.45rem 1rem;
-  font-size: 0.875rem;
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s;
+  transition: background 0.15s;
   font-weight: 600;
 }
 .hdr-cat-btn:hover {
-  background: rgba(96, 165, 250, 0.2);
-  border-color: rgba(96, 165, 250, 0.5);
-  color: #bfdbfe;
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
 }
 
 /* ── Settings menu: limit height so it doesn't overlap Ask AI fab ── */
@@ -7067,4 +6955,139 @@ body::after {
   50% {
     box-shadow: 0 0 0 10px rgba(248, 113, 113, 0);
   }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   STAT CARD TOP BORDERS — fintech accent lines
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Income card — green top border */
+.dashboard-grid .card:has(.income-amount) {
+  border-top: 2px solid #22c55e !important;
+}
+
+/* Expense card — red top border */
+.dashboard-grid .card:has(.expense-amount) {
+  border-top: 2px solid #ef4444 !important;
+}
+
+/* Net balance card — blue top border */
+.dashboard-grid .card:has(.net-positive),
+.dashboard-grid .card:has(.net-negative) {
+  border-top: 2px solid #3b82f6 !important;
+}
+
+/* My card widget — already has border-top from .my-card */
+.dashboard-grid .my-card {
+  border-top: 2px solid #3b82f6 !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LOCK SCREEN INPUT CLEANUP
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.lock-card .pin-input,
+.lock-card input[type="password"],
+.lock-card input[type="text"] {
+  background: #0d1117 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  color: #f1f5f9 !important;
+  box-shadow: none !important;
+}
+
+.lock-card .pin-input:focus,
+.lock-card input:focus {
+  border-color: #3b82f6 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Auth popup inputs */
+.auth-popup input[type="email"],
+.auth-popup input[type="password"],
+.auth-popup input[type="text"] {
+  background: #0d1117 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  color: #f1f5f9 !important;
+  box-shadow: none !important;
+}
+
+.auth-popup input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETTINGS BTN CONSISTENCY
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.settings-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0.4rem 0.75rem !important;
+  font-size: 0.82rem !important;
+  box-shadow: none !important;
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Light theme overrides — keep light theme still working */
+[data-theme="light"] .card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .card:hover {
+  background: #f9fafb !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12) !important;
+}
+[data-theme="light"] .auth-screen,
+[data-theme="light"] .lock-screen {
+  background: #f1f5f9 !important;
+}
+[data-theme="light"] .auth-card,
+[data-theme="light"] .lock-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .card-switcher-bar,
+[data-theme="light"] .bottom-nav {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .header {
+  background: #ffffff !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .settings-menu {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] .card-tab {
+  background: none !important;
+  border: none !important;
+}
+[data-theme="light"] .card-tab--active {
+  border-bottom-color: #3b82f6 !important;
+}
+[data-theme="light"] #bnHome.bn-tab--active {
+  box-shadow: inset 0 3px 0 #3b82f6;
+}
+[data-theme="light"] #bnReport.bn-tab--active {
+  box-shadow: inset 0 3px 0 #8b5cf6;
+}
+[data-theme="light"] #bnCat.bn-tab--active {
+  box-shadow: inset 0 3px 0 #16a34a;
+}
+[data-theme="light"] #bnSettings.bn-tab--active {
+  box-shadow: inset 0 3px 0 #dc2626;
 }
