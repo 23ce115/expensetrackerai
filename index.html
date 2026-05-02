@@ -328,7 +328,7 @@
     <!-- ═══════════════════════════════════════════════════════
          APP LAYOUT — replaces old .header + .main-content
     ═══════════════════════════════════════════════════════ -->
-    <div class="app-layout" id="appLayout" style="display:none">
+    <div class="app-layout" id="appLayout">
 
       <!-- ── Sidebar ─────────────────────────────────────── -->
       <aside class="sidebar">
@@ -2193,41 +2193,18 @@
 
     <!-- INIT -->
     <script src="main.js"></script>
-  </body>
 
-    <!-- Premium UI bridge -->
+    <!-- Premium UI bridge (right-panel txn list + greeting) -->
     <script>
     (function() {
-      function revealAppLayout() {
-        var el = document.getElementById('appLayout');
-        if (el) el.style.display = 'flex';
-        try {
-          var u = window._currentUser || {};
-          var name = (u.user_metadata && u.user_metadata.full_name) || u.email || 'You';
-          var g = document.getElementById('topbarGreeting');
-          if (g) g.innerHTML = 'Hi, <strong>' + name.split(' ')[0] + '!</strong>';
-          var av = document.getElementById('topbarAvatar');
-          if (av) av.textContent = name[0].toUpperCase();
-        } catch(e) {}
-      }
-
-      var _t = setInterval(function() {
-        if (typeof window.showDashboard === 'function' && !window._appLayoutPatched) {
-          var orig = window.showDashboard;
-          window.showDashboard = function() {
-            orig.apply(this, arguments);
-            revealAppLayout();
-          };
-          window._appLayoutPatched = true;
-          clearInterval(_t);
-        }
-      }, 100);
-
       function updateRightPanelTxns() {
         var container = document.getElementById('rightPanelTxnList');
         if (!container) return;
         var txns = window.transactions || [];
-        if (!txns.length) return;
+        if (!txns.length) {
+          container.innerHTML = '<div style="text-align:center;padding:1.5rem;font-size:.8rem;color:var(--text-muted)"><i class="fas fa-receipt" style="display:block;font-size:1.5rem;margin-bottom:.5rem;opacity:.4"></i>No transactions yet</div>';
+          return;
+        }
         var recent = txns.slice(-8).reverse();
         container.innerHTML = recent.map(function(t) {
           var isIncome = t.type === 'income';
@@ -2249,17 +2226,26 @@
         }).join('');
       }
 
-      var _t2 = setInterval(function() {
-        if (typeof window.refreshAll === 'function' && !window._rightPanelPatched) {
+      // Patch refreshAll once it's available
+      var _t = setInterval(function() {
+        if (typeof window.refreshAll === 'function' && !window._blPanelPatched) {
           var origRefresh = window.refreshAll;
           window.refreshAll = function() {
             origRefresh.apply(this, arguments);
             setTimeout(updateRightPanelTxns, 60);
+            // Update greeting from userData
+            try {
+              var name = (window.userData && window.userData.name) || 'there';
+              var g = document.getElementById('topbarGreeting');
+              if (g) g.innerHTML = 'Hi, <strong>' + name.split(' ')[0] + '!</strong>';
+              var av = document.getElementById('topbarAvatar');
+              if (av) av.textContent = name[0].toUpperCase();
+            } catch(e) {}
           };
-          window._rightPanelPatched = true;
-          clearInterval(_t2);
+          window._blPanelPatched = true;
+          clearInterval(_t);
         }
-      }, 200);
+      }, 150);
 
       window.setActiveFilter = function(btn, type) {
         document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active'); });
@@ -2267,3 +2253,5 @@
       };
     })();
     </script>
+  </body>
+</html>
