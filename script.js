@@ -948,16 +948,16 @@ function resetAiCatBadge(type) {
    Opens a slide-up panel. Passes transaction
    summary to Claude and answers in plain English.
 ────────────────────────────────────────────── */
-// function openAskBl() {
-//   safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-//   safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
-//   setTimeout(() => safeGet("askBlInput")?.focus(), 300);
-// }
+function openAskBl() {
+  safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+  setTimeout(() => safeGet("askBlInput")?.focus(), 300);
+}
 
-// function closeAskBl() {
-//   safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-//   safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
-// }
+function closeAskBl() {
+  safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
+  safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+}
 
 // function _buildFinanceSummary() {
 //   // Build a compact but rich summary of the user's data to pass to the AI
@@ -8389,3 +8389,108 @@ function _clearAiSuggestion(type) {
     }
   });
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOPBAR SEARCH — syncs with existing onSearchInput / txnSearch
+   ═══════════════════════════════════════════════════════════════════ */
+
+function _syncTopbarSearch(val) {
+  /* Keep the hidden full-page txnSearch in sync so filter state is unified */
+  const txnEl = document.getElementById("txnSearch");
+  if (txnEl && txnEl.value !== val) txnEl.value = val;
+  /* Also sync the RTP panel search if open */
+  const rtpEl = document.getElementById("rtpSearch");
+  if (rtpEl && rtpEl.value !== val) rtpEl.value = val;
+  /* Refresh the recent-txn panel list if it's open */
+  if (
+    document.getElementById("rtpPanel")?.classList.contains("rtp-panel--open")
+  ) {
+    _renderRtpList();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RECENT TRANSACTIONS SLIDE PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+
+function _openRecentTxnPanel() {
+  const panel = document.getElementById("rtpPanel");
+  const overlay = document.getElementById("rtpOverlay");
+  if (!panel) return;
+  panel.classList.add("rtp-panel--open");
+  overlay?.classList.add("rtp-overlay--open");
+  _renderRtpList();
+  /* Focus the RTP search */
+  setTimeout(() => document.getElementById("rtpSearch")?.focus(), 280);
+}
+
+function _closeRecentTxnPanel() {
+  document.getElementById("rtpPanel")?.classList.remove("rtp-panel--open");
+  document.getElementById("rtpOverlay")?.classList.remove("rtp-overlay--open");
+}
+
+function _renderRtpList() {
+  const listEl = document.getElementById("rtpList");
+  if (!listEl) return;
+
+  /* Re-use existing data source: getAnalyticsTransactions() or transactions[] */
+  const allTxns = (
+    typeof getAnalyticsTransactions === "function"
+      ? getAnalyticsTransactions()
+      : window.transactions || []
+  )
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  /* Apply current searchQuery filter */
+  const q = (searchQuery || "").toLowerCase().trim();
+  const filtered = q
+    ? allTxns.filter(
+        (t) =>
+          (t.description || "").toLowerCase().includes(q) ||
+          (t.category || "").toLowerCase().includes(q) ||
+          String(Math.abs(t.amount || 0)).includes(q),
+      )
+    : allTxns.slice(0, 40); /* show last 40 when no search */
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="rtp-empty"><i class="fas fa-receipt"></i><span>${q ? 'No results for "' + q + '"' : "No transactions yet"}</span></div>`;
+    return;
+  }
+
+  const fmt = (n) => "₹" + Math.abs(n).toLocaleString("en-IN");
+  const isIncome = (t) => t.type === "income" || t.amount > 0;
+
+  listEl.innerHTML = filtered
+    .map((t) => {
+      const inc = isIncome(t);
+      const sign = inc ? "+" : "−";
+      const cls = inc ? "rtp-amt--inc" : "rtp-amt--exp";
+      const ico = inc ? "fa-arrow-up" : "fa-arrow-down";
+      const date = t.date
+        ? new Date(t.date + "T00:00:00").toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+          })
+        : "";
+      return `
+      <div class="rtp-row">
+        <div class="rtp-icon rtp-icon--${inc ? "inc" : "exp"}">
+          <i class="fas ${ico}"></i>
+        </div>
+        <div class="rtp-info">
+          <div class="rtp-desc">${t.description || t.category || "Transaction"}</div>
+          <div class="rtp-cat">${t.category || ""}${date ? " · " + date : ""}</div>
+        </div>
+        <div class="rtp-amt ${cls}">${sign}${fmt(t.amount)}</div>
+      </div>`;
+    })
+    .join("");
+}
+
+/* Expose to global so HTML onclick can reach it */
+window._openRecentTxnPanel = _openRecentTxnPanel;
+window._closeRecentTxnPanel = _closeRecentTxnPanel;
+window._syncTopbarSearch = _syncTopbarSearch;
+window.openAskBl = openAskBl;
+window.closeAskBl = closeAskBl;
