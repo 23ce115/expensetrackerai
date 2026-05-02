@@ -3570,8 +3570,10 @@ async function completeCardSetup() {
   if (addingNewCard) {
     // Adding an additional card to existing account
     syncActiveToCards();
+    const setPrimary = document.getElementById("cs-primary")?.checked ?? false;
     cards.push(newCardData);
-    activeCardIdx = cards.length - 1;
+    // If user wants this as primary, switch active to it; otherwise stay on current
+    activeCardIdx = setPrimary ? cards.length - 1 : activeCardIdx;
     loadActiveCard();
     addingNewCard = false;
     document.getElementById("cardSetupModal").style.display = "none";
@@ -4721,6 +4723,8 @@ function addNewCard() {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  const csPrimary = document.getElementById("cs-primary");
+  if (csPrimary) csPrimary.checked = cards.length === 0; // first card defaults to primary
 
   const modal = document.getElementById("cardSetupModal");
   if (!modal) return;
