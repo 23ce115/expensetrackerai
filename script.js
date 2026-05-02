@@ -71,6 +71,25 @@ window.addEventListener("load", () => {
 
 let cards = [];
 let activeCardIdx = 0;
+// Expose to card-stack-logic.js (let variables don't auto-attach to window)
+Object.defineProperty(window, "cards", {
+  get() {
+    return cards;
+  },
+  set(v) {
+    cards = v;
+  },
+  configurable: true,
+});
+Object.defineProperty(window, "activeCardIdx", {
+  get() {
+    return activeCardIdx;
+  },
+  set(v) {
+    activeCardIdx = v;
+  },
+  configurable: true,
+});
 let addingNewCard = false;
 
 let userData = null;
@@ -3572,7 +3591,12 @@ async function completeCardSetup() {
   }
 
   // Already logged in but no card yet (opened from the "My Card" empty state)
-  if (!_pendingCardSetup && sessionPin) {
+  // _pendingCardSetup is null in this case; fall back to live sessionPin + syncConfig
+  if (!_pendingCardSetup) {
+    if (!sessionPin) {
+      notify("Session expired. Please log in again.", "error");
+      return;
+    }
     cards = [newCardData];
     activeCardIdx = 0;
     loadActiveCard();
@@ -3587,7 +3611,7 @@ async function completeCardSetup() {
     return;
   }
 
-  // First-time card setup after signup
+  // First-time card setup after signup (_pendingCardSetup is present)
   sessionPin = password;
   localStorage.setItem(AUTH_MODE_KEY, "password");
 
