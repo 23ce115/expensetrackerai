@@ -27,6 +27,8 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="premium-override.css" />
+    
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -354,17 +356,19 @@
           <img src="BlueLedger Icon.png" alt="BL" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=sb-letter>BL</span>'" />
         </div>
         <nav class="sidebar-nav">
+          <!-- GROUP 1: Navigation -->
           <button class="sb-btn active" id="sbHome" onclick="bnSwitch('home')" title="Dashboard">
             <i class="fas fa-home"></i>
           </button>
-          <!-- Income / Expense: call existing modal functions -->
+          <!-- GROUP 2: Transactions -->
           <button class="sb-btn sb-income" onclick="openModal('incomeModal')" title="Add Income">
             <i class="fas fa-plus"></i>
           </button>
           <button class="sb-btn sb-expense" onclick="openModal('expenseModal')" title="Add Expense">
             <i class="fas fa-minus"></i>
           </button>
-          <!-- Transactions: list icon now shows Recent Transactions panel -->
+          <div style="width:28px;height:1px;background:rgba(255,255,255,0.07);margin:6px auto;"></div>
+          <!-- GROUP 3: Analytics -->
           <button class="sb-btn" onclick="_openRecentTxnPanel()" title="Recent Transactions">
             <i class="fas fa-list-ul"></i>
           </button>
@@ -520,7 +524,14 @@
                     <span><span class="leg-dot" style="background:#f97316"></span>Expense</span>
                   </div>
                 </div>
-                <div id="chartContainer"></div>
+                <div id="chartContainer">
+                <div id="chartEmptyPlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.7rem;padding:2.5rem 1rem;width:100%;opacity:1;transition:opacity 0.3s;">
+                  <div style="width:44px;height:44px;border-radius:13px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:rgba(129,140,248,0.35);">
+                    <i class="fas fa-chart-area"></i>
+                  </div>
+                  <p style="font-size:0.82rem;font-weight:500;color:var(--t3);margin:0;">Add transactions to see your overview</p>
+                </div>
+              </div>
                 <div id="chartLabels" style="display:none"></div>
               </div>
 
@@ -2189,6 +2200,21 @@
       <i class="fas fa-comment-dots"></i>
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
+
+    <!-- Chart empty-state hide when chart renders -->
+    <script>
+    (function() {
+      var _obs = setInterval(function() {
+        var c = document.getElementById('chartContainer');
+        var p = document.getElementById('chartEmptyPlaceholder');
+        if (!c || !p) return;
+        if (c.querySelector('canvas')) {
+          p.style.display = 'none';
+          clearInterval(_obs);
+        }
+      }, 300);
+    })();
+    </script>
 
     <!-- Chart.js CDN is already loaded in <head> — do NOT load it again -->
     <script src="utils.js"></script>
