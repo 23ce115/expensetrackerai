@@ -4792,7 +4792,7 @@ body::before {
    SIDEBAR — intentional navigation system
    ═══════════════════════════════════════════════════════════════ */
 .sidebar {
-  width: 72px;
+  width: 72px !important;
   padding: 20px 0 20px;
   background: rgba(7, 8, 16, 0.92);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
@@ -4897,8 +4897,10 @@ body::before {
    TOPBAR — single clean horizontal bar
    ═══════════════════════════════════════════════════════════════ */
 .topbar {
-  height: 64px;
-  padding: 0 var(--space-lg);
+  height: 64px !important;
+  padding: 0 var(--space-lg) !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
   background: rgba(7, 8, 16, 0.75);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(24px);
@@ -4940,7 +4942,7 @@ body::before {
 
 /* CENTER: search bar — dominant, pill-shaped */
 .topbar-search {
-  width: 380px;
+  width: 380px !important;
   max-width: 100%;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
