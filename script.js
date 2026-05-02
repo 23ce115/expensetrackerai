@@ -2183,7 +2183,9 @@ function getVaultPayload() {
 }
 
 function applyVaultPayload(payload) {
-  cards = Array.isArray(payload?.cards) ? payload.cards : [];
+  const raw = Array.isArray(payload?.cards) ? payload.cards : [];
+  // Filter out any stale/partial card entries that never completed setup
+  cards = raw.filter((c) => c && c.userData && c.userData.cardNumber);
   activeCardIdx = Math.max(
     0,
     Math.min(payload?.activeCardIdx || 0, Math.max(cards.length - 1, 0)),
@@ -4683,26 +4685,34 @@ function switchCard(idx) {
 }
 
 function addNewCard() {
+  // Strip stale/partial entries that lack card data
+  cards = cards.filter((c) => c && c.userData && c.userData.cardNumber);
+
   if (cards.length >= 4) {
     notify("Maximum 4 cards supported", "error");
     return;
   }
-  if (cards.length === 0 || !userData) {
-    notify("Complete your profile setup first", "error");
-    return;
-  }
-  // Reuse card setup modal for adding additional cards
-  addingNewCard = true;
+
   ["cs-nickname", "cs-bank", "cs-card4", "cs-limit"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+
   const modal = document.getElementById("cardSetupModal");
-  if (modal) {
+  if (!modal) return;
+
+  if (cards.length === 0) {
+    // First card from empty state — completeCardSetup uses the sessionPin path
+    addingNewCard = false;
+    modal.querySelector(".modal-title").innerHTML =
+      '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Set Up Your First Card';
+  } else {
+    addingNewCard = true;
     modal.querySelector(".modal-title").innerHTML =
       '<i class="fas fa-credit-card" style="color:#10b981;margin-right:.5rem"></i>Add New Card';
-    modal.style.display = "flex";
   }
+
+  modal.style.display = "flex";
 }
 
 let deleteCardTargetIdx = null;
