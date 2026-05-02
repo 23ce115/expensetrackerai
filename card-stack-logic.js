@@ -1,66 +1,46 @@
 /* ══════════════════════════════════════════════════════════════════════
    PREMIUM CARD STACK v2  — card-stack-logic.js
-   Add this block to the bottom of script.js  (or include as a separate
-   <script src="card-stack-logic.js"></script> AFTER script.js)
-
-   Requires:
-     - window.cards            (array, defined in script.js)
-     - window.activeCardIdx    (number, defined in script.js)
-     - window.CARD_ACCENT_COLORS (array, defined in script.js)
-     - window.switchCard(idx)  (function, defined in script.js)
-     - window.fmt(n)           (currency formatter, defined in script.js)
+   Include AFTER script.js:
+     <script src="card-stack-logic.js"></script>
    ══════════════════════════════════════════════════════════════════════ */
 
 (function () {
   "use strict";
 
-  /* ── State ────────────────────────────────────────────────────────── */
-  let hoverCardIndex = null; // temporary; never persists
+  let hoverCardIndex = null;
 
-  /* ── Helpers ──────────────────────────────────────────────────────── */
-  function getContainer() {
-    return document.getElementById("cardStackContainer");
-  }
-  function getDotsEl() {
-    return document.getElementById("cardStackDots");
-  }
+  const getContainer = () => document.getElementById("cardStackContainer");
+  const getDotsEl = () => document.getElementById("cardStackDots");
 
-  /**
-   * Build a card's inner HTML.
-   * Shows full data only when it's rank-0 (the visible top card);
-   * lower ranks show a lighter skeleton for depth illusion.
-   */
-  function buildCardInnerHTML(card, cardIdx, isTopVisible) {
+  const fmtMoney = (n) =>
+    typeof window.fmt === "function"
+      ? window.fmt(n)
+      : "₹" + (+n || 0).toLocaleString("en-IN");
+
+  /* ─── Inner HTML for one card ───────────────────────────────────── */
+  function cardHTML(card, cardIdx, isTop) {
     const ud = card?.userData || {};
-    const accent = CARD_ACCENT_COLORS[cardIdx % CARD_ACCENT_COLORS.length];
-    const nick = ud.nickname?.trim() || ud.name?.split(" ")[0] || "Card";
-    const num = ud.cardNumber || "•••• •••• •••• ••••";
-    const holder = ud.name?.toUpperCase() || "YOUR NAME";
-    const bank = ud.bank?.toUpperCase() || "";
+    const nick = ud.nickname?.trim() || ud.bank?.trim() || "Card";
+    const num = ud.cardNumber
+      ? `\u2022\u2022\u2022\u2022 ${String(ud.cardNumber).slice(-4)}`
+      : "\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022";
+    const holder = (ud.name || "YOUR NAME").toUpperCase();
+    const bank = (ud.bank || "").toUpperCase();
     const limit = ud.spendingLimit || 0;
-
-    // Spending progress
     const spent = (card.transactions || [])
       .filter((t) => t.type === "expense")
       .reduce((s, t) => s + Math.abs(t.amount || 0), 0);
     const pct = limit > 0 ? Math.min((spent / limit) * 100, 100).toFixed(1) : 0;
-    const fmtFn =
-      typeof window.fmt === "function"
-        ? window.fmt
-        : (n) => "₹" + (+n || 0).toLocaleString("en-IN");
 
-    // Only surface spending details on the top-visible card
-    const spendHTML = isTopVisible
+    const spending = isTop
       ? `
       <div class="ci-spending">
         <div class="ci-spend-row">
           <span class="ci-spend-label">Spending Limit</span>
-          <span class="ci-spend-limit">${fmtFn(limit)}</span>
+          <span class="ci-spend-limit">${fmtMoney(limit)}</span>
         </div>
-        <div class="ci-spend-used">Used: ${fmtFn(spent)}</div>
-        <div class="ci-progress">
-          <div class="ci-progress-fill" style="width:${pct}%"></div>
-        </div>
+        <div class="ci-spend-used">Used: ${fmtMoney(spent)}</div>
+        <div class="ci-progress"><div class="ci-progress-fill" style="width:${pct}%"></div></div>
       </div>`
       : "";
 
@@ -72,21 +52,30 @@
       <div class="ci-number">${num}</div>
       <div class="ci-holder">${holder}</div>
       ${bank ? `<div class="ci-bank">${bank}</div>` : ""}
-      ${spendHTML}
-      <span class="ci-active-badge">Active</span>
+      ${spending}
+      ${isTop ? `<span class="ci-active-badge">Active</span>` : ""}
     `;
   }
 
-  /* ── Core render ──────────────────────────────────────────────────── */
+  /* ─── Core render ───────────────────────────────────────────────── */
   function renderCardStack() {
     const container = getContainer();
     const dotsEl = getDotsEl();
     if (!container) return;
 
     const cardList = window.cards || [];
+    const activeIdx = window.activeCardIdx != null ? window.activeCardIdx : 0;
+    const accents = window.CARD_ACCENT_COLORS || [
+      "#10b981",
+      "#3b82f6",
+      "#f59e0b",
+      "#ec4899",
+    ];
+
+    /* Empty state */
     if (!cardList.length) {
       container.innerHTML = `
-        <div class="csv2-empty-state" onclick="if(typeof addNewCard==='function') addNewCard()">
+        <div class="csv2-empty-state" onclick="typeof addNewCard==='function'&&addNewCard()">
           <div class="csv2-empty-icon"><i class="fas fa-credit-card"></i></div>
           <div class="csv2-empty-title">No card added yet</div>
           <div class="csv2-empty-sub">Tap to add your first card</div>
@@ -96,58 +85,46 @@
       return;
     }
 
-    // Which card is visually on top right now?
-    const topIdx =
-      hoverCardIndex !== null ? hoverCardIndex : window.activeCardIdx;
+    /* Order: top card first */
+    const topIdx = hoverCardIndex !== null ? hoverCardIndex : activeIdx;
+    const order = [
+      topIdx,
+      ...cardList.map((_, i) => i).filter((i) => i !== topIdx),
+    ];
 
-    // Build display order: topIdx first, then the rest in their natural order
-    // (active card is rank-0 when not hovering)
-    const order = buildDisplayOrder(cardList.length, topIdx);
+    /* Node cache (keeps event listeners alive across re-renders) */
+    if (!container._cardNodes) container._cardNodes = {};
+    const cache = container._cardNodes;
 
-    /* ── Render cards ───────────────────────────────────────────────── */
-    // Reuse existing DOM nodes if possible (avoids layout flash)
-    const existingItems = Array.from(container.querySelectorAll(".card-item"));
-    const existingMap = {};
-    existingItems.forEach((el) => {
-      existingMap[el.dataset.cardIndex] = el;
+    /* Prune cache for deleted cards */
+    Object.keys(cache).forEach((k) => {
+      if (+k >= cardList.length) delete cache[k];
     });
 
-    // Remove placeholder
-    const placeholder = container.querySelector(".csv2-placeholder");
-    if (placeholder) placeholder.remove();
+    /* Detach all children cleanly */
+    while (container.firstChild) container.removeChild(container.firstChild);
 
-    // Track which card elements we want to keep
-    const wanted = new Set(cardList.map((_, i) => String(i)));
-
-    // Remove stale elements
-    existingItems.forEach((el) => {
-      if (!wanted.has(el.dataset.cardIndex)) el.remove();
-    });
-
-    order.forEach((cardIdx, rankFromTop) => {
+    /* Append bottom→top (last appended = painted on top) */
+    [...order].reverse().forEach((cardIdx, reversedRank) => {
+      const rankFromTop = order.length - 1 - reversedRank;
       const card = cardList[cardIdx];
       const isTop = rankFromTop === 0;
-      const isActive = cardIdx === window.activeCardIdx;
+      const isActive = cardIdx === activeIdx;
       const isHovered = cardIdx === hoverCardIndex;
-      const totalRank = Math.min(rankFromTop, 3); // cap at rank-3
+      const rank = Math.min(rankFromTop, 3);
 
-      let el = existingMap[cardIdx];
+      let el = cache[cardIdx];
       if (!el) {
         el = document.createElement("div");
-        el.className = "card-item";
-        el.dataset.cardIndex = cardIdx;
-        container.appendChild(el);
+        el.dataset.cardIndex = String(cardIdx);
 
-        // ── Event: hover enter ──
         el.addEventListener("mouseenter", () => {
           hoverCardIndex = cardIdx;
           container.classList.add("hovering");
           renderCardStack();
         });
 
-        // ── Event: click ──
         el.addEventListener("click", (e) => {
-          // Ripple effect
           const rect = el.getBoundingClientRect();
           const ripple = document.createElement("span");
           ripple.className = "ci-ripple";
@@ -156,69 +133,52 @@
           el.appendChild(ripple);
           setTimeout(() => ripple.remove(), 600);
 
-          // Switch active card
           if (cardIdx !== window.activeCardIdx) {
-            if (typeof window.switchCard === "function") {
+            if (typeof window.switchCard === "function")
               window.switchCard(cardIdx);
-            }
             hoverCardIndex = null;
             container.classList.remove("hovering");
           }
         });
+
+        cache[cardIdx] = el;
       }
 
-      // ── Update classes ──────────────────────────────────────────── //
-      el.className = `card-item rank-${totalRank}`;
+      el.className = `card-item rank-${rank}`;
       if (isTop) el.classList.add("is-top");
       if (isActive) el.classList.add("is-active");
       if (isHovered) el.classList.add("is-hovered");
 
-      // ── z-index: higher rank from top = higher z ─────────────────── //
-      const zBase = cardList.length;
-      el.style.zIndex = zBase - rankFromTop;
+      el.dataset.theme = String(cardIdx % accents.length);
+      el.style.zIndex = isTop ? "10" : String(10 - rankFromTop);
+      const ops = [1, 0.82, 0.62, 0.44];
+      el.style.setProperty("--base-opacity", String(ops[rank] ?? 0.44));
 
-      // ── Accent / theme attr ───────────────────────────────────────── //
-      el.dataset.theme = String(cardIdx % CARD_ACCENT_COLORS.length);
-
-      // Expose base opacity as CSS var for sibling fade calculation
-      const baseOpacities = [1, 0.82, 0.62, 0.44];
-      el.style.setProperty("--base-opacity", baseOpacities[totalRank] || 0.44);
-
-      // ── Inner HTML (only rebuild if stale) ───────────────────────── //
-      const wantFull = isTop;
-      const hasFull = el.dataset.hasFull === "1";
-      const themeMatch = el.dataset.lastTheme === el.dataset.theme;
-      if (!themeMatch || wantFull !== hasFull) {
-        el.innerHTML = buildCardInnerHTML(card, cardIdx, wantFull);
-        el.dataset.hasFull = wantFull ? "1" : "0";
-        el.dataset.lastTheme = el.dataset.theme;
-      }
-
-      // Always refresh spending bar on top card (data may have changed)
-      if (isTop) {
-        const fill = el.querySelector(".ci-progress-fill");
-        const ud = card?.userData || {};
-        const limit = ud.spendingLimit || 0;
-        const spent = (card.transactions || [])
-          .filter((t) => t.type === "expense")
-          .reduce((s, t) => s + Math.abs(t.amount || 0), 0);
-        const pct =
-          limit > 0 ? Math.min((spent / limit) * 100, 100).toFixed(1) : 0;
-        if (fill) fill.style.width = pct + "%";
-      }
+      el.innerHTML = cardHTML(card, cardIdx, isTop);
+      container.appendChild(el);
     });
 
-    /* ── Dot indicators ─────────────────────────────────────────────── */
+    /* Bind container mouseleave once */
+    if (!container._leaveBound) {
+      container._leaveBound = true;
+      container.addEventListener("mouseleave", () => {
+        hoverCardIndex = null;
+        container.classList.remove("hovering");
+        renderCardStack();
+      });
+    }
+
+    /* Dots */
     if (dotsEl) {
       dotsEl.innerHTML = cardList
-        .map((_, i) => {
-          const active = i === window.activeCardIdx ? "is-active" : "";
-          return `<div class="cs-dot ${active}" data-dot-idx="${i}"></div>`;
-        })
+        .map(
+          (_, i) =>
+            `<div class="cs-dot${i === activeIdx ? " is-active" : ""}" data-dot-idx="${i}"></div>`,
+        )
         .join("");
       dotsEl.querySelectorAll(".cs-dot").forEach((dot) => {
         dot.addEventListener("click", () => {
-          const idx = parseInt(dot.dataset.dotIdx, 10);
+          const idx = +dot.dataset.dotIdx;
           if (
             idx !== window.activeCardIdx &&
             typeof window.switchCard === "function"
@@ -230,82 +190,39 @@
     }
   }
 
-  /* ── Container mouse-leave → reset hover ────────────────────────── */
-  function bindContainerLeave() {
-    const container = getContainer();
-    if (!container || container._stackLeafBound) return;
-    container._stackLeafBound = true;
+  /* ─── Public ────────────────────────────────────────────────────── */
+  window.renderCardStack = renderCardStack;
 
-    container.addEventListener("mouseleave", () => {
-      hoverCardIndex = null;
-      container.classList.remove("hovering");
-      renderCardStack();
-    });
-  }
-
-  /* ── Build display order array ──────────────────────────────────── */
-  // Returns indices ordered from visually TOP to BOTTOM.
-  // The topIdx card is first. The rest follow in original order.
-  function buildDisplayOrder(count, topIdx) {
-    if (count === 0) return [];
-    const order = [topIdx];
-    for (let i = 0; i < count; i++) {
-      if (i !== topIdx) order.push(i);
+  /* ─── Patch existing functions after DOM ready ──────────────────── */
+  function patchFunctions() {
+    const _w = window.updateMyCardWidget;
+    if (typeof _w === "function") {
+      window.updateMyCardWidget = function () {
+        _w.apply(this, arguments);
+        renderCardStack();
+      };
     }
-    return order;
+    const _rs = window.renderCardSwitcher;
+    if (typeof _rs === "function") {
+      window.renderCardSwitcher = function () {
+        _rs.apply(this, arguments);
+        renderCardStack();
+      };
+    }
+    const _sc = window.switchCard;
+    if (typeof _sc === "function") {
+      window.switchCard = function (idx) {
+        hoverCardIndex = null;
+        _sc.apply(this, arguments);
+      };
+    }
+    renderCardStack();
   }
 
-  /* ── Public API ─────────────────────────────────────────────────── */
-  // Exposed so script.js can call it wherever it currently calls
-  // renderCardSwitcher() or updateMyCardWidget() — just add a call
-  // to window.renderCardStack() alongside those.
-  window.renderCardStack = function () {
-    bindContainerLeave();
-    renderCardStack();
-  };
-
-  /* ── Also refresh spending data displayed on the top card ───────── */
-  // Patch the existing updateMyCardWidget to also refresh the stack
-  (function patchUpdateMyCardWidget() {
-    const _orig = window.updateMyCardWidget;
-    if (typeof _orig !== "function") return;
-    window.updateMyCardWidget = function () {
-      _orig.apply(this, arguments);
-      window.renderCardStack();
-    };
-  })();
-
-  /* ── Patch switchCard to update dots + re-render ────────────────── */
-  (function patchSwitchCard() {
-    const _orig = window.switchCard;
-    if (typeof _orig !== "function") return;
-    window.switchCard = function (idx) {
-      hoverCardIndex = null; // always clear hover on explicit switch
-      _orig.apply(this, arguments);
-      // renderCardStack is called via the patched updateMyCardWidget
-    };
-  })();
-
-  /* ── Patch renderCardSwitcher to co-render the stack ────────────── */
-  (function patchRenderCardSwitcher() {
-    const _orig = window.renderCardSwitcher;
-    if (typeof _orig !== "function") return;
-    window.renderCardSwitcher = function () {
-      _orig.apply(this, arguments);
-      bindContainerLeave();
-      renderCardStack();
-    };
-  })();
-
-  /* ── Initial render (fires after DOM is ready) ───────────────────── */
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      bindContainerLeave();
-      renderCardStack();
-    });
+    document.addEventListener("DOMContentLoaded", patchFunctions);
   } else {
-    // DOM already ready
-    bindContainerLeave();
-    renderCardStack();
+    // script.js runs synchronously before this file, so functions are ready
+    patchFunctions();
   }
 })();
