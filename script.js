@@ -34,7 +34,7 @@ const SYNC_POLL_MS = 30 * 1000;
 //   if (el) el.classList.remove(className);
 // }
 
-// function safeToggleClass(el, className, condition) {
+// function safeToggleClass(el, className, condition q    ) {
 //   if (el) el.classList.toggle(className, condition);
 // }
 
