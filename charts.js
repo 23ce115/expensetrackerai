@@ -22,7 +22,7 @@ let _overviewChart = null;
 let _categoryChart = null;
 let _currentOverviewPeriod = "monthly";
 
-const INCOME_COLOR = "#10b981";
+const INCOME_COLOR = "#00e08c";
 const EXPENSE_COLOR = "#f97316";
 
 /* ══════════════════════════════════════════════════════════════
@@ -86,8 +86,8 @@ function _buildOverviewChart(canvas) {
 
   const isDark =
     document.documentElement.getAttribute("data-theme") !== "light";
-  const gridCol = isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)";
-  const tickCol = isDark ? "#64748b" : "#94a3b8";
+  const gridCol = isDark ? "rgba(0,224,140,0.06)" : "rgba(0,80,50,0.07)";
+  const tickCol = isDark ? "#4d7a65" : "#5a9e82";
 
   const labels = data.map((d) => d.label || "");
   const incomes = data.map((d) => d.income || 0);
@@ -106,8 +106,9 @@ function _buildOverviewChart(canvas) {
           pointBackgroundColor: INCOME_COLOR,
           pointBorderColor: INCOME_COLOR,
           borderWidth: 2.5,
-          fill: false,
-          tension: 0.3,
+          fill: true,
+          backgroundColor: "rgba(0,224,140,0.05)",
+          tension: 0.4,
         },
         {
           label: "Expense",
@@ -133,8 +134,8 @@ function _buildOverviewChart(canvas) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)",
+          backgroundColor: "rgba(4,20,14,0.96)",
+          borderColor: "rgba(0,224,140,0.15)",
           borderWidth: 1,
           titleColor: "#e2e8f0",
           bodyColor: "#94a3b8",
@@ -340,8 +341,8 @@ function updateCategoryChart(catsData) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(15,23,42,0.92)",
-          borderColor: "rgba(148,163,184,0.15)",
+          backgroundColor: "rgba(4,20,14,0.96)",
+          borderColor: "rgba(0,224,140,0.15)",
           borderWidth: 1,
           titleColor: "#e2e8f0",
           bodyColor: "#94a3b8",
