@@ -590,34 +590,29 @@
             <div class="db-right">
 
               <!-- My Card -->
-              <div class="db-panel db-card-panel">
-                <div class="db-panel-hdr">
-                  <span class="db-panel-title">My Card</span>
-                  <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-                <!-- Card stack -->
-                <div class="card-stack">
-                  <div class="cs-back cs-back-2"></div>
-                  <div class="cs-back cs-back-1"></div>
-                  <div class="cs-main my-card">
-                    <div class="csm-top">
-                      <span class="csm-nick" id="cardNicknameDisplay">Primary</span>
-                      <div class="csm-chip"></div>
-                    </div>
-                    <div class="card-number" id="cardNumberDisplay">•••• •••• •••• ••••</div>
-                    <div class="card-holder-name" id="cardHolderDisplay">YOUR NAME</div>
-                    <button class="my-card-dots" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
-                    <div class="spending-section">
-                      <div class="csm-spend-row">
-                        <span class="spending-label">Spending Limit</span>
-                        <span class="spending-limit-val" id="spendLimitVal">₹0</span>
-                      </div>
-                      <div class="spending-used-val" id="spendUsedVal">Used: ₹0</div>
-                      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <!-- My Card -->
+<div class="db-panel db-card-panel">
+  <div class="db-panel-hdr">
+    <span class="db-panel-title">My Card</span>
+    <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
+  </div>
+
+  <!--
+    Premium interactive card stack.
+    JS renders .card-item elements into this container.
+    mouseleave on the CONTAINER resets hover state.
+  -->
+  <div class="card-stack-v2" id="cardStackContainer">
+    <!-- Cards injected by renderCardStack() in script.js -->
+    <!-- Fallback placeholder shown until JS runs -->
+    <div class="csv2-placeholder">
+      <div class="csv2-shimmer"></div>
+    </div>
+  </div>
+
+  <!-- Dot-indicator pagination (rendered by JS) -->
+  <div class="card-stack-dots" id="cardStackDots"></div>
+</div>
 
               <!-- Recent Transactions mini list -->
               <div class="db-panel">
@@ -2155,6 +2150,7 @@
     <script src="ai.js"></script>
     <script src="voice.js"></script>
     <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
+    <script src="card-stack-logic.js"></script>
 
     <!-- CORE APP -->
     <script src="script.js"></script>
