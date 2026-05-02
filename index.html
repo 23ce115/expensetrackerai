@@ -325,418 +325,375 @@
       <div class="modal-content onboarding-content" style="display:none"></div>
     </div>
 
-</div>
+    <!-- ═══════════════════════════════════════════════════════
+         APP LAYOUT — replaces old .header + .main-content
+    ═══════════════════════════════════════════════════════ -->
+    <div class="app-layout" id="appLayout" style="display:none">
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HEADER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <div class="header">
-      <div class="logo-container">
-        <img src="BlueLedger Icon.png" alt="BlueLedger" class="header-icon" />
-        <span class="header-brand"
-          >Blue<span class="header-brand-accent">Ledger</span></span
-        >
-      </div>
-      <div class="header-controls">
-        <!-- DESKTOP ONLY: date + lock + theme + income + expense -->
-        <span id="headerDate" style="display:none"></span>
-        <button class="report-btn desktop-only" onclick="openMonthlySummary()">
-          <i class="fas fa-chart-pie"></i> Report
-        </button>
-        <button
-          class="hdr-income-btn desktop-only"
-          onclick="openModal('incomeModal')"
-        >
-          <i class="fas fa-plus"></i> Income
-        </button>
-        <button
-          class="hdr-expense-btn desktop-only"
-          onclick="openModal('expenseModal')"
-        >
-          <i class="fas fa-minus"></i> Expense
-        </button>
-        <button
-          class="hdr-cat-btn desktop-only"
-          onclick="openCategoryManager()"
-          title="Manage Categories"
-        >
-          <i class="fas fa-tags"></i> Categories
-        </button>
-        <!-- <button class="lock-btn desktop-only" onclick="lockApp()">
-          <i class="fas fa-lock"></i>
-        </button> -->
-        <!-- <button
-          class="theme-btn desktop-only"
-          onclick="toggleTheme()"
-          id="themeBtn"
-        >
-          <i class="fas fa-moon" id="themeIcon"></i>
-        </button> -->
+      <!-- ── Sidebar ─────────────────────────────────────── -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="BlueLedger Icon.png" alt="BL" onerror="this.parentElement.innerHTML='<span class=sb-letter>BL</span>'" />
+        </div>
+        <nav class="sidebar-nav">
+          <button class="sb-btn active" id="bnHome" onclick="bnSwitch('home')" title="Dashboard"><i class="fas fa-home"></i></button>
+          <button class="sb-btn" onclick="openTxnFullPage()" title="Transactions"><i class="fas fa-list-ul"></i></button>
+          <button class="sb-btn" id="bnReport" onclick="bnSwitch('report')" title="Reports"><i class="fas fa-chart-pie"></i></button>
+          <button class="sb-btn" id="bnCat" onclick="bnSwitch('cat')" title="Categories"><i class="fas fa-tags"></i></button>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="sb-btn" onclick="openAskBl()" title="Ask AI"><i class="fas fa-comment-dots"></i></button>
+          <button class="sb-btn" id="bnSettings" onclick="bnSwitch('settings')" title="Settings"><i class="fas fa-cog"></i></button>
+        </div>
+      </aside>
 
-        <!-- Settings gear — desktop only -->
-        <div class="settings-dropdown" id="settingsDropdown">
-          <button
-            class="settings-btn"
-            onclick="toggleSettingsMenu()"
-            title="Settings"
-          >
-            <i class="fas fa-cog"></i>
-          </button>
-          <div class="settings-menu" id="settingsMenu">
+      <!-- ── Main area ───────────────────────────────────── -->
+      <div class="main-area">
 
-            <!-- Header row with title + close -->
-            <div class="settings-menu-header">
-              <span>Settings</span>
-              <button onclick="closeSettingsMenu()" class="settings-close-btn" title="Close">
-                <i class="fas fa-times"></i>
+        <!-- Top bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <div class="topbar-greeting">
+              <strong id="topbarGreeting">My Dashboard</strong>
+            </div>
+            <!-- Card switcher preserved -->
+            <div id="cardSwitcher" class="card-switcher"></div>
+          </div>
+
+          <div class="topbar-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search payment…" id="topbarSearchInput" readonly onfocus="document.getElementById('txnSearch')?.focus()" />
+          </div>
+
+          <div class="topbar-right">
+            <button class="topbar-pill income desktop-only" onclick="openModal('incomeModal')">
+              <i class="fas fa-plus"></i><span> Income</span>
+            </button>
+            <button class="topbar-pill expense desktop-only" onclick="openModal('expenseModal')">
+              <i class="fas fa-minus"></i><span> Expense</span>
+            </button>
+            <button class="report-btn desktop-only" onclick="openMonthlySummary()">
+              <i class="fas fa-chart-pie"></i> Report
+            </button>
+            <button class="topbar-icon-btn desktop-only" onclick="openCategoryManager()" title="Categories">
+              <i class="fas fa-tags"></i>
+            </button>
+
+            <!-- Settings -->
+            <div class="settings-dropdown" id="settingsDropdown">
+              <button class="topbar-icon-btn" onclick="toggleSettingsMenu()" title="Settings">
+                <i class="fas fa-cog"></i>
               </button>
-            </div>
-
-            <!-- Sync status row -->
-            <div class="settings-sync-row" id="settingsSyncRow" onclick="closeSettingsMenu();openSyncModal()">
-              <span class="sync-live-dot" id="settingsSyncDot" style="background:#475569"></span>
-              <span id="settingsSyncLabel" style="font-size:.78rem;color:#64748b">Not synced</span>
-              <i class="fas fa-chevron-right" style="font-size:.65rem;color:#475569;margin-left:auto"></i>
-            </div>
-
-            <div class="settings-menu-divider" style="margin:.25rem 0"></div>
-
-            <div class="settings-menu-item" onclick="closeSettingsMenu();lockApp()">
-              <i class="fas fa-lock"></i> Lock App
-            </div>
-            <div class="settings-menu-item" id="settingsBiometricRow" onclick="closeSettingsMenu();openBiometricSetup()" style="display:none">
-              <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
-              <span id="settingsBiometricLabel">Set Up Face ID / Fingerprint</span>
-            </div>
-            <div class="settings-menu-item" onclick="closeSettingsMenu();toggleTheme()">
-              <i class="fas fa-moon" id="themeIcon"></i> Dark / Light Mode
-            </div>
-
-            <!-- Transparency toggle item -->
-            <div class="settings-menu-item" onclick="toggleGlassSlider()">
-              <i class="fas fa-droplet"></i> Glass Transparency
-              <i class="fas fa-chevron-down" id="glassChevron" style="font-size:.65rem;margin-left:auto;transition:transform .2s"></i>
-            </div>
-            <!-- Slider — hidden by default -->
-            <div id="glassSliderPanel" style="display:none;padding:.25rem .75rem .6rem">
-              <div class="glass-slider-wrap">
-                <i class="fas fa-circle" style="font-size:.5rem;color:#64748b"></i>
-                <input type="range" min="0" max="100" value="50" id="glassSlider"
-                  oninput="setGlassOpacity(this.value)" style="flex:1" />
-                <i class="fas fa-circle" style="font-size:.9rem;color:#e2e8f0"></i>
+              <div class="settings-menu" id="settingsMenu">
+                <div class="settings-menu-header">
+                  <span>Settings</span>
+                  <button onclick="closeSettingsMenu()" class="settings-close-btn" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="settings-sync-row" id="settingsSyncRow" onclick="closeSettingsMenu();openSyncModal()">
+                  <span class="sync-live-dot" id="settingsSyncDot" style="background:#475569"></span>
+                  <span id="settingsSyncLabel" style="font-size:.78rem;color:#64748b">Not synced</span>
+                  <i class="fas fa-chevron-right" style="font-size:.65rem;color:#475569;margin-left:auto"></i>
+                </div>
+                <div class="settings-menu-divider" style="margin:.25rem 0"></div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();lockApp()"><i class="fas fa-lock"></i> Lock App</div>
+                <div class="settings-menu-item" id="settingsBiometricRow" onclick="closeSettingsMenu();openBiometricSetup()" style="display:none">
+                  <i class="fas fa-fingerprint" style="color:#3b82f6"></i>
+                  <span id="settingsBiometricLabel">Set Up Face ID / Fingerprint</span>
+                </div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i> Dark / Light Mode</div>
+                <div class="settings-menu-item" onclick="toggleGlassSlider()">
+                  <i class="fas fa-droplet"></i> Glass Transparency
+                  <i class="fas fa-chevron-down" id="glassChevron" style="font-size:.65rem;margin-left:auto;transition:transform .2s"></i>
+                </div>
+                <div id="glassSliderPanel" style="display:none;padding:.25rem .75rem .6rem">
+                  <div class="glass-slider-wrap">
+                    <i class="fas fa-circle" style="font-size:.5rem;color:#64748b"></i>
+                    <input type="range" min="0" max="100" value="50" id="glassSlider" oninput="setGlassOpacity(this.value)" style="flex:1" />
+                    <i class="fas fa-circle" style="font-size:.9rem;color:#e2e8f0"></i>
+                  </div>
+                </div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();openTxnFullPage()">
+                  <i class="fas fa-list-ul"></i> Recent Transactions
+                  <i class="fas fa-arrow-up-right-from-square" style="font-size:.6rem;margin-left:auto;color:#64748b"></i>
+                </div>
+                <div class="settings-menu-divider"></div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();openChangePinModal()"><i class="fas fa-key"></i> Change Password</div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();openSyncModal()"><i class="fas fa-cloud"></i> Cloud Sync &amp; Backup</div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();exportCSV()"><i class="fas fa-download"></i> Export CSV</div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();openImportModal()"><i class="fas fa-upload"></i> Import CSV</div>
+                <div class="settings-menu-item" onclick="closeSettingsMenu();openPrivacyModal()"><i class="fas fa-shield-alt"></i> Privacy Policy</div>
+                <div class="settings-menu-divider"></div>
+                <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();doSignOut()"><i class="fas fa-sign-out-alt"></i> Log Out</div>
+                <div class="settings-menu-divider"></div>
+                <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();openResetModal()"><i class="fas fa-user-slash"></i> Sign Out &amp; Delete Data</div>
               </div>
             </div>
 
-            <!-- Recent Transactions â†’ opens full transactions page -->
-            <div class="settings-menu-item" onclick="closeSettingsMenu();openTxnFullPage()">
-              <i class="fas fa-list-ul"></i> Recent Transactions
-              <i class="fas fa-arrow-up-right-from-square" style="font-size:.6rem;margin-left:auto;color:#64748b"></i>
-            </div>
+            <div class="topbar-avatar" id="topbarAvatar">BL</div>
+          </div>
+        </header>
 
-            <div class="settings-menu-divider"></div>
+        <!-- Dashboard scroll body -->
+        <div class="dashboard-body">
 
-            <div class="settings-menu-item" onclick="closeSettingsMenu();openChangePinModal()">
-              <i class="fas fa-key"></i> Change Password
-            </div>
-            <div class="settings-menu-item" onclick="closeSettingsMenu();openSyncModal()">
-              <i class="fas fa-cloud"></i> Cloud Sync &amp; Backup
-            </div>
-            <div class="settings-menu-item" onclick="closeSettingsMenu();exportCSV()">
-              <i class="fas fa-download"></i> Export CSV
-            </div>
-            <div class="settings-menu-item" onclick="closeSettingsMenu();openImportModal()">
-              <i class="fas fa-upload"></i> Import CSV
-            </div>
-            <div class="settings-menu-item" onclick="closeSettingsMenu();openPrivacyModal()">
-              <i class="fas fa-shield-alt"></i> Privacy Policy
-            </div>
-            <div class="settings-menu-divider"></div>
-            <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();doSignOut()">
-              <i class="fas fa-sign-out-alt"></i> Log Out
-            </div>
-            <div class="settings-menu-divider"></div>
-            <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();openResetModal()">
-              <i class="fas fa-user-slash"></i> Sign Out &amp; Delete Data
+          <!-- OLD .main-content WRAPPER preserved for JS compatibility -->
+          <div class="main-content" style="display:contents">
+
+          <!-- Title + filter row -->
+          <div class="dash-title-row">
+            <h1 class="dash-title">My Dashboard</h1>
+            <div class="filter-pills">
+              <button class="filter-pill active" onclick="setActiveFilter(this,'all')">All</button>
+              <button class="filter-pill" onclick="setActiveFilter(this,'income')">Income</button>
+              <button class="filter-pill" onclick="setActiveFilter(this,'expense')">Expense</button>
+              <button class="filter-pill" onclick="openMonthPicker()"><i class="fas fa-calendar-check" style="font-size:.7rem"></i> Month</button>
             </div>
           </div>
+
+          <!-- Two-column grid -->
+          <div class="dash-grid">
+
+            <!-- ────────── LEFT PANEL ────────── -->
+            <div class="left-panel">
+
+              <!-- Stat Cards Row -->
+              <div class="stat-cards-row">
+
+                <!-- Income -->
+                <div class="stat-card" onclick="showCardInfo('income')" style="cursor:pointer">
+                  <div class="stat-card-icon income"><i class="fas fa-arrow-down"></i></div>
+                  <div class="stat-card-label">Income</div>
+                  <div class="amount income-amount stat-card-value" id="dashIncome">₹0</div>
+                  <div class="stat-card-change" id="dashIncomeChange">
+                    <i class="fas fa-minus"></i>&nbsp;No transactions yet
+                  </div>
+                </div>
+
+                <!-- Expenses -->
+                <div class="stat-card" onclick="showCardInfo('expense')" style="cursor:pointer">
+                  <div class="stat-card-icon expense"><i class="fas fa-arrow-up"></i></div>
+                  <div class="stat-card-label">Expenses</div>
+                  <div class="amount expense-amount stat-card-value" id="dashExpense">₹0</div>
+                  <div class="stat-card-change" id="dashExpenseChange">
+                    <i class="fas fa-minus"></i>&nbsp;No transactions yet
+                  </div>
+                </div>
+
+                <!-- Net Balance -->
+                <div class="stat-card" onclick="showCardInfo('net')" style="cursor:pointer">
+                  <div class="stat-card-icon net"><i class="fas fa-wallet"></i></div>
+                  <div class="stat-card-label">Net Balance</div>
+                  <div class="amount net-positive stat-card-value" id="dashNet">₹0</div>
+                  <div style="font-size:.68rem;color:var(--text-muted);margin-bottom:.25rem" id="dashNetSign">Surplus</div>
+                  <div class="stat-card-change" id="dashNetChange">
+                    <i class="fas fa-minus"></i>&nbsp;No transactions yet
+                  </div>
+                </div>
+
+              </div>
+              <!-- /stat-cards-row -->
+
+              <!-- Overview Chart Card -->
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <span class="chart-card-title">Revenue Overview</span>
+                  <div class="chart-legend-inline">
+                    <span><span class="legend-dot" style="background:#00e08c"></span>Income</span>
+                    <span><span class="legend-dot" style="background:#f97316"></span>Expense</span>
+                  </div>
+                </div>
+                <div class="chart-container">
+                  <div id="chartContainer" style="min-height:200px"></div>
+                  <div class="chart-labels" id="chartLabels" style="display:none"></div>
+                </div>
+              </div>
+
+              <!-- Bottom row: Expenses + Insights -->
+              <div class="bottom-row">
+
+                <!-- All Expenses -->
+                <div class="panel">
+                  <div class="panel-header">
+                    <span class="panel-title">All Expenses <span id="expBadge" style="font-size:.68rem;color:var(--text-muted);font-weight:400"></span></span>
+                    <button class="set-budgets-btn" onclick="openBudgetModal()" title="Set budgets">
+                      <i class="fas fa-sliders-h"></i> Budgets
+                    </button>
+                  </div>
+                  <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">Breakdown by category</div>
+                  <div class="total-expenses" id="allExpTotal">₹0</div>
+                  <div class="period-values-row">
+                    <div class="period-val-item"><div class="pv-label">Daily</div><div class="pv-value" id="pvDaily">₹0</div></div>
+                    <div class="period-val-item"><div class="pv-label">Weekly</div><div class="pv-value" id="pvWeekly">₹0</div></div>
+                    <div class="period-val-item"><div class="pv-label">Monthly</div><div class="pv-value" id="pvMonthly">₹0</div></div>
+                  </div>
+                  <div class="color-bar"></div>
+                  <ul class="expense-categories" id="categoryList"></ul>
+                </div>
+
+                <!-- Insights -->
+                <div class="card insights-card" id="insightsSection" style="display:none">
+                  <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-brain" style="color:#a78bfa;margin-right:.4rem"></i>Insights</h3>
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                      <button class="ai-insights-btn" id="aiInsightsBtn" onclick="runAiInsights()"><i class="fas fa-wand-magic-sparkles"></i> AI</button>
+                      <span class="insights-badge" id="insightsBadge">This month</span>
+                    </div>
+                  </div>
+                  <div id="aiInsightsPanel" class="ai-insights-panel" style="display:none"></div>
+                  <div id="anomalyAlerts"></div>
+                  <div class="insights-grid" id="insightsGrid"></div>
+                  <div class="prediction-bar" id="predictionBar" style="display:none">
+                    <div class="prediction-label-row">
+                      <span class="prediction-title">Month-end prediction</span>
+                      <span class="prediction-amount" id="predAmount"></span>
+                    </div>
+                    <div class="prediction-track">
+                      <div class="prediction-actual" id="predActual"></div>
+                      <div class="prediction-projected" id="predProjected"></div>
+                    </div>
+                    <div class="prediction-sublabel" id="predSub"></div>
+                  </div>
+                  <div class="dow-section" id="dowSection" style="display:none">
+                    <div class="insights-section-title">By day of week</div>
+                    <div class="dow-bars" id="dowBars"></div>
+                  </div>
+                </div>
+
+              </div>
+              <!-- /bottom-row -->
+
+              <!-- Transactions (full table — shown when JS enables it) -->
+              <div class="card" id="dashboardTxnCard" style="display:none;margin-bottom:1.25rem">
+                <div class="section-header">
+                  <h3 class="card-title">Recent Transactions <span id="txnBadge" style="font-size:.68rem;color:var(--text-muted);font-weight:400"></span></h3>
+                  <div class="filters">
+                    <button class="filter-btn" id="sortBtn" onclick="openSortModal()"><i class="fas fa-sort"></i> Sort</button>
+                    <button class="filter-btn" id="filterBtn" onclick="openFilterModal()"><i class="fas fa-filter"></i> Filter</button>
+                  </div>
+                </div>
+                <div class="txn-meta">
+                  <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" id="txnSearch" placeholder="Search description or category…" oninput="onSearchInput(this.value)" />
+                  </div>
+                  <span class="txn-count-badge" id="txnCount"></span>
+                </div>
+                <div class="table-wrapper">
+                  <table class="transaction-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th><th>Category</th><th>Description</th>
+                        <th>Amount</th><th>Type</th><th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="txnBody"></tbody>
+                  </table>
+                </div>
+                <div class="txn-mobile-list" id="txnMobileList"></div>
+                <div class="txn-list-footer" id="txnListFooter"></div>
+              </div>
+
+            </div>
+            <!-- /left-panel -->
+
+            <!-- ────────── RIGHT PANEL ────────── -->
+            <div class="right-panel">
+
+              <!-- Card Stack -->
+              <div class="panel card-stack-section">
+                <div class="card-stack-label">
+                  <span class="panel-title">My Card</span>
+                  <span class="view-all-link" onclick="openCardOptionsMenu(event)">
+                    <i class="fas fa-ellipsis-h"></i>
+                  </span>
+                </div>
+
+                <div class="card-stack-wrap">
+                  <!-- Stacked bg cards (decorative) -->
+                  <div class="card-bg-3"></div>
+                  <div class="card-bg-2"></div>
+
+                  <!-- Primary card -->
+                  <div class="my-card">
+                    <div class="card-header-row">
+                      <span class="card-badge" id="cardNicknameDisplay">Primary wallet</span>
+                      <div class="card-chip"></div>
+                    </div>
+                    <div class="card-number" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+                    <div class="card-holder-name" id="cardHolderDisplay">YOUR NAME</div>
+                    <button class="my-card-dots" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
+                    <div class="spending-section">
+                      <div class="spending-meta">
+                        <span class="spending-label">Spending Limit</span>
+                        <span class="spending-limit-val" id="spendLimitVal">₹0</span>
+                      </div>
+                      <div class="spending-used-val" id="spendUsedVal" style="margin-bottom:.35rem">Used: ₹0</div>
+                      <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini Transactions list (right panel) -->
+              <div class="txn-panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+                  <span class="panel-title">Recent Transactions</span>
+                  <span class="panel-action" onclick="openTxnFullPage()">View All <i class="fas fa-chevron-right" style="font-size:.65rem"></i></span>
+                </div>
+                <div id="rightPanelTxnList" style="display:flex;flex-direction:column;gap:.5rem">
+                  <div style="text-align:center;padding:1.5rem;font-size:.8rem;color:var(--text-muted)">
+                    <i class="fas fa-receipt" style="display:block;font-size:1.5rem;margin-bottom:.5rem;opacity:.4"></i>
+                    No transactions yet
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="panel" style="padding:1rem 1.2rem">
+                <div class="panel-header" style="margin-bottom:.75rem">
+                  <span class="panel-title">Quick Actions</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+                  <button class="topbar-pill income" style="border-radius:12px;padding:.65rem;justify-content:center;width:100%;font-size:.82rem" onclick="openModal('incomeModal')">
+                    <i class="fas fa-plus"></i> Income
+                  </button>
+                  <button class="topbar-pill expense" style="border-radius:12px;padding:.65rem;justify-content:center;width:100%;font-size:.82rem" onclick="openModal('expenseModal')">
+                    <i class="fas fa-minus"></i> Expense
+                  </button>
+                  <button class="filter-btn" style="border-radius:10px;padding:.55rem;justify-content:center;width:100%;font-size:.78rem" onclick="openMonthlySummary()">
+                    <i class="fas fa-chart-pie"></i> Report
+                  </button>
+                  <button class="filter-btn" style="border-radius:10px;padding:.55rem;justify-content:center;width:100%;font-size:.78rem" onclick="openAskBl()">
+                    <i class="fas fa-comment-dots"></i> Ask AI
+                  </button>
+                </div>
+              </div>
+
+            </div>
+            <!-- /right-panel -->
+
+          </div>
+          <!-- /dash-grid -->
+
+          </div>
+          <!-- /main-content (display:contents) -->
+
         </div>
+        <!-- /dashboard-body -->
+
       </div>
+      <!-- /main-area -->
+
+    </div>
+    <!-- /app-layout -->
+
+    <!-- Legacy card-switcher-bar (hidden, JS still references #cardSwitcher above) -->
+    <div class="card-switcher-bar" style="display:none">
+      <div id="cardSwitcherLegacy" class="card-switcher"></div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CARD SWITCHER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <div class="card-switcher-bar">
-      <div id="cardSwitcher" class="card-switcher"></div>
-    </div>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <div class="main-content">
-      <div class="dashboard-grid">
-        <!-- Income Card -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Income</h3>
-            <button
-              class="card-menu-btn"
-              title="Card info"
-              onclick="showCardInfo('income')"
-            >
-              <!-- <i class="fas fa-ellipsis-h"></i> -->
-            </button>
-          </div>
-          <div class="amount income-amount" id="dashIncome">₹0.00</div>
-          <div class="change" id="dashIncomeChange">
-            <i class="fas fa-minus"></i>&nbsp;No transactions yet
-          </div>
-        </div>
-
-        <!-- Expense Card -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Expenses</h3>
-            <button
-              class="card-menu-btn"
-              title="Card info"
-              onclick="showCardInfo('expense')"
-            >
-              <!-- <i class="fas fa-ellipsis-h"></i> -->
-            </button>
-          </div>
-          <div class="amount expense-amount" id="dashExpense">₹0.00</div>
-          <div class="change" id="dashExpenseChange">
-            <i class="fas fa-minus"></i>&nbsp;No transactions yet
-          </div>
-        </div>
-
-        <!-- Net Balance Card -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Net Balance</h3>
-            <button
-              class="card-menu-btn"
-              title="Card info"
-              onclick="showCardInfo('net')"
-            >
-              <!-- <i class="fas fa-ellipsis-h"></i> -->
-            </button>
-          </div>
-          <div class="amount net-positive" id="dashNet">₹0.00</div>
-          <div
-            style="font-size: 0.72rem; color: #64748b; margin-bottom: 0.25rem"
-            id="dashNetSign"
-          >
-            Surplus
-          </div>
-          <div class="change" id="dashNetChange">
-            <i class="fas fa-minus"></i>&nbsp;No transactions yet
-          </div>
-        </div>
-
-        <!-- My Card -->
-        <div class="card my-card">
-          <div class="card-header">
-            <h3 class="card-title">My Card</h3>
-          </div>
-          <div
-            style="
-              font-size: 0.72rem;
-              color: rgba(255, 255, 255, 0.7);
-              margin-bottom: 0.75rem;
-            "
-            id="cardNicknameDisplay"
-          >
-            Primary wallet
-          </div>
-          <div class="card-chip"></div>
-          <div class="card-number" id="cardNumberDisplay">
-            •••• •••• •••• ••••
-          </div>
-          <div class="card-holder-name" id="cardHolderDisplay">YOUR NAME</div>
-          <button class="my-card-dots" onclick="openCardOptionsMenu(event)">
-            <i class="fas fa-ellipsis-h"></i>
-          </button>
-          <div class="spending-section">
-            <div class="spending-label">Spending Limit</div>
-            <div class="spending-limit-val" id="spendLimitVal">₹0</div>
-            <div class="spending-used-val" id="spendUsedVal">Used: ₹0</div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="progressFill"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chart + All Expenses -->
-      <div class="chart-section">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Overview</h3>
-
-          </div>
-          <div class="chart-container" id="chartContainer"></div>
-          <div class="chart-labels" id="chartLabels"></div>
-          <div class="chart-legend">
-            <span
-              ><span class="legend-dot" style="background: #10b981"></span
-              >Income</span
-            >
-            <span
-              ><span class="legend-dot" style="background: #f97316"></span
-              >Expense</span
-            >
-          </div>
-        </div>
-
-        <!-- All Expenses -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">
-              All Expenses &nbsp;<span
-                id="expBadge"
-                style="
-                  text-transform: none;
-                  font-size: 0.68rem;
-                  color: #94a3b8;
-                  font-weight: 400;
-                "
-                ></span
-              >
-            </h3>
-            <button
-              class="card-menu-btn set-budgets-btn"
-              onclick="openBudgetModal()"
-              title="Set category budgets"
-            >
-              <i class="fas fa-sliders-h"></i>
-            </button>
-          </div>
-          <div
-            style="font-size: 0.72rem; color: #9ca3af; margin-bottom: 0.6rem"
-          >
-            Breakdown by category
-          </div>
-          <div class="total-expenses" id="allExpTotal">₹0</div>
-          <div class="period-values-row">
-            <div class="period-val-item">
-              <div class="pv-label">Daily</div>
-              <div class="pv-value" id="pvDaily">₹0</div>
-            </div>
-            <div class="period-val-item">
-              <div class="pv-label">Weekly</div>
-              <div class="pv-value" id="pvWeekly">₹0</div>
-            </div>
-            <div class="period-val-item">
-              <div class="pv-label">Monthly</div>
-              <div class="pv-value" id="pvMonthly">₹0</div>
-            </div>
-          </div>
-          <div class="color-bar"></div>
-          <ul class="expense-categories" id="categoryList"></ul>
-        </div>
-      </div>
-
-      <!-- Transactions -->
-      <div class="card" id="dashboardTxnCard" style="margin-bottom: 1.75rem; display: none">
-        <div class="section-header">
-          <h3 class="card-title">
-            Recent Transactions &nbsp;<span
-              id="txnBadge"
-              style="
-                text-transform: none;
-                font-size: 0.68rem;
-                color: #94a3b8;
-                font-weight: 400;
-              "
-              ></span
-            >
-          </h3>
-          <div class="filters">
-            <button class="filter-btn" id="sortBtn" onclick="openSortModal()">
-              <i class="fas fa-sort"></i> Sort
-            </button>
-            <button
-              class="filter-btn"
-              id="filterBtn"
-              onclick="openFilterModal()"
-            >
-              <i class="fas fa-filter"></i> Filter
-            </button>
-          </div>
-        </div>
-        <div class="txn-meta">
-          <div class="search-wrapper">
-            <i class="fas fa-search"></i>
-            <input
-              type="text"
-              class="search-input"
-              id="txnSearch"
-              placeholder="Search by description or category…"
-              oninput="onSearchInput(this.value)"
-            />
-          </div>
-          <span class="txn-count-badge" id="txnCount"></span>
-        </div>
-        <div class="table-wrapper">
-          <table class="transaction-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Type</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="txnBody"></tbody>
-          </table>
-        </div>
-        <div class="txn-mobile-list" id="txnMobileList"></div>
-        <div class="txn-list-footer" id="txnListFooter"></div>
-      </div>
-
-      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INSIGHTS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-      <div
-        class="card insights-card"
-        id="insightsSection"
-        style="margin-bottom: 1.75rem; margin-top: 0; display: none"
-      >
-        <div class="card-header">
-          <h3 class="card-title">
-            <i
-              class="fas fa-brain"
-              style="color: #a78bfa; margin-right: 0.4rem"
-            ></i
-            >Spending Insights
-          </h3>
-          <div style="display:flex;align-items:center;gap:.6rem">
-            <button class="ai-insights-btn" id="aiInsightsBtn" onclick="runAiInsights()" title="Get AI-powered advice">
-              <i class="fas fa-wand-magic-sparkles"></i> AI Advice
-            </button>
-            <span class="insights-badge" id="insightsBadge">This month</span>
-          </div>
-        </div>
-        <!-- AI Advice panel — hidden until triggered -->
-        <div id="aiInsightsPanel" class="ai-insights-panel" style="display:none"></div>
-        <div id="anomalyAlerts"></div>
-        <div class="insights-grid" id="insightsGrid"></div>
-        <div class="prediction-bar" id="predictionBar" style="display: none">
-          <div class="prediction-label-row">
-            <span class="prediction-title">Month-end prediction</span>
-            <span class="prediction-amount" id="predAmount"></span>
-          </div>
-          <div class="prediction-track">
-            <div class="prediction-actual" id="predActual"></div>
-            <div class="prediction-projected" id="predProjected"></div>
-          </div>
-          <div class="prediction-sublabel" id="predSub"></div>
-        </div>
-        <div class="dow-section" id="dowSection" style="display: none">
-          <div class="insights-section-title">Spending by day of week</div>
-          <div class="dow-bars" id="dowBars"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• 5-TAB BOTTOM NAV (mobile) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <nav class="bottom-nav" id="bottomNav" style="display: none">
       <button
         class="bn-tab bn-tab--active"
         id="bnHome"
@@ -2237,5 +2194,76 @@
     <!-- INIT -->
     <script src="main.js"></script>
   </body>
-</html>
 
+    <!-- Premium UI bridge -->
+    <script>
+    (function() {
+      function revealAppLayout() {
+        var el = document.getElementById('appLayout');
+        if (el) el.style.display = 'flex';
+        try {
+          var u = window._currentUser || {};
+          var name = (u.user_metadata && u.user_metadata.full_name) || u.email || 'You';
+          var g = document.getElementById('topbarGreeting');
+          if (g) g.innerHTML = 'Hi, <strong>' + name.split(' ')[0] + '!</strong>';
+          var av = document.getElementById('topbarAvatar');
+          if (av) av.textContent = name[0].toUpperCase();
+        } catch(e) {}
+      }
+
+      var _t = setInterval(function() {
+        if (typeof window.showDashboard === 'function' && !window._appLayoutPatched) {
+          var orig = window.showDashboard;
+          window.showDashboard = function() {
+            orig.apply(this, arguments);
+            revealAppLayout();
+          };
+          window._appLayoutPatched = true;
+          clearInterval(_t);
+        }
+      }, 100);
+
+      function updateRightPanelTxns() {
+        var container = document.getElementById('rightPanelTxnList');
+        if (!container) return;
+        var txns = window.transactions || [];
+        if (!txns.length) return;
+        var recent = txns.slice(-8).reverse();
+        container.innerHTML = recent.map(function(t) {
+          var isIncome = t.type === 'income';
+          var color = isIncome ? '#00e08c' : '#f97316';
+          var sign = isIncome ? '+' : '-';
+          var icon = isIncome ? 'fa-arrow-down' : 'fa-arrow-up';
+          var desc = (t.description || t.category || 'Transaction').substring(0, 22);
+          var cat = (t.category || 'Other').substring(0, 14);
+          var amt = '\u20b9' + Math.abs(t.amount || 0).toLocaleString('en-IN');
+          return '<div style="display:flex;align-items:center;gap:.65rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,0.03)">' +
+            '<div style="width:32px;height:32px;border-radius:9px;background:' + (isIncome ? 'rgba(0,224,140,0.12)' : 'rgba(249,115,22,0.12)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.75rem;color:' + color + '">' +
+            '<i class="fas ' + icon + '"></i></div>' +
+            '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:.78rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + desc + '</div>' +
+            '<div style="font-size:.68rem;color:var(--text-muted)">' + cat + '</div>' +
+            '</div>' +
+            '<div style="font-size:.82rem;font-weight:700;color:' + color + ';white-space:nowrap">' + sign + amt + '</div>' +
+            '</div>';
+        }).join('');
+      }
+
+      var _t2 = setInterval(function() {
+        if (typeof window.refreshAll === 'function' && !window._rightPanelPatched) {
+          var origRefresh = window.refreshAll;
+          window.refreshAll = function() {
+            origRefresh.apply(this, arguments);
+            setTimeout(updateRightPanelTxns, 60);
+          };
+          window._rightPanelPatched = true;
+          clearInterval(_t2);
+        }
+      }, 200);
+
+      window.setActiveFilter = function(btn, type) {
+        document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+      };
+    })();
+    </script>
