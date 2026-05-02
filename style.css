@@ -1905,6 +1905,11 @@ select.form-input option,
 .auth-popup-overlay[style*="flex"] {
   display: flex !important;
 }
+
+.auth-popup-overlay.open {
+  display: flex;
+}
+
 .auth-popup {
   background: #0d0e1c;
   border: 1px solid rgba(129, 140, 248, 0.18);
