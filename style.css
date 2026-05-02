@@ -3967,6 +3967,82 @@ select.form-input option,
   }
 }
 
+/* ── Empty state (no cards added yet) ──────────────────────────── */
+.csv2-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 18px;
+  border: 1.5px dashed rgba(129, 140, 248, 0.25);
+  background: rgba(129, 140, 248, 0.04);
+  cursor: pointer;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+.csv2-empty-state:hover {
+  border-color: rgba(129, 140, 248, 0.5);
+  background: rgba(129, 140, 248, 0.08);
+}
+.csv2-empty-icon {
+  font-size: 1.6rem;
+  color: rgba(129, 140, 248, 0.4);
+  margin-bottom: 0.2rem;
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+.csv2-empty-state:hover .csv2-empty-icon {
+  color: rgba(129, 140, 248, 0.75);
+  transform: translateY(-3px);
+}
+.csv2-empty-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+.csv2-empty-sub {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.28);
+}
+.csv2-empty-btn {
+  margin-top: 0.6rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 50px;
+  background: rgba(129, 140, 248, 0.15);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  color: rgba(129, 140, 248, 0.9);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.csv2-empty-state:hover .csv2-empty-btn {
+  background: rgba(129, 140, 248, 0.28);
+  border-color: rgba(129, 140, 248, 0.55);
+}
+
+/* ── Hide the topbar card switcher — stack in "My Card" replaces it ─ */
+/* The #cardSwitcher pill tabs in the topbar are not needed anymore.   */
+/* The legacy .card-switcher-bar (already display:none in HTML) stays. */
+#cardSwitcher .card-tab,
+#cardSwitcher .card-ring-row {
+  display: none !important;
+}
+/* Keep the element itself but make it zero-width so it doesn't push layout */
+#cardSwitcher {
+  width: 0;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+}
+
 /* ── Light theme overrides ──────────────────────────────────────── */
 [data-theme="light"] .card-item[data-theme="0"] {
   background: linear-gradient(135deg, #064e35 0%, #0a6b48 100%);
