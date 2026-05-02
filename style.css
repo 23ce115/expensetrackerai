@@ -4769,3 +4769,950 @@ select.form-input option,
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(129, 140, 248, 0.35);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BlueLedger — PREMIUM UI OVERRIDES
+   Transforms rearranged components → polished fintech SaaS
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+/* ── 1. ROOT TOKEN ENHANCEMENTS ──────────────────────────────── */
+:root {
+  /* Richer background with subtle depth */
+  --bg: #080a12;
+  --bg2: #0c0e1a;
+  --bg3: #101220;
+
+  /* Stronger glass cards */
+  --glass: rgba(14, 16, 28, 0.82);
+  --glass-blur: 24px;
+
+  /* Refined border system */
+  --border: rgba(255, 255, 255, 0.065);
+  --border-hi: rgba(129, 140, 248, 0.32);
+
+  /* Spacing system */
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+
+  /* Border radii */
+  --r-card: 20px;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  /* Font stack */
+  --font-primary: "DM Sans", system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+/* ── Typography upgrade ──────────────────────────────────────── */
+body {
+  font-family: var(--font-primary);
+  background: var(--bg);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 1 — SIDEBAR: GROUPED, INTENTIONAL
+   ══════════════════════════════════════════════════════════════ */
+
+.sidebar {
+  width: 72px;
+  padding: 20px 0 20px;
+  background: rgba(8, 10, 18, 0.92);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-right: 1px solid rgba(255, 255, 255, 0.055);
+  gap: 0;
+  justify-content: flex-start;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.3),
+    0 6px 24px rgba(99, 102, 241, 0.35);
+  margin-bottom: var(--sp-lg);
+  flex-shrink: 0;
+}
+
+/* Nav groups */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  width: 100%;
+  padding: 0 10px;
+}
+
+/* Group 1: Home / Income / Expense — add visual separator */
+.sb-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1rem;
+  color: #3d4565;
+  margin-bottom: 4px;
+  transition: all 0.22s cubic-bezier(0.34, 1.28, 0.64, 1);
+  position: relative;
+}
+
+.sb-btn:hover {
+  background: rgba(129, 140, 248, 0.12);
+  color: #818cf8;
+  transform: scale(1.06);
+}
+
+.sb-btn.active {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+  box-shadow:
+    0 0 22px rgba(129, 140, 248, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.sb-btn.active::before {
+  left: -10px;
+  width: 3px;
+  height: 22px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+  box-shadow: 2px 0 8px rgba(129, 140, 248, 0.4);
+}
+
+/* Income btn accent */
+.sb-income:hover {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+}
+
+/* Expense btn accent */
+.sb-expense:hover {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+/* AI btn accent */
+.sb-ai:hover {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+}
+
+/* Sidebar visual group separator */
+.sidebar-nav::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 8px auto;
+}
+
+.sidebar-bottom {
+  padding: 12px 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  gap: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 2 — HEADER: STRONG, BALANCED
+   ══════════════════════════════════════════════════════════════ */
+
+.topbar {
+  height: 64px;
+  padding: 0 24px;
+  background: rgba(8, 10, 18, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+#headerDate {
+  font-size: 0.73rem !important;
+  color: var(--t3) !important;
+  white-space: nowrap;
+  margin-left: 0 !important;
+}
+
+/* CENTER: Search bar — dominant pill */
+.topbar-search {
+  width: 340px;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 50px;
+  padding: 0.5rem 1.1rem;
+  gap: 0.6rem;
+  justify-self: center;
+  transition: all 0.25s;
+}
+
+.topbar-search:focus-within {
+  width: 380px;
+  border-color: rgba(129, 140, 248, 0.4);
+  background: rgba(99, 102, 241, 0.07);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.topbar-search i {
+  color: var(--t3);
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.topbar-search input {
+  font-size: 0.83rem;
+  font-family: var(--font-primary);
+}
+
+/* RIGHT: Settings + Avatar */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.tb-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #4d5580;
+  transition: all 0.2s;
+}
+
+.tb-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--t1);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.topbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border: 2px solid rgba(129, 140, 248, 0.45);
+  box-shadow: 0 0 18px rgba(129, 140, 248, 0.28);
+  background: linear-gradient(145deg, #4f46e5, #7c3aed);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 3 — DASHBOARD BODY & GRID: BALANCED
+   ══════════════════════════════════════════════════════════════ */
+
+.db-body {
+  padding: var(--sp-lg);
+  gap: var(--sp-md);
+}
+
+.db-title-row {
+  margin-bottom: var(--sp-lg);
+}
+
+.db-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.db-grid {
+  grid-template-columns: 1fr 320px;
+  gap: var(--sp-lg);
+}
+
+.db-left {
+  gap: var(--sp-lg);
+}
+
+.db-right {
+  gap: var(--sp-lg);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 4 — STAT CARDS: EQUAL HEIGHT + REFINED
+   ══════════════════════════════════════════════════════════════ */
+
+.db-stats {
+  gap: var(--sp-md);
+}
+
+.db-stat-card {
+  border-radius: var(--r-card);
+  padding: 1.25rem 1.3rem;
+  background: rgba(14, 16, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.28, 0.64, 1),
+    box-shadow 0.22s;
+}
+
+.db-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(129, 140, 248, 0.12);
+}
+
+/* Colored top accent line per card */
+.db-stat-card:nth-child(1) {
+  border-top: 2px solid rgba(52, 211, 153, 0.35);
+}
+.db-stat-card:nth-child(2) {
+  border-top: 2px solid rgba(249, 115, 22, 0.35);
+}
+.db-stat-card:nth-child(3) {
+  border-top: 2px solid rgba(129, 140, 248, 0.35);
+}
+
+.dsc-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 0.88rem;
+  margin-bottom: 0.85rem;
+}
+
+.dsc-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+}
+
+.db-stat-card .amount {
+  font-family: var(--font-display) !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 5 — CHART CARD: REDUCED EMPTY SPACE
+   ══════════════════════════════════════════════════════════════ */
+
+.db-chart-card {
+  border-radius: var(--r-card);
+  padding: 1.3rem 1.4rem 1.15rem;
+  background: rgba(14, 16, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.dcc-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+/* Chart period controls in header */
+.dcc-header {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Empty state: centered, styled, not dead */
+#chartContainer {
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* When chart is empty, style the placeholder */
+#chartContainer:not(:has(canvas))::after {
+  content: "";
+  /* handled by JS rendered empty state */
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 6 — PANELS: CONSISTENT GLASS
+   ══════════════════════════════════════════════════════════════ */
+
+.db-panel {
+  border-radius: var(--r-card);
+  padding: 1.25rem 1.3rem;
+  background: rgba(14, 16, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.28, 0.64, 1),
+    box-shadow 0.22s;
+}
+
+.db-panel:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.42);
+}
+
+.db-panel-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 7 — MY CARD PANEL: PREMIUM REDESIGN
+   ══════════════════════════════════════════════════════════════ */
+
+.db-card-panel {
+  padding: 1.25rem 1.3rem 1.3rem;
+  border-radius: var(--r-card);
+  background: rgba(14, 16, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  /* Soft violet glow on the card panel */
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 60px rgba(99, 102, 241, 0.04);
+}
+
+/* Card stack: larger and more dominant */
+.card-stack-v2 {
+  height: 200px;
+  margin-top: 0.75rem;
+  perspective: 1000px;
+}
+
+/* TOP card larger + stronger glow */
+.card-item.rank-0 {
+  bottom: 24px;
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.6),
+    0 0 80px var(--card-accent-glow, rgba(99, 102, 241, 0.18)),
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+.card-item.is-hovered {
+  transform: translateY(-16px) scale(1.05) rotateX(-1.5deg) !important;
+  box-shadow:
+    0 32px 72px rgba(0, 0, 0, 0.65),
+    0 0 100px var(--card-accent-glow, rgba(99, 102, 241, 0.3)),
+    0 1px 0 rgba(255, 255, 255, 0.14) inset !important;
+}
+
+/* Card number bigger and more readable */
+.ci-number {
+  font-size: 0.9rem;
+  letter-spacing: 0.22em;
+  margin-bottom: 0.65rem;
+}
+
+/* Cardholder name bolder */
+.ci-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Status badge */
+.ci-status {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ── Card action buttons: polished secondary actions ─────────── */
+.card-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--sp-md);
+}
+
+.card-action-btn {
+  flex: 1;
+  padding: 0.65rem 0;
+  border-radius: 14px;
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  gap: 0.4rem;
+  transition: all 0.2s cubic-bezier(0.34, 1.28, 0.64, 1);
+  font-family: var(--font-primary);
+}
+
+.card-action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.card-action-btn i {
+  font-size: 0.75rem;
+}
+
+/* Add Card — ghost with indigo tint */
+.card-action-add {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+}
+
+.card-action-add:hover {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.36);
+  box-shadow:
+    0 6px 20px rgba(99, 102, 241, 0.16),
+    0 0 0 1px rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+}
+
+/* Remove — minimal ghost, danger on hover only */
+.card-action-remove {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #4d5580;
+}
+
+.card-action-remove:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+/* Card stack dots: refined */
+.card-stack-dots {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 8 — TRANSACTIONS RIGHT PANEL: CLEAN
+   ══════════════════════════════════════════════════════════════ */
+
+.rp-txn-list {
+  gap: 0;
+}
+
+.rp-txn-row {
+  padding: 0.6rem 0.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+  border-radius: 0;
+  transition: background 0.15s;
+}
+
+.rp-txn-row:last-child {
+  border-bottom: none;
+}
+
+.rp-txn-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 10px;
+  padding-left: 0.5rem;
+  padding-right: 0.3rem;
+}
+
+.rp-txn-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.rp-txn-desc {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.rp-txn-cat {
+  font-size: 0.68rem;
+}
+
+.rp-txn-amt {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Styled empty state — not dead */
+.rp-empty {
+  padding: 2rem 1rem;
+  gap: 0.6rem;
+}
+
+.rp-empty i {
+  font-size: 1.8rem;
+  opacity: 0.25;
+}
+
+.rp-empty span {
+  font-size: 0.8rem;
+  color: var(--t3);
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 9 — EMPTY STATE CHART: STYLED
+   ══════════════════════════════════════════════════════════════ */
+
+/* The JS renders a no-data placeholder; make it pretty */
+.chart-empty-state,
+.no-chart-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  color: var(--t3);
+}
+
+.chart-empty-state i,
+.no-chart-data i {
+  font-size: 2rem;
+  opacity: 0.2;
+}
+
+.chart-empty-state p,
+.no-chart-data p {
+  font-size: 0.82rem;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 10 — ASK AI FAB: HIDE, SIDEBAR IS ENOUGH
+   ══════════════════════════════════════════════════════════════ */
+
+.ask-bl-fab {
+  display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 11 — PILLS / FILTERS: REFINED
+   ══════════════════════════════════════════════════════════════ */
+
+.db-pill {
+  font-family: var(--font-primary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.32rem 0.95rem;
+  border-radius: 50px;
+  transition: all 0.2s;
+}
+
+.db-pill.active {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.12);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 12 — CSV2 EMPTY STATE (card panel no-cards)
+   ══════════════════════════════════════════════════════════════ */
+
+.csv2-empty-state {
+  border-radius: var(--r-lg);
+  border: 1.5px dashed rgba(129, 140, 248, 0.18);
+  background: rgba(99, 102, 241, 0.04);
+  transition: all 0.2s;
+}
+
+.csv2-empty-state:hover {
+  border-color: rgba(129, 140, 248, 0.32);
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateY(-2px);
+}
+
+.csv2-empty-icon {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+}
+
+.csv2-empty-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.csv2-empty-btn {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.22);
+  color: #818cf8;
+  font-family: var(--font-primary);
+  font-weight: 700;
+}
+
+.csv2-empty-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.38);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 13 — ALL EXPENSES PANEL: CONSISTENT
+   ══════════════════════════════════════════════════════════════ */
+
+.total-expenses {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.pv-value {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 14 — GLOBAL CARD CONSISTENCY
+   ══════════════════════════════════════════════════════════════ */
+
+.card {
+  border-radius: var(--r-card);
+  background: rgba(14, 16, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 15 — SETTINGS DROPDOWN: REFINED
+   ══════════════════════════════════════════════════════════════ */
+
+.settings-menu {
+  background: #0c0e1c;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(129, 140, 248, 0.06);
+  padding: 0.4rem;
+  min-width: 230px;
+}
+
+.settings-menu-header {
+  font-family: var(--font-display);
+}
+
+.settings-menu-item {
+  border-radius: 10px;
+  font-family: var(--font-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 16 — TOPBAR CARD SWITCHER: CLEAN
+   ══════════════════════════════════════════════════════════════ */
+
+.card-switcher {
+  /* Hide in topbar — keeps layout clean */
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 17 — AMBIENT GLOW UPGRADE
+   ══════════════════════════════════════════════════════════════ */
+
+body::before {
+  background:
+    radial-gradient(
+      ellipse 90% 65% at -5% -5%,
+      rgba(79, 70, 229, 0.1) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 105% 0%,
+      rgba(124, 58, 237, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 50% 110%,
+      rgba(59, 130, 246, 0.06) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg, #080a12 0%, #0b0d1a 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 18 — SCROLLBAR: POLISHED
+   ══════════════════════════════════════════════════════════════ */
+
+.db-body::-webkit-scrollbar {
+  width: 5px;
+}
+.db-body::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.15);
+  border-radius: 5px;
+}
+.db-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 140, 248, 0.28);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 19 — BOTTOM-ROW PANELS
+   ══════════════════════════════════════════════════════════════ */
+
+.db-bottom-row {
+  gap: var(--sp-md);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 20 — MODAL SYSTEM: POLISHED
+   ══════════════════════════════════════════════════════════════ */
+
+.modal-content {
+  border-radius: 22px;
+  background: #0c0e1c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.75);
+}
+
+.form-input {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--t1);
+  font-family: var(--font-primary);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.form-input:focus {
+  border-color: rgba(129, 140, 248, 0.4);
+  background: rgba(99, 102, 241, 0.06);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 12px;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 21 — HOVER LIFT SYSTEM (global micro-interactions)
+   ══════════════════════════════════════════════════════════════ */
+
+.db-stat-card,
+.db-chart-card,
+.db-panel,
+.card {
+  will-change: transform;
+}
+
+/* Subtle entrance animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.db-stats,
+.db-chart-card,
+.db-bottom-row,
+.db-right > * {
+  animation: fadeUp 0.4s ease both;
+}
+
+.db-stats {
+  animation-delay: 0.05s;
+}
+.db-chart-card {
+  animation-delay: 0.12s;
+}
+.db-bottom-row {
+  animation-delay: 0.18s;
+}
+.db-right > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.db-right > *:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PART 22 — VIEW-ALL LINK + PANEL HDR
+   ══════════════════════════════════════════════════════════════ */
+
+.db-view-all {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: #818cf8;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+
+.db-view-all:hover {
+  opacity: 1;
+  color: #a5b4fc;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE: KEEP RIGHT PANEL BALANCED ON SMALLER SCREENS
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+  .db-grid {
+    grid-template-columns: 1fr 290px;
+  }
+  .topbar-search {
+    width: 260px;
+  }
+  .topbar-search:focus-within {
+    width: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .db-grid {
+    grid-template-columns: 1fr;
+  }
+  .db-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .topbar {
+    grid-template-columns: 1fr auto;
+  }
+  .topbar-left #headerDate {
+    display: none;
+  }
+}
