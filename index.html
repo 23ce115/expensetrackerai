@@ -27,6 +27,7 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="premium-overrides.css" />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -2255,5 +2256,100 @@
       };
     })();
     </script>
+  
+    <!-- ═══ PREMIUM UI ENHANCEMENTS ═══════════════════════════════ -->
+    <script>
+    (function() {
+      // ── Debounced search (300ms) ───────────────────────────────
+      var _searchTimer = null;
+      function debounceSearch(val) {
+        clearTimeout(_searchTimer);
+        _searchTimer = setTimeout(function() {
+          if (typeof onSearchInput === 'function') onSearchInput(val);
+        }, 300);
+      }
+
+      // Patch topbar search to use debounce
+      document.addEventListener('DOMContentLoaded', function() {
+        var ts = document.getElementById('topbarSearch');
+        if (ts) {
+          ts.oninput = null;
+          ts.addEventListener('input', function(e) {
+            debounceSearch(e.target.value);
+            // sync with txnSearch
+            var txnS = document.getElementById('txnSearch');
+            if (txnS) txnS.value = e.target.value;
+          });
+        }
+
+        // Sync txnSearch -> topbarSearch
+        var txnS = document.getElementById('txnSearch');
+        if (txnS) {
+          var origInput = txnS.oninput;
+          txnS.oninput = null;
+          txnS.addEventListener('input', function(e) {
+            debounceSearch(e.target.value);
+            var ts2 = document.getElementById('topbarSearch');
+            if (ts2) ts2.value = e.target.value;
+          });
+        }
+
+        // ── Header date formatting ─────────────────────────────
+        var hd = document.getElementById('headerDate');
+        if (hd) {
+          var now = new Date();
+          hd.textContent = now.toLocaleDateString('en-IN', {
+            day: 'numeric', month: 'long', year: 'numeric'
+          });
+          hd.style.display = 'block';
+          hd.style.fontSize = '0.72rem';
+          hd.style.color = 'var(--t3)';
+        }
+
+        // ── Sidebar tooltip labels ─────────────────────────────
+        var sbBtns = document.querySelectorAll('.sb-btn');
+        sbBtns.forEach(function(btn) {
+          var title = btn.getAttribute('title');
+          if (!title) return;
+          btn.style.position = 'relative';
+          btn.addEventListener('mouseenter', function() {
+            var existing = document.getElementById('sb-tooltip');
+            if (existing) existing.remove();
+            var tip = document.createElement('div');
+            tip.id = 'sb-tooltip';
+            tip.textContent = title;
+            tip.style.cssText = [
+              'position:fixed',
+              'left:82px',
+              'background:rgba(11,12,26,0.96)',
+              'border:1px solid rgba(129,140,248,0.2)',
+              'color:#f0f4ff',
+              'font-size:0.72rem',
+              'font-weight:600',
+              'padding:0.32rem 0.7rem',
+              'border-radius:8px',
+              'pointer-events:none',
+              'z-index:9999',
+              'white-space:nowrap',
+              'box-shadow:0 4px 14px rgba(0,0,0,0.4)',
+              'letter-spacing:0.02em',
+              'font-family:DM Sans,sans-serif',
+              'opacity:0',
+              'transition:opacity 0.15s'
+            ].join(';');
+            var rect = btn.getBoundingClientRect();
+            tip.style.top = (rect.top + rect.height/2 - 12) + 'px';
+            document.body.appendChild(tip);
+            requestAnimationFrame(function() { tip.style.opacity = '1'; });
+          });
+          btn.addEventListener('mouseleave', function() {
+            var t = document.getElementById('sb-tooltip');
+            if (t) t.remove();
+          });
+        });
+      });
+    })();
+    </script>
+
   </body>
 </html>
