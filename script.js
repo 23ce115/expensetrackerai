@@ -3538,7 +3538,7 @@ async function completeCardSetup() {
       bank: bank || "",
       cardNumber: card4,
       cardType: cardType || "Debit",
-      limit,
+      spendingLimit: limit,
     },
     transactions: [],
     customCategories: [],
@@ -4735,16 +4735,24 @@ function doDeleteCard() {
 
 function updateMyCardWidget() {
   if (!userData) return;
-  document.getElementById("cardNumberDisplay").textContent =
-    userData.cardNumber;
-  document.getElementById("cardHolderDisplay").textContent =
-    userData.name.toUpperCase();
-  document.getElementById("spendLimitVal").textContent = fmt(
-    userData.spendingLimit,
-  );
+  // These static IDs only exist in the legacy card markup.
+  // The new card-stack-v2 renders everything dynamically, so guard every lookup.
+  const numEl = document.getElementById("cardNumberDisplay");
+  if (numEl) numEl.textContent = userData.cardNumber;
+
+  const holderEl = document.getElementById("cardHolderDisplay");
+  if (holderEl) holderEl.textContent = (userData.name || "").toUpperCase();
+
+  const limitEl = document.getElementById("spendLimitVal");
+  if (limitEl)
+    limitEl.textContent = fmt(userData.spendingLimit || userData.limit || 0);
+
   const nicknameEl = document.getElementById("cardNicknameDisplay");
   if (nicknameEl)
     nicknameEl.textContent = userData.nickname?.trim() || "Primary wallet";
+
+  // Refresh the dynamic card stack
+  if (typeof window.renderCardStack === "function") window.renderCardStack();
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
