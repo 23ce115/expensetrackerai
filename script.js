@@ -3569,6 +3569,22 @@ async function completeCardSetup() {
     return;
   }
 
+  // Already logged in but no card yet (opened from the "My Card" empty state)
+  if (!_pendingCardSetup && sessionPin) {
+    cards = [newCardData];
+    activeCardIdx = 0;
+    loadActiveCard();
+    document.getElementById("cardSetupModal").style.display = "none";
+    saveToStorage();
+    renderCardSwitcher();
+    updateMyCardWidget();
+    populateCategorySelects();
+    updateAddAccountUI();
+    refreshAll();
+    notify("Card added successfully! 🎉", "success");
+    return;
+  }
+
   // First-time card setup after signup
   sessionPin = password;
   localStorage.setItem(AUTH_MODE_KEY, "password");
