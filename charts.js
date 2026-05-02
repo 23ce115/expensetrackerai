@@ -1,29 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════
-   charts.js — BlueLedger Chart Rendering (Chart.js)
-
-   OWNS:
-     _overviewChart, _categoryChart, _currentOverviewPeriod
-     initOverviewChart(), updateOverviewChart()
-     initCategoryChart(), updateCategoryChart()
-     setChartPeriod()
-     renderChartJS(), renderCategoryChartJS()
-
-   READS from script.js (do NOT redeclare here):
-     getCatColor(), getChartData(), chartPeriod
-
-   Load order:  Chart.js CDN → utils.js → ai.js → voice.js →
-                receipt.js → charts.js → script.js → main.js
+   charts.js — BlueLedger Chart Rendering (Chart.js) — FINAL
+   Premium Edition: gradient fills, smooth animations, no grid lines
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
-/* ── Private chart state (single source of truth) ────────────── */
+/* ── Private chart state ──────────────────────────────────────── */
 let _overviewChart = null;
 let _categoryChart = null;
 let _currentOverviewPeriod = "monthly";
 
-const INCOME_COLOR = "#00e08c";
+const INCOME_COLOR = "#34d399";
 const EXPENSE_COLOR = "#f97316";
+const INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
+const EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
 
 /* ══════════════════════════════════════════════════════════════
    OVERVIEW CHART — init
@@ -42,7 +32,9 @@ function initOverviewChart() {
   container.style.position = "relative";
   container.style.padding = "0";
 
-  const cardHeader = container.closest(".card")?.querySelector(".card-header");
+  const cardHeader =
+    container.closest(".card")?.querySelector(".card-header") ||
+    container.closest(".db-chart-card")?.querySelector(".dcc-header");
   if (cardHeader) {
     const existing = cardHeader.querySelector(".chart-period-controls");
     if (existing) existing.remove();
@@ -68,6 +60,23 @@ function initOverviewChart() {
   _buildOverviewChart(canvas);
 }
 
+/* ── Create gradient fill for chart ───────────────────────────── */
+function _makeGradient(ctx, color, alpha1 = 0.28, alpha2 = 0.0) {
+  try {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+    // parse hex color
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    gradient.addColorStop(0, `rgba(${r},${g},${b},${alpha1})`);
+    gradient.addColorStop(0.6, `rgba(${r},${g},${b},${alpha2 * 0.5})`);
+    gradient.addColorStop(1, `rgba(${r},${g},${b},${alpha2})`);
+    return gradient;
+  } catch (e) {
+    return "transparent";
+  }
+}
+
 function _buildOverviewChart(canvas) {
   if (!canvas) return;
   if (typeof getChartData !== "function") {
@@ -86,12 +95,15 @@ function _buildOverviewChart(canvas) {
 
   const isDark =
     document.documentElement.getAttribute("data-theme") !== "light";
-  const gridCol = isDark ? "rgba(0,224,140,0.06)" : "rgba(0,80,50,0.07)";
-  const tickCol = isDark ? "#4d7a65" : "#5a9e82";
+  const gridCol = isDark ? "rgba(129,140,248,0.05)" : "rgba(99,102,241,0.06)";
+  const tickCol = isDark ? "#334155" : "#94a3b8";
 
   const labels = data.map((d) => d.label || "");
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
+
+  const incGradient = _makeGradient(ctx, "#34d399", 0.32, 0.0);
+  const expGradient = _makeGradient(ctx, "#f97316", 0.28, 0.0);
 
   _overviewChart = new Chart(ctx, {
     type: "line",
@@ -102,40 +114,45 @@ function _buildOverviewChart(canvas) {
           label: "Income",
           data: incomes,
           borderColor: INCOME_COLOR,
-          backgroundColor: "rgba(16,185,129,0.0)",
+          backgroundColor: incGradient,
           pointBackgroundColor: INCOME_COLOR,
-          pointBorderColor: INCOME_COLOR,
+          pointBorderColor: "#08090f",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 7,
           borderWidth: 2.5,
           fill: true,
-          backgroundColor: "rgba(0,224,140,0.05)",
-          tension: 0.4,
+          tension: 0.42,
         },
         {
           label: "Expense",
           data: expenses,
           borderColor: EXPENSE_COLOR,
-          backgroundColor: "rgba(249,115,22,0.0)",
+          backgroundColor: expGradient,
           pointBackgroundColor: EXPENSE_COLOR,
-          pointBorderColor: EXPENSE_COLOR,
+          pointBorderColor: "#08090f",
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 7,
           borderWidth: 2.5,
-          fill: false,
-          tension: 0.3,
+          fill: true,
+          tension: 0.38,
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      elements: {
-        line: { borderWidth: 2.5 },
-        point: { radius: 4, hoverRadius: 6 },
+      animation: {
+        duration: 700,
+        easing: "easeOutQuart",
       },
       interaction: { mode: "index", intersect: false },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(4,20,14,0.96)",
-          borderColor: "rgba(0,224,140,0.15)",
+          backgroundColor: "rgba(8,9,20,0.96)",
+          borderColor: "rgba(129,140,248,0.22)",
           borderWidth: 1,
           titleColor: "#e2e8f0",
           bodyColor: "#94a3b8",
@@ -162,11 +179,15 @@ function _buildOverviewChart(canvas) {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: tickCol, font: { size: 11 } },
+          ticks: { color: tickCol, font: { size: 11 }, maxRotation: 0 },
           border: { display: false },
         },
         y: {
-          grid: { color: gridCol, drawBorder: false },
+          grid: {
+            color: gridCol,
+            drawBorder: false,
+            lineWidth: 1,
+          },
           ticks: {
             color: tickCol,
             font: { size: 11 },
@@ -255,36 +276,43 @@ function updateOverviewChart(period) {
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
+  // Rebuild gradients (canvas context may have changed)
+  const ctx = canvas.getContext("2d");
+  _overviewChart.data.datasets[0].backgroundColor = _makeGradient(
+    ctx,
+    "#34d399",
+    0.32,
+    0.0,
+  );
+  _overviewChart.data.datasets[1].backgroundColor = _makeGradient(
+    ctx,
+    "#f97316",
+    0.28,
+    0.0,
+  );
+
   _overviewChart.data.labels = labels;
   _overviewChart.data.datasets[0].data = incomes;
-  _overviewChart.data.datasets[0].backgroundColor = incomes.map((_, i) =>
-    data[i]?.active ? INCOME_COLOR : "rgba(16,185,129,0.45)",
-  );
   _overviewChart.data.datasets[1].data = expenses;
-  _overviewChart.data.datasets[1].backgroundColor = expenses.map((_, i) =>
-    data[i]?.active ? EXPENSE_COLOR : "rgba(249,115,22,0.45)",
-  );
-  _overviewChart.update();
+  _overviewChart.update("active");
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CHART PERIOD — single definition
-   Syncs script.js global `chartPeriod` and redraws.
+   CHART PERIOD
    ══════════════════════════════════════════════════════════════ */
 
 function setChartPeriod(period) {
-  /* Keep the script.js `chartPeriod` global in sync */
   try {
     chartPeriod = period;
   } catch (e) {
-    /* not yet declared — safe to ignore */
+    /* ok */
   }
   _currentOverviewPeriod = period;
   updateOverviewChart(period);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CATEGORY STACKED BAR
+   CATEGORY STACKED BAR (thin 8px strip)
    ══════════════════════════════════════════════════════════════ */
 
 function initCategoryChart() {
@@ -330,7 +358,7 @@ function updateCategoryChart(catsData) {
         label: c.label,
         data: [c.value || 0],
         backgroundColor: c.color,
-        borderRadius: 0,
+        borderRadius: 2,
         borderSkipped: false,
       })),
     },
@@ -341,8 +369,8 @@ function updateCategoryChart(catsData) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(4,20,14,0.96)",
-          borderColor: "rgba(0,224,140,0.15)",
+          backgroundColor: "rgba(8,9,20,0.96)",
+          borderColor: "rgba(129,140,248,0.22)",
           borderWidth: 1,
           titleColor: "#e2e8f0",
           bodyColor: "#94a3b8",
@@ -359,7 +387,7 @@ function updateCategoryChart(catsData) {
         x: { stacked: true, display: false },
         y: { stacked: true, display: false },
       },
-      animation: { duration: 400, easing: "easeOutQuart" },
+      animation: { duration: 500, easing: "easeOutQuart" },
     },
   });
 }
