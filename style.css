@@ -4111,11 +4111,11 @@ select.form-input option,
 
 /* ── Fan-open: non-hovered siblings dim ─────────────────────────── */
 .card-stack-v2.fan-open .card-item:not(.is-hovered) {
-  opacity: 0.62;
-  filter: brightness(0.88);
+  opacity: 0.55;
+  filter: brightness(0.8) grayscale(0.12);
   transition:
-    opacity 0.2s ease,
-    filter 0.2s ease;
+    opacity 0.24s ease,
+    filter 0.24s ease;
 }
 
 /* ── Hovered card in fan: additional glow ring pulse ─────────────── */
@@ -4335,6 +4335,7 @@ select.form-input option,
 }
 
 .cs-toggle-track {
+  display: block;
   width: 40px;
   height: 22px;
   border-radius: 11px;
@@ -4346,6 +4347,7 @@ select.form-input option,
     background 0.22s ease,
     border-color 0.22s ease,
     box-shadow 0.22s ease;
+  flex-shrink: 0;
 }
 
 .cs-toggle-thumb {
@@ -4363,11 +4365,13 @@ select.form-input option,
 }
 
 /* Checked state */
+.cs-toggle-input:checked ~ .cs-toggle-track,
 .cs-toggle-input:checked + .cs-toggle-track {
   background: rgba(99, 102, 241, 0.7);
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
 }
+.cs-toggle-input:checked ~ .cs-toggle-track .cs-toggle-thumb,
 .cs-toggle-input:checked + .cs-toggle-track .cs-toggle-thumb {
   transform: translateX(18px);
   background: #fff;
