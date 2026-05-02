@@ -357,7 +357,15 @@
           <button class="sb-btn active" id="sbHome" onclick="bnSwitch('home')" title="Dashboard">
             <i class="fas fa-home"></i>
           </button>
-          <button class="sb-btn" onclick="openTxnFullPage()" title="Transactions">
+          <!-- Income / Expense: call existing modal functions -->
+          <button class="sb-btn sb-income" onclick="openModal('incomeModal')" title="Add Income">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="sb-btn sb-expense" onclick="openModal('expenseModal')" title="Add Expense">
+            <i class="fas fa-minus"></i>
+          </button>
+          <!-- Transactions: list icon now shows Recent Transactions panel -->
+          <button class="sb-btn" onclick="_openRecentTxnPanel()" title="Recent Transactions">
             <i class="fas fa-list-ul"></i>
           </button>
           <button class="sb-btn" onclick="openMonthlySummary()" title="Reports">
@@ -368,7 +376,8 @@
           </button>
         </nav>
         <div class="sidebar-bottom">
-          <button class="sb-btn" onclick="openAskBl()" title="Ask AI">
+          <!-- Ask AI wired above Settings -->
+          <button class="sb-btn sb-ai" onclick="openAskBl()" title="Ask AI">
             <i class="fas fa-comment-dots"></i>
           </button>
           <button class="sb-btn" onclick="toggleSettingsMenu()" title="Settings">
@@ -391,23 +400,16 @@
 
           <div class="topbar-search">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search payment..." readonly onclick="document.getElementById('txnSearch')?.focus()" />
+            <input
+              type="text"
+              id="topbarSearch"
+              placeholder="Search payment..."
+              autocomplete="off"
+              oninput="onSearchInput(this.value); _syncTopbarSearch(this.value)"
+            />
           </div>
 
           <div class="topbar-right">
-            <button class="tb-btn tb-income desktop-only" onclick="openModal('incomeModal')">
-              <i class="fas fa-plus"></i> Income
-            </button>
-            <button class="tb-btn tb-expense desktop-only" onclick="openModal('expenseModal')">
-              <i class="fas fa-minus"></i> Expense
-            </button>
-            <button class="tb-btn tb-ghost desktop-only" onclick="openMonthlySummary()">
-              <i class="fas fa-chart-pie"></i> Report
-            </button>
-            <button class="tb-icon desktop-only" onclick="openCategoryManager()" title="Categories">
-              <i class="fas fa-tags"></i>
-            </button>
-
             <!-- Settings dropdown -->
             <div class="settings-dropdown" id="settingsDropdown">
               <button class="tb-icon" onclick="toggleSettingsMenu()" title="Settings">
@@ -652,18 +654,6 @@
                 </div>
               </div>
 
-              <!-- Quick Actions -->
-              <div class="db-panel db-qa-panel">
-                <div class="db-panel-hdr" style="margin-bottom:.75rem">
-                  <span class="db-panel-title">Quick Actions</span>
-                </div>
-                <div class="qa-grid">
-                  <button class="qa-btn qa-income" onclick="openModal('incomeModal')"><i class="fas fa-plus"></i> Income</button>
-                  <button class="qa-btn qa-expense" onclick="openModal('expenseModal')"><i class="fas fa-minus"></i> Expense</button>
-                  <button class="qa-btn qa-ghost" onclick="openMonthlySummary()"><i class="fas fa-chart-pie"></i> Report</button>
-                  <button class="qa-btn qa-ghost" onclick="openAskBl()"><i class="fas fa-comment-dots"></i> Ask AI</button>
-                </div>
-              </div>
 
             </div><!-- /db-right -->
 
@@ -676,6 +666,34 @@
       </div><!-- /main-area -->
 
     </div><!-- /app-layout -->
+
+    <!-- ═══ RECENT TRANSACTIONS SLIDE PANEL ═══════════════════════ -->
+    <div class="rtp-overlay" id="rtpOverlay" onclick="_closeRecentTxnPanel()"></div>
+    <div class="rtp-panel" id="rtpPanel">
+      <div class="rtp-header">
+        <span class="rtp-title">Recent Transactions</span>
+        <button class="rtp-close" onclick="_closeRecentTxnPanel()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="rtp-search">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          id="rtpSearch"
+          placeholder="Search transactions..."
+          autocomplete="off"
+          oninput="onSearchInput(this.value); document.getElementById('topbarSearch') && (document.getElementById('topbarSearch').value = this.value)"
+        />
+      </div>
+      <!-- Renders the full transaction table/list (reuses #txnBody, #txnMobileList via openTxnFullPage path) -->
+      <div class="rtp-body" id="rtpBody">
+        <div class="rtp-list" id="rtpList"></div>
+      </div>
+      <div class="rtp-footer">
+        <button class="rtp-view-all" onclick="_closeRecentTxnPanel(); openTxnFullPage()">
+          View all transactions <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- card-switcher-bar kept for JS compat (hidden) -->
     <div class="card-switcher-bar" style="display:none">
