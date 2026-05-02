@@ -85,7 +85,13 @@
 
     const cardList = window.cards || [];
     if (!cardList.length) {
-      container.innerHTML = `<div class="csv2-placeholder"><div class="csv2-shimmer"></div></div>`;
+      container.innerHTML = `
+        <div class="csv2-empty-state" onclick="if(typeof addNewCard==='function') addNewCard()">
+          <div class="csv2-empty-icon"><i class="fas fa-credit-card"></i></div>
+          <div class="csv2-empty-title">No card added yet</div>
+          <div class="csv2-empty-sub">Tap to add your first card</div>
+          <div class="csv2-empty-btn"><i class="fas fa-plus"></i> Add Card</div>
+        </div>`;
       if (dotsEl) dotsEl.innerHTML = "";
       return;
     }
