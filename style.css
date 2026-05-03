@@ -5732,6 +5732,16 @@ body::before {
   outline: none;
 }
 
+.rtp-header,
+.rtp-search {
+  all: unset;
+  display: contents;
+}
+
+.rtp-view-all {
+  all: unset;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    LIGHT THEME ADJUSTMENTS
    ═══════════════════════════════════════════════════════════════ */
