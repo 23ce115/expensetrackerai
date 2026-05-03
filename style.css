@@ -3623,7 +3623,8 @@ select.form-input option,
 .card-stack-v2 {
   position: relative;
   height: 186px; /* tall enough to show all shifted cards  */
-  margin-top: 0.5rem;
+  margin-top: 12px;
+  z-index: 5;
   cursor: pointer;
   /* perspective makes the depth illusion crisp                     */
   perspective: 900px;
