@@ -5884,12 +5884,12 @@ body::before {
   padding: 0 0 12px 0 !important;
 } */
 
-/* .db-card-panel .db-panel-title {
+.db-card-panel .db-panel-title {
   font-size: 1rem !important;
   font-weight: 800 !important;
   color: #ffffff !important;
   background: transparent !important;
-} */
+}
 
 .my-card-panel {
   font-size: 0.85rem;
