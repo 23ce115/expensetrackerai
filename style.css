@@ -5868,7 +5868,7 @@ body::before {
 }
 
 .my-card-panel {
-  font-size: 6rem;
+  font-size: 1.5rem !important;
   font-weight: 700;
   color: var(--t1);
   text-shadow: 0 0 10px rgba(255,255,255,0.05);
