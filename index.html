@@ -26,7 +26,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="style.css" />    
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="premium-override.css" />
+    
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
       crossorigin="anonymous"
@@ -677,13 +679,13 @@
     </div><!-- /app-layout -->
 
     <!-- ═══ RECENT TRANSACTIONS SLIDE PANEL ═══════════════════════ -->
-    <div class="rtp-overlay" id="rtpOverlay" onclick="_closeRecentTxnPanel()"></div>
+    <!-- <div class="rtp-overlay" id="rtpOverlay" onclick="_closeRecentTxnPanel()"></div>
     <div class="rtp-panel" id="rtpPanel">
       <div class="rtp-header">
         <span class="rtp-title">Recent Transactions</span>
         <button class="rtp-close" onclick="_closeRecentTxnPanel()"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="rtp-search">
+      </div> -->
+      <!-- <div class="rtp-search">
         <i class="fas fa-search"></i>
         <input
           type="text"
@@ -692,9 +694,9 @@
           autocomplete="off"
           oninput="onSearchInput(this.value); document.getElementById('topbarSearch') && (document.getElementById('topbarSearch').value = this.value)"
         />
-      </div>
+      </div> -->
       <!-- Renders the full transaction table/list (reuses #txnBody, #txnMobileList via openTxnFullPage path) -->
-      <div class="rtp-body" id="rtpBody">
+      <!-- <div class="rtp-body" id="rtpBody">
         <div class="rtp-list" id="rtpList"></div>
       </div>
       <div class="rtp-footer">
@@ -702,7 +704,7 @@
           View all transactions <i class="fas fa-arrow-right"></i>
         </button>
       </div>
-    </div>
+    </div> -->
 
     <!-- card-switcher-bar kept for JS compat (hidden) -->
     <div class="card-switcher-bar" style="display:none">
