@@ -5225,15 +5225,15 @@ body::before {
 /* ═══════════════════════════════════════════════════════════════
    MY CARD PANEL — visually dominant, premium
    ═══════════════════════════════════════════════════════════════ */
-.db-card-panel {
-  /* background: rgba(9, 10, 22, 0.9) !important;
+/* .db-card-panel { */
+/* background: rgba(9, 10, 22, 0.9) !important;
   border: 1px solid rgba(129, 140, 248, 0.14) !important; */
-  /* box-shadow:
+/* box-shadow:
     var(--shadow-lg),
     0 0 0 1px rgba(129, 140, 248, 0.08) inset,
     var(--glow-accent) !important; */
-  padding: 1.4rem 1.4rem 1.2rem !important;
-}
+/* padding: 1.4rem 1.4rem 1.2rem !important;
+} */
 
 /* .db-card-panel:hover {
   transform: translateY(-3px);
