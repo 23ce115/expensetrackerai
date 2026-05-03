@@ -5911,3 +5911,118 @@ body::before {
   min-width: 0;
   overflow: hidden;
 }
+
+/* ═══════════════════════════════════════════════
+   MY CARD — PREMIUM SPACING & HEIGHT FIX
+   ═══════════════════════════════════════════════ */
+
+/* 1. Card stack container — taller, no clipping */
+.card-stack-v2 {
+  height: 220px !important;
+  min-height: 220px !important;
+  margin-top: 10px !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+}
+
+/* 2. Card items — breathable internal height */
+.card-item {
+  padding: 1.4rem 1.5rem 1.3rem !important;
+  border-radius: 20px !important;
+}
+
+/* 3. Top section: bank name → chip */
+.ci-top {
+  margin-bottom: 0.9rem !important;
+}
+
+/* 4. Bank name: stronger presence */
+.ci-nick {
+  font-size: 0.72rem !important;
+  letter-spacing: 0.14em !important;
+}
+
+/* 5. Card number: more breathing room */
+.ci-number {
+  margin-bottom: 0.8rem !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.2em !important;
+}
+
+/* 6. Cardholder name */
+.ci-holder {
+  font-size: 0.78rem !important;
+  margin-bottom: 0.2rem !important;
+}
+
+/* 7. Bank label below name */
+.ci-bank {
+  margin-bottom: 0.75rem !important;
+  font-size: 0.64rem !important;
+}
+
+/* 8. Spending section — clear separation */
+.ci-spending {
+  margin-top: 0.85rem !important;
+  padding-top: 0.7rem !important;
+  border-top: 1px solid rgba(255,255,255,0.07) !important;
+}
+
+/* 9. Spend row typography */
+.ci-spend-row {
+  margin-bottom: 0.3rem !important;
+  font-size: 0.68rem !important;
+}
+
+.ci-spend-used {
+  margin-top: 0.22rem !important;
+  margin-bottom: 0.4rem !important;
+}
+
+/* 10. Progress bar */
+.ci-progress {
+  margin-top: 0.4rem !important;
+  height: 3px !important;
+}
+
+/* 11. Bottom section: expiry alignment */
+.ci-bottom {
+  margin-top: 0.75rem !important;
+}
+
+/* 12. Stacking positions — adjusted for taller cards */
+.card-item.rank-0 {
+  bottom: 28px !important;
+}
+.card-item.rank-1 {
+  bottom: 16px !important;
+}
+.card-item.rank-2 {
+  bottom: 6px !important;
+}
+.card-item.rank-3 {
+  bottom: 0px !important;
+}
+
+/* 13. Panel header — always above card */
+.db-card-panel .db-panel-hdr {
+  flex-shrink: 0 !important;
+  padding-bottom: 6px !important;
+  position: relative !important;
+  z-index: 50 !important;
+  background: transparent !important;
+}
+
+/* 14. Dots sit cleanly below */
+.card-stack-dots {
+  margin-top: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+/* 15. Action row — clear separation from dots */
+.card-action-row {
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(255,255,255,0.05) !important;
+  flex-shrink: 0 !important;
+}
