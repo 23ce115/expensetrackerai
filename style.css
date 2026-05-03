@@ -5920,7 +5920,7 @@ body::before {
 .card-stack-v2 {
   height: 220px !important;
   min-height: 220px !important;
-  margin-top: 50px !important;
+  margin-top: 58px !important;
   overflow: visible !important;
   flex-shrink: 0 !important;
 }
