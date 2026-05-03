@@ -5697,7 +5697,7 @@ body::before {
 /* ═══════════════════════════════════════════════════════════════
    RECENT TXN SLIDE PANEL — refined
    ═══════════════════════════════════════════════════════════════ */
-.rtp-panel {
+/* .rtp-panel {
   background: rgba(9, 10, 22, 0.97);
   border-left: 1px solid rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(28px);
@@ -5739,8 +5739,8 @@ body::before {
 }
 
 .rtp-view-all {
-  all: unset;
-}
+  all: unset; 
+} */
 
 /* ═══════════════════════════════════════════════════════════════
    LIGHT THEME ADJUSTMENTS
