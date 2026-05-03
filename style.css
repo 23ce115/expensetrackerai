@@ -5226,21 +5226,21 @@ body::before {
    MY CARD PANEL — visually dominant, premium
    ═══════════════════════════════════════════════════════════════ */
 .db-card-panel {
-  background: rgba(9, 10, 22, 0.9) !important;
-  border: 1px solid rgba(129, 140, 248, 0.14) !important;
-  box-shadow:
+  /* background: rgba(9, 10, 22, 0.9) !important;
+  border: 1px solid rgba(129, 140, 248, 0.14) !important; */
+  /* box-shadow:
     var(--shadow-lg),
     0 0 0 1px rgba(129, 140, 248, 0.08) inset,
-    var(--glow-accent) !important;
+    var(--glow-accent) !important; */
   padding: 1.4rem 1.4rem 1.2rem !important;
 }
 
-.db-card-panel:hover {
+/* .db-card-panel:hover {
   transform: translateY(-3px);
   box-shadow:
     var(--shadow-xl),
     0 0 50px rgba(129, 140, 248, 0.12) !important;
-}
+} */
 
 .db-card-panel .db-panel-title {
   font-size: 0.92rem;
@@ -5867,12 +5867,20 @@ body::before {
   overflow: hidden;
 }
 
-.my-card-panel {
-  font-size: 1.5rem !important;
-  font-weight: 700;
-  color: var(--t1);
-  text-shadow: 0 0 10px rgba(255,255,255,0.05);
+.db-card-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
 }
+
+/* .db-card-panel .db-panel-header {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+} */
 
 .card-stack-v2 {
   position: relative !important;
