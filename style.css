@@ -385,7 +385,7 @@ body::after {
   border-radius: 9px;
   position: relative;
   top: 0;
-  right:0;
+  right: 0;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -5235,16 +5235,42 @@ body::before {
 /* ═══════════════════════════════════════════════════════════════
    MY CARD PANEL — visually dominant, premium
    ═══════════════════════════════════════════════════════════════ */
-.db-card-panel { 
-   background: rgba(9, 10, 22, 0.9) !important;
-  border: 1px solid rgba(129, 140, 248, 0.14) !important; 
- box-shadow:
+.db-card-panel {
+  background: rgba(9, 10, 22, 0.9) !important;
+  border: 1px solid rgba(129, 140, 248, 0.14) !important;
+  box-shadow:
     var(--shadow-lg),
     0 0 0 1px rgba(129, 140, 248, 0.08) inset,
-    var(--glow-accent) !important; */
-padding: 1.4rem 1.4rem 1.2rem !important;
-   min-height: 500px !important;
-} 
+    var(--glow-accent) !important;
+  padding: 1.4rem 1.4rem 1.2rem !important;
+  min-height: 500px !important;
+  overflow: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 1.2rem 1.3rem 1.1rem !important;
+  min-height: unset !important;
+  gap: 0 !important;
+}
+
+.db-card-panel .db-panel-hdr {
+  position: relative !important;
+  z-index: auto !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0 10px 0 !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.db-card-panel .tb-icon-sm {
+  position: static !important;
+  z-index: auto !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--t3) !important;
+}
 
 .db-card-panel:hover {
   transform: translateY(-3px);
@@ -5260,8 +5286,9 @@ padding: 1.4rem 1.4rem 1.2rem !important;
 
 /* Taller card stack for prominence */
 .card-stack-v2 {
-  height: 196px !important;
-  margin-top: 0.65rem !important;
+  height: 186px !important;
+  margin-top: 4px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Card items — more padding, richer */
@@ -5274,9 +5301,9 @@ padding: 1.4rem 1.4rem 1.2rem !important;
 .card-action-row {
   display: flex;
   gap: var(--space-sm);
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .card-action-btn {
@@ -5322,7 +5349,8 @@ padding: 1.4rem 1.4rem 1.2rem !important;
 
 /* Card dots pagination */
 .card-stack-dots {
-  margin-top: 0.65rem;
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
   justify-content: center;
   gap: 5px;
 }
@@ -5876,35 +5904,4 @@ padding: 1.4rem 1.4rem 1.2rem !important;
   flex: 1;
   min-width: 0;
   overflow: hidden;
-}
-.db-card-panel {
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.db-panel-hdr {
-  position: relative !important;
-  z-index: 99 !important;
-  background: transparent !important;
-}
-
-.card-stack-v2 {
-  margin-top: 12px !important;
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-.db-card-panel .db-panel-hdr  {
-  position: static !important;
-  padding-right: 40px !important;
-}
-
-.db-card-panel .tb-icon-sm {
-  position: absolute !important;
-  top: 23px !important;
-  right: 20px !important;
-  z-index: 200 !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
 }
