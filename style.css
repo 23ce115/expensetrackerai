@@ -5845,3 +5845,20 @@ body::before {
   min-width: 0;
   overflow: hidden;
 }
+
+/* FIX: Settings menu opens to the RIGHT of sidebar, not left */
+.sidebar .settings-dropdown {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar .settings-menu {
+  position: fixed;
+  left: 80px;
+  bottom: 60px;
+  top: auto;
+  right: auto;
+  transform: none;
+}
