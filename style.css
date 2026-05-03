@@ -383,6 +383,8 @@ body::after {
   width: 32px;
   height: 32px;
   border-radius: 9px;
+  position: relative;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5870,8 +5872,6 @@ body::before {
 }
 
 .db-card-panel {
-  font-size: 1.2rem;
-  font-weight: 800;
   display: flex !important;
   flex-direction: column !important;
   gap: 0 !important;
