@@ -5868,6 +5868,7 @@ body::before {
 }
 
 .db-card-panel {
+  font-size: 5rem;
   display: flex !important;
   flex-direction: column !important;
   gap: 0 !important;
