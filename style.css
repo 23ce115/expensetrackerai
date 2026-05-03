@@ -384,6 +384,7 @@ body::after {
   height: 32px;
   border-radius: 9px;
   position: relative;
+  margin-bottom: 7px;
   z-index: 50;
   display: flex;
   align-items: center;
