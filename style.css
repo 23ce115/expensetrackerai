@@ -278,8 +278,10 @@ body::after {
    ════════════════════════════════════════════════════════════ */
 .topbar {
   height: 60px;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  padding: 0 1.5rem;
   justify-content: space-between;
   padding: 0 1.5rem;
   flex-shrink: 0;
@@ -334,6 +336,7 @@ body::after {
 .topbar-right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 
@@ -4543,6 +4546,9 @@ select.form-input option,
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  max-width: 420px; /* limit size */
+  width: 100%;
+  margin: 0 auto; /* center it */
   padding: 0.7rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
