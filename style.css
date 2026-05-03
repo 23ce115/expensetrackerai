@@ -424,28 +424,25 @@ body::after {
 }
 .settings-menu {
   display: none;
-  position: absolute;
+  position: fixed !important;
   top: calc(100% + 8px);
-  left: 50%;
+  right: 16px !important;
+  left: auto !important;
   transform: translateX(-50%);
-  right: auto;
   background: #0f1020;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(129, 140, 248, 0.08);
-  min-width: 218px;
-  z-index: 1000;
+  width: 240px !important;
+  min-width: unset !important;
+  max-width: 240px !important;
+  max-height: calc(100vh - 80px) !important;
+  overflow-y: auto !important;
+  z-index: 9999 !important;
   padding: 0.3rem;
   overflow: hidden;
-}
-
-.settings-dropdown {
-  outline: 1px solid red;
-}
-.settings-menu {
-  outline: 1px solid green;
 }
 
 .settings-menu.open {
@@ -5018,17 +5015,14 @@ body::before {
 /* Settings icon button — subtle */
 .settings-dropdown .tb-icon {
   background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   width: 34px;
   height: 34px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    DB BODY + SCROLLABLE AREA
-   ═══════════════════════════════════════════════════════════════ */
-.db-body {
-  padding: var(--space-lg) var(--space-lg);
-  overflow-y: auto;
+   ══════════════════════════════════════
   flex: 1;
 }
 
