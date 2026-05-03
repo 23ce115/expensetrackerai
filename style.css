@@ -415,12 +415,14 @@ body::after {
    ════════════════════════════════════════════════════════════ */
 .settings-dropdown {
   position: relative;
+  display: inline-block;
 }
 .settings-menu {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
+  left: auto;
   background: #0f1020;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
@@ -432,6 +434,14 @@ body::after {
   padding: 0.3rem;
   overflow: hidden;
 }
+
+.settings-dropdown {
+  outline: 1px solid red;
+}
+.settings-menu {
+  outline: 1px solid green;
+}
+
 .settings-menu.open {
   display: block;
 }
@@ -4708,6 +4718,7 @@ select.form-input option,
    BlueLedger — Premium Fintech UI Overrides
    Complete redesign: hierarchy · spacing · visual quality
    ═══════════════════════════════════════════════════════════════ */
+
 /* ─── Design Tokens (premium refinement) ──────────────────────── */
 :root {
   --bg: #070810;
@@ -5841,21 +5852,4 @@ body::before {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-}
-
-/* FIX: Settings menu opens to the RIGHT of sidebar, not left */
-.sidebar .settings-dropdown {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.sidebar .settings-menu {
-  position: fixed;
-  left: 80px;
-  bottom: 60px;
-  top: auto;
-  right: auto;
-  transform: none;
 }
