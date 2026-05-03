@@ -5873,7 +5873,7 @@ body::before {
   gap: 0 !important;
 } */
 
-/* .db-card-panel .db-panel-header {
+.db-card-panel .db-panel-hdr {
   position: static !important;
   z-index: auto !important;
   background: transparent !important;
@@ -5882,7 +5882,7 @@ body::before {
   border: none !important;
   box-shadow: none !important;
   padding: 0 0 12px 0 !important;
-} */
+}
 
 .db-card-panel .db-panel-title {
   font-size: 6rem !important;
