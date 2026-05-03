@@ -415,14 +415,17 @@ body::after {
    ════════════════════════════════════════════════════════════ */
 .settings-dropdown {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .settings-menu {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
-  left: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
   background: #0f1020;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
