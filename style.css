@@ -5867,11 +5867,11 @@ body::before {
   overflow: hidden;
 }
 
-.db-card-panel {
+/* .db-card-panel {
   display: flex !important;
   flex-direction: column !important;
   gap: 0 !important;
-}
+} */
 
 .db-card-panel .db-panel-header {
   position: static !important;
