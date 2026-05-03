@@ -5867,13 +5867,6 @@ body::before {
   overflow: hidden;
 }
 
-.db-card-panel .db-panel-title {
-  font-size: 6rem !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  background: transparent !important;
-}
-
 .my-card-panel {
   font-size: 6rem;
   font-weight: 700;
