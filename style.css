@@ -5885,14 +5885,14 @@ body::before {
 } */
 
 .db-card-panel .db-panel-title {
-  font-size: 1rem !important;
+  font-size: 6rem !important;
   font-weight: 800 !important;
   color: #ffffff !important;
   background: transparent !important;
 }
 
 .my-card-panel {
-  font-size: 0.85rem;
+  font-size: 6rem;
   font-weight: 700;
   color: var(--t2);
   letter-spacing: 0.04em;
