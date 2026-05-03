@@ -5254,9 +5254,11 @@ body::before {
 
 .db-card-panel .db-panel-hdr {
   position: relative !important;
-  z-index: auto !important;
-  background: transparent !important;
+  z-index: 50px !important;
+  background: rgba(9, 10, 22, 0.95) !important;
   border: none !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 0 !important;
   box-shadow: none !important;
   padding: 0 0 10px 0 !important;
   margin-bottom: 0 !important;
@@ -5286,6 +5288,10 @@ body::before {
 
 /* Taller card stack for prominence */
 .card-stack-v2 {
+  position: static !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   height: 186px !important;
   margin-top: 4px !important;
   flex-shrink: 0 !important;
