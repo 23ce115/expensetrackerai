@@ -384,11 +384,14 @@ body::after {
   height: 32px;
   border-radius: 9px;
   position: relative;
-  z-index: 50;
+  top: 0;
+  right:0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--border);
   color: var(--t3);
   font-size: 0.84rem;
@@ -855,7 +858,9 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  position: relative;
+  z-index: 20;
+  margin-bottom: 8px;
 }
 .db-panel-title {
   font-size: 0.87rem;
