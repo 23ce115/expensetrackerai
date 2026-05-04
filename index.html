@@ -620,38 +620,40 @@
               <!-- My Card -->
               <!-- My Card -->
 <div class="db-panel db-card-panel">
+
+  <!-- Header: title + options -->
   <div class="db-panel-hdr">
     <span class="db-card-title">My Card</span>
-    <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
+    <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)" 
+            title="Card options" aria-label="Card options">
+      <i class="fas fa-ellipsis-h"></i>
+    </button>
   </div>
 
-  <!--
-    Premium interactive card stack.
-    JS renders .card-item elements into this container.
-    mouseleave on the CONTAINER resets hover state.
-  -->
+  <!-- Flip card container — JS renders into this -->
   <div class="card-stack-v2" id="cardStackContainer">
-    <!-- Cards injected by renderCardStack() in script.js -->
-    <!-- Fallback placeholder shown until JS runs -->
     <div class="csv2-placeholder">
       <div class="csv2-shimmer"></div>
     </div>
   </div>
 
-  <!-- Dot-indicator pagination (rendered by JS) -->
+  <!-- Dot pagination — JS renders into this -->
   <div class="card-stack-dots" id="cardStackDots"></div>
 
-  <!-- Card action buttons -->
+  <!-- Action buttons -->
   <div class="card-action-row">
-    <button class="card-action-btn card-action-add" onclick="addNewCard()">
+    <button class="card-action-btn card-action-add" 
+            onclick="addNewCard()">
       <i class="fas fa-plus"></i>
       <span>Add Card</span>
     </button>
-    <button class="card-action-btn card-action-remove" onclick="confirmDeleteCard(window.activeCardIdx ?? 0)">
+    <button class="card-action-btn card-action-remove" 
+            onclick="confirmDeleteCard(window.activeCardIdx ?? 0)">
       <i class="fas fa-trash-alt"></i>
       <span>Remove</span>
     </button>
   </div>
+
 </div>
 
               <!-- Recent Transactions mini list -->
