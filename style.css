@@ -1829,14 +1829,20 @@ select.form-input option,
   color: var(--t3);
   margin-bottom: 1.4rem;
 }
-.lock-logo {
-  width: 30px;
-  height: 30px;
-  color: var(--accent);
+
+.lock-header {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 0.35rem;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.lock-logo {
+ width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  padding: 10px;
+  backdrop-filter: blur(6px);
 }
 .lock-error,
 .auth-error {
