@@ -1834,15 +1834,25 @@ select.form-input option,
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  width: 100%;           
+  margin-bottom: 24px;
+  text-align: center;
 }
 .lock-logo {
- width: 70px;
-  height: 70px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.03);
-  padding: 10px;
-  backdrop-filter: blur(6px);
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;   
+  border-radius: 20px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
+}
+.lock-logo img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
 }
 .lock-error,
 .auth-error {
