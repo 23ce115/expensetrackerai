@@ -397,16 +397,8 @@
             <div id="cardSwitcher" class="card-switcher"></div>
           </div>
 
-          <div class="topbar-search">
-            <i class="fas fa-search"></i>
-            <input
-              type="text"
-              id="topbarSearch"
-              placeholder="Search payment..."
-              autocomplete="off"
-              oninput="onSearchInput(this.value); _syncTopbarSearch(this.value)"
-            />
-          </div>
+          <!-- topbar search moved to Transactions panel -->
+          <div id="topbarSearch" style="display:none"></div>
 
           <div class="topbar-right">
             <!-- Settings dropdown -->
@@ -678,6 +670,41 @@
 
               <!-- rightPanelTxnList kept for JS compat (hidden) -->
               <div id="rightPanelTxnList" style="display:none"></div>
+
+              <!-- Transactions Panel with Search -->
+              <div class="db-panel rp-txn-panel">
+                <div class="db-panel-hdr">
+                  <span class="db-panel-title">Transactions</span>
+                  <span class="db-view-all" onclick="openTxnFullPage()">View All <i class="fas fa-chevron-right" style="font-size:.6rem"></i></span>
+                </div>
+
+                <!-- Search bar -->
+                <div class="rp-search-bar">
+                  <i class="fas fa-search rp-search-icon"></i>
+                  <input
+                    type="text"
+                    id="rpTxnSearch"
+                    class="rp-search-input"
+                    placeholder="Search by description, category or amount…"
+                    autocomplete="off"
+                  />
+                  <button class="rp-search-clear" id="rpSearchClear" onclick="_rpClearSearch()" style="display:none" aria-label="Clear search">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+
+                <!-- Filter chips -->
+                <div class="rp-filter-chips">
+                  <button class="rp-chip rp-chip--active" data-filter="all" onclick="_rpFilter(this,'all')">All</button>
+                  <button class="rp-chip" data-filter="income" onclick="_rpFilter(this,'income')">Income</button>
+                  <button class="rp-chip" data-filter="expense" onclick="_rpFilter(this,'expense')">Expense</button>
+                </div>
+
+                <!-- Results list -->
+                <div id="rpTxnList" class="rp-txn-list">
+                  <div class="rp-empty"><i class="fas fa-receipt"></i><span>No transactions yet</span></div>
+                </div>
+              </div>
 
 
             </div><!-- /db-right -->
@@ -2243,35 +2270,114 @@
     <!-- Premium UI bridge -->
     <script>
     (function() {
-      function updateRightTxns() {
-        var c = document.getElementById('rightPanelTxnList');
-        if (!c) return;
+      /* ── Right-panel transaction renderer ─────────────────────────
+         Supports: text search (desc/cat/amount) + type filter
+         Called after every refreshAll() and after search input
+      ──────────────────────────────────────────────────────────────── */
+      var _rpQuery  = '';
+      var _rpFilter = 'all';
+      var _rpTimer  = null;
+
+      function renderRpTxns() {
+        var list = document.getElementById('rpTxnList');
+        if (!list) return;
+
         var txns = window.transactions || [];
+
+        // 1. Type filter
+        if (_rpFilter !== 'all') {
+          txns = txns.filter(function(t){ return t.type === _rpFilter; });
+        }
+
+        // 2. Text search — description, category, amount
+        if (_rpQuery) {
+          var q = _rpQuery.toLowerCase().trim();
+          txns = txns.filter(function(t) {
+            var desc = (t.description || '').toLowerCase();
+            var cat  = (t.category    || '').toLowerCase();
+            var amt  = String(Math.abs(t.amount || 0));
+            return desc.includes(q) || cat.includes(q) || amt.includes(q);
+          });
+        }
+
+        // 3. Most-recent first, cap at 30
+        txns = txns.slice().reverse().slice(0, 30);
+
         if (!txns.length) {
-          c.innerHTML = '<div class="rp-empty"><i class="fas fa-receipt"></i><span>No transactions yet</span></div>';
+          list.innerHTML = '<div class="rp-empty"><i class="fas fa-receipt"></i><span>'
+            + (_rpQuery ? 'No results for "' + _rpQuery + '"' : 'No transactions yet')
+            + '</span></div>';
           return;
         }
-        c.innerHTML = txns.slice(-8).reverse().map(function(t) {
-          var inc = t.type === 'income';
-          var col = inc ? '#34d399' : '#f97316';
+
+        list.innerHTML = txns.map(function(t) {
+          var inc  = t.type === 'income';
+          var col  = inc ? '#34d399' : '#f97316';
           var sign = inc ? '+' : '-';
           var icon = inc ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-          var desc = (t.description || t.category || 'Transaction').substring(0,22);
-          var cat = (t.category || 'Other').substring(0,14);
-          var amt = '\u20b9' + Math.abs(t.amount||0).toLocaleString('en-IN');
+          var desc = (t.description || t.category || 'Transaction').substring(0, 24);
+          var cat  = (t.category || 'Other').substring(0, 16);
+          var amt  = '₹' + Math.abs(t.amount || 0).toLocaleString('en-IN');
+          var bg   = inc ? 'rgba(52,211,153,0.1)' : 'rgba(249,115,22,0.1)';
+
+          // Highlight matched text
+          function hl(str) {
+            if (!_rpQuery) return str;
+            var re = new RegExp('(' + _rpQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+            return str.replace(re, '<mark class="rp-hl">$1</mark>');
+          }
+
           return '<div class="rp-txn-row">'
-            + '<div class="rp-txn-icon" style="background:'+(inc?'rgba(52,211,153,0.1)':'rgba(249,115,22,0.1)')+';color:'+col+'"><i class="fas '+icon+'"></i></div>'
-            + '<div class="rp-txn-info"><div class="rp-txn-desc">'+desc+'</div><div class="rp-txn-cat">'+cat+'</div></div>'
-            + '<div class="rp-txn-amt" style="color:'+col+'">'+sign+amt+'</div>'
+            + '<div class="rp-txn-icon" style="background:' + bg + ';color:' + col + '">'
+            + '<i class="fas ' + icon + '"></i></div>'
+            + '<div class="rp-txn-info">'
+            + '<div class="rp-txn-desc">' + hl(desc) + '</div>'
+            + '<div class="rp-txn-cat">'  + hl(cat)  + '</div>'
+            + '</div>'
+            + '<div class="rp-txn-amt" style="color:' + col + '">' + sign + amt + '</div>'
             + '</div>';
         }).join('');
       }
+
+      /* ── Expose globals so HTML onclick handlers can call them ──── */
+      window._rpFilter = function(btn, type) {
+        _rpFilter = type;
+        document.querySelectorAll('.rp-chip').forEach(function(c){
+          c.classList.toggle('rp-chip--active', c.dataset.filter === type);
+        });
+        renderRpTxns();
+      };
+
+      window._rpClearSearch = function() {
+        var inp = document.getElementById('rpTxnSearch');
+        var clr = document.getElementById('rpSearchClear');
+        if (inp) inp.value = '';
+        if (clr) clr.style.display = 'none';
+        _rpQuery = '';
+        renderRpTxns();
+      };
+
+      /* ── Wire up search input after DOM ready ───────────────────── */
+      document.addEventListener('DOMContentLoaded', function() {
+        var inp = document.getElementById('rpTxnSearch');
+        var clr = document.getElementById('rpSearchClear');
+        if (inp) {
+          inp.addEventListener('input', function(e) {
+            _rpQuery = e.target.value.trim();
+            if (clr) clr.style.display = _rpQuery ? 'flex' : 'none';
+            clearTimeout(_rpTimer);
+            _rpTimer = setTimeout(renderRpTxns, 300);
+          });
+        }
+      });
+
+      /* ── Hook into refreshAll so panel updates with data ─────────── */
       var _t = setInterval(function() {
         if (typeof window.refreshAll === 'function' && !window._blBridgeDone) {
           var orig = window.refreshAll;
           window.refreshAll = function() {
             orig.apply(this, arguments);
-            setTimeout(updateRightTxns, 60);
+            setTimeout(renderRpTxns, 60);
             try {
               var name = (window.userData && window.userData.name) || '';
               if (name) {
@@ -2286,50 +2392,21 @@
           clearInterval(_t);
         }
       }, 150);
+
       window.setDbFilter = function(btn) {
         document.querySelectorAll('.db-pill').forEach(function(p){p.classList.remove('active');});
         btn.classList.add('active');
       };
+
+      /* expose for external calls */
+      window._renderRpTxns = renderRpTxns;
     })();
     </script>
   
     <!-- ═══ PREMIUM UI ENHANCEMENTS ═══════════════════════════════ -->
     <script>
     (function() {
-      // ── Debounced search (300ms) ───────────────────────────────
-      var _searchTimer = null;
-      function debounceSearch(val) {
-        clearTimeout(_searchTimer);
-        _searchTimer = setTimeout(function() {
-          if (typeof onSearchInput === 'function') onSearchInput(val);
-        }, 300);
-      }
-
-      // Patch topbar search to use debounce
       document.addEventListener('DOMContentLoaded', function() {
-        var ts = document.getElementById('topbarSearch');
-        if (ts) {
-          ts.oninput = null;
-          ts.addEventListener('input', function(e) {
-            debounceSearch(e.target.value);
-            // sync with txnSearch
-            var txnS = document.getElementById('txnSearch');
-            if (txnS) txnS.value = e.target.value;
-          });
-        }
-
-        // Sync txnSearch -> topbarSearch
-        var txnS = document.getElementById('txnSearch');
-        if (txnS) {
-          var origInput = txnS.oninput;
-          txnS.oninput = null;
-          txnS.addEventListener('input', function(e) {
-            debounceSearch(e.target.value);
-            var ts2 = document.getElementById('topbarSearch');
-            if (ts2) ts2.value = e.target.value;
-          });
-        }
-
         // ── Header date formatting ─────────────────────────────
         var hd = document.getElementById('headerDate');
         if (hd) {
