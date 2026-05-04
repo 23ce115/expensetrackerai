@@ -1858,10 +1858,7 @@ select.form-input option,
   align-items: center;
   border-radius: 36px;
   background: rgba(13, 14, 30, 0.8);
-  border: 1px solid rgba(129, 140, 248, 0.2);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   margin: 0 auto 1.75rem;
   overflow: hidden;
 }
