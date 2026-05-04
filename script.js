@@ -6661,7 +6661,7 @@ function switchCardForAdd(idx) {
 
 function openBnSettings() {
   safeAddClass(safeGet("bnSettingsPanel"), "open");
-  safeAddClass(safeGet("bnSettingsOverlay"), "open");
+  // No overlay for compact desktop panel - closed by outside click
   openBnSettingsWithSync();
 }
 
@@ -7412,8 +7412,15 @@ function openPrivacyModal() {
 }
 
 // Close settings menu when clicking outside
-// Removed: old settingsDropdown global click-to-close intercepted every click
-// and immediately closed the settings panel after opening it.
+document.addEventListener("click", (e) => {
+  // Close compact settings panel on outside click
+  const panel = document.getElementById("bnSettingsPanel");
+  if (panel && panel.classList.contains("open") &&
+      !e.target.closest("#bnSettingsPanel") &&
+      !e.target.closest(".sb-btn[title='Settings']")) {
+    closeBnSettings();
+  }
+});
 
 function openResetModal() {
   openModal("resetModal");
