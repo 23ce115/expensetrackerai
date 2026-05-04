@@ -1763,6 +1763,14 @@ select.form-input option,
 /* ════════════════════════════════════════════════════════════
    AUTH & LOCK
    ════════════════════════════════════════════════════════════ */
+  
+.lock-screen{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 .lock-screen,
 .auth-screen {
   position: fixed;
@@ -6042,4 +6050,489 @@ body::before {
   padding-top: 14px !important;
   border-top: 1px solid rgba(255,255,255,0.05) !important;
   flex-shrink: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BlueLedger — Card Flip Interaction CSS
+   Paste at the VERY END of style.css
+   Replaces: hover/stack system → click 3D flip
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. KILL ALL HOVER STACK RULES ─────────────────────────────── */
+
+/* Remove all rank-based stacking transforms */
+.card-item.rank-0,
+.card-item.rank-1,
+.card-item.rank-2,
+.card-item.rank-3 {
+  /* Reset positioning — flip system takes over */
+  position: static !important;
+  bottom: auto !important;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove hover state classes */
+.card-item.is-hovered,
+.card-item.is-top,
+.card-item.is-active {
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Kill hover-driven sibling fade */
+.card-stack-v2.hovering .card-item:not(.is-hovered),
+.card-stack-v2.fan-open .card-item:not(.is-hovered) {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Remove fan-open height change */
+.card-stack-v2.fan-open {
+  height: auto !important;
+}
+
+/* Kill glow-ring pulse on hover */
+.card-item.is-hovered::after {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+/* ── 2. CARD STACK CONTAINER — clean slate ──────────────────────── */
+.card-stack-v2 {
+  position: relative !important;
+  height: auto !important;
+  min-height: unset !important;
+  margin-top: 8px !important;
+  overflow: visible !important;
+  perspective: 1000px !important;
+  perspective-origin: 50% 50% !important;
+  flex-shrink: 0 !important;
+  cursor: default !important;
+}
+
+/* ── 3. FLIP SCENE ──────────────────────────────────────────────── */
+.cs-flip-scene {
+  width: 100%;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+}
+
+/* ── 4. THE FLIP CARD ───────────────────────────────────────────── */
+.cs-flip-card {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  padding: 1.35rem 1.4rem 1.2rem;
+  overflow: hidden;
+  cursor: pointer;
+
+  /* 3D transform setup */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transform: rotateY(0deg) scale(1);
+
+  /* Default transition (overridden by JS during flip) */
+  transition: box-shadow 0.25s ease;
+
+  /* Glassmorphism */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+
+  /* Rich shadow */
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.55),
+    0 0 80px var(--card-accent-glow, rgba(129, 140, 248, 0.15)),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+/* Per-theme gradients (reuse existing data-theme system) */
+.cs-flip-card[data-theme="0"] {
+  background: linear-gradient(135deg, #0d2b20 0%, #133828 45%, #1a4a30 100%);
+  --card-accent: rgba(16, 185, 129, 0.7);
+  --card-accent-glow: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.22) !important;
+}
+.cs-flip-card[data-theme="1"] {
+  background: linear-gradient(135deg, #0d1a35 0%, #152240 45%, #1a2d52 100%);
+  --card-accent: rgba(59, 130, 246, 0.7);
+  --card-accent-glow: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.22) !important;
+}
+.cs-flip-card[data-theme="2"] {
+  background: linear-gradient(135deg, #2b1d08 0%, #3a2510 45%, #4a2e12 100%);
+  --card-accent: rgba(245, 158, 11, 0.7);
+  --card-accent-glow: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.22) !important;
+}
+.cs-flip-card[data-theme="3"] {
+  background: linear-gradient(135deg, #2b0d20 0%, #3a1228 45%, #4a163a 100%);
+  --card-accent: rgba(236, 72, 153, 0.7);
+  --card-accent-glow: rgba(236, 72, 153, 0.2);
+  border-color: rgba(236, 72, 153, 0.22) !important;
+}
+
+/* Subtle lift on hover (not stacking — just depth signal) */
+.cs-flip-card:hover {
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.65),
+    0 0 100px var(--card-accent-glow, rgba(129, 140, 248, 0.25)),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+/* ── 5. CARD FACE CONTENTS ──────────────────────────────────────── */
+.cs-flip-card__face {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* Shine overlay */
+.cs-flip-card__shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Ambient glow blobs */
+.cs-flip-card__blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.cs-flip-card__blob--tl {
+  top: -40px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 65%
+  );
+}
+.cs-flip-card__blob--br {
+  bottom: -25px;
+  left: 10px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.07) 0%,
+    transparent 65%
+  );
+}
+
+/* ── 6. CARD INNER TYPOGRAPHY ───────────────────────────────────── */
+.cs-flip-card .ci-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  position: relative;
+  z-index: 3;
+}
+
+.cs-flip-card .ci-nick {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cs-flip-card .ci-chip {
+  width: 28px;
+  height: 20px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.cs-flip-card .ci-number {
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 0.75rem;
+  font-family: "Courier New", monospace;
+  position: relative;
+  z-index: 3;
+}
+
+.cs-flip-card .ci-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.1rem;
+  position: relative;
+  z-index: 3;
+}
+
+.cs-flip-card .ci-holder {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cs-flip-card .ci-bank {
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+}
+
+.cs-flip-card .ci-expiry-col {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cs-flip-card .ci-exp-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.28);
+  margin-bottom: 3px;
+}
+
+.cs-flip-card .ci-exp-val {
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cs-flip-card .ci-spending {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 3;
+}
+
+.cs-flip-card .ci-spend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.67rem;
+  color: rgba(255, 255, 255, 0.42);
+  margin-bottom: 0.25rem;
+}
+
+.cs-flip-card .ci-spend-limit {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.cs-flip-card .ci-spend-used {
+  font-size: 0.63rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 0.4rem;
+}
+
+.cs-flip-card .ci-progress {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.cs-flip-card .ci-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--card-accent, rgba(129, 140, 248, 0.8)),
+    rgba(255, 255, 255, 0.3)
+  );
+  transition: width 0.5s ease;
+}
+
+.cs-flip-card .ci-progress-danger {
+  background: linear-gradient(90deg, #ef4444, #fca5a5) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ── 7. NAVIGATION ARROWS ───────────────────────────────────────── */
+.cs-flip-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.cs-flip-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+
+.cs-flip-arrow:hover {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.28);
+  color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.08);
+}
+
+.cs-flip-arrow:active {
+  transform: scale(0.95);
+}
+
+/* ── 8. DOTS ────────────────────────────────────────────────────── */
+/* Override existing dot styles to work with new layout */
+.card-stack-dots {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  min-height: 14px !important;
+}
+
+.cs-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  transition:
+    background 0.25s ease,
+    width 0.25s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.cs-dot.is-active {
+  background: rgba(255, 255, 255, 0.72) !important;
+  width: 18px !important;
+  border-radius: 4px !important;
+}
+
+.cs-dot:hover:not(.is-active) {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* ── 9. MY CARD PANEL — final layout ───────────────────────────── */
+.db-card-panel {
+  overflow: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 1.3rem 1.35rem 1.15rem !important;
+  min-height: unset !important;
+  gap: 0 !important;
+  position: relative !important;
+}
+
+.db-card-panel .db-panel-hdr {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.db-card-panel .db-card-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+}
+
+.db-card-panel .tb-icon-sm {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--t3) !important;
+  position: static !important;
+}
+
+/* Card action buttons */
+.card-action-row {
+  display: flex !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── 10. EMPTY STATE ────────────────────────────────────────────── */
+.csv2-empty-state {
+  position: relative !important;
+  height: 190px !important;
+}
+
+/* ── 11. LIGHT THEME ────────────────────────────────────────────── */
+[data-theme="light"] .cs-flip-card[data-theme="0"] {
+  background: linear-gradient(135deg, #065f46 0%, #047857 45%, #059669 100%);
+}
+[data-theme="light"] .cs-flip-card[data-theme="1"] {
+  background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 45%, #2563eb 100%);
+}
+[data-theme="light"] .cs-flip-card[data-theme="2"] {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 45%, #d97706 100%);
+}
+[data-theme="light"] .cs-flip-card[data-theme="3"] {
+  background: linear-gradient(135deg, #831843 0%, #be185d 45%, #db2777 100%);
+}
+
+/* ── 12. RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cs-flip-card {
+    padding: 1.2rem 1.25rem 1.1rem !important;
+  }
+  .cs-flip-card .ci-number {
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .cs-flip-card {
+    padding: 1.1rem 1.15rem 1rem !important;
+    border-radius: 18px !important;
+  }
+  .cs-flip-card .ci-number {
+    font-size: 0.78rem !important;
+    letter-spacing: 0.14em !important;
+  }
+  .cs-flip-arrow {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.7rem !important;
+  }
 }
