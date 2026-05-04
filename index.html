@@ -481,7 +481,7 @@
           </div>
 
           <!-- Two-column grid -->
-          <div class="db-grid">
+          <div class="db-grid" id="dashboardGrid">
 
             <!-- LEFT -->
             <div class="db-left">
@@ -514,7 +514,7 @@
               </div>
 
               <!-- Chart card -->
-              <div class="db-chart-card">
+              <div class="db-chart-card section-revenue">
                 <div class="dcc-header">
                   <span class="dcc-title">Revenue Overview</span>
                   <div class="dcc-legend">
@@ -533,11 +533,11 @@
                 <div id="chartLabels" style="display:none"></div>
               </div>
 
-              <!-- Bottom row: Expenses + Insights -->
+              <!-- Bottom row: Insights -->
               <div class="db-bottom-row">
 
                 <!-- Insights -->
-                <div class="card insights-card" id="insightsSection" style="display:none">
+                <div class="card insights-card section-insights" id="insightsSection" style="display:none">
                   <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-brain" style="color:#a78bfa;margin-right:.4rem"></i>Insights</h3>
                     <div style="display:flex;align-items:center;gap:.5rem">
@@ -636,7 +636,7 @@
 </div>
 
               <!-- All Expenses (moved from db-left) -->
-              <div class="db-panel">
+              <div class="db-panel section-expenses">
                 <div class="db-panel-hdr">
                   <span class="db-panel-title">All Expenses <span id="expBadge" style="font-size:.66rem;font-weight:400;color:var(--c-muted)"></span></span>
                   <button class="set-budgets-btn" onclick="openBudgetModal()"><i class="fas fa-sliders-h"></i> Budgets</button>
@@ -652,6 +652,37 @@
                 <ul class="expense-categories" id="categoryList"></ul>
               </div>
 
+
+              <!-- Inline Monthly Report Panel (state-driven, shows in right col) -->
+              <div class="db-panel section-report" id="inlineSummaryPanel" style="display:none">
+                <div class="db-panel-hdr">
+                  <span class="db-panel-title"><i class="fas fa-chart-pie" style="color:#818cf8;margin-right:.4rem;font-size:.75rem"></i>Monthly Report</span>
+                  <span class="inline-report-month" id="inlineReportMonth"></span>
+                </div>
+                <div class="inline-report-grid">
+                  <div class="inline-report-stat">
+                    <div class="inline-report-label">Income</div>
+                    <div class="inline-report-value positive" id="inlineInc">₹0</div>
+                  </div>
+                  <div class="inline-report-stat">
+                    <div class="inline-report-label">Expenses</div>
+                    <div class="inline-report-value negative" id="inlineExp">₹0</div>
+                  </div>
+                  <div class="inline-report-stat">
+                    <div class="inline-report-label">Net Balance</div>
+                    <div class="inline-report-value" id="inlineNet">₹0</div>
+                  </div>
+                  <div class="inline-report-stat">
+                    <div class="inline-report-label">Surplus/Deficit</div>
+                    <div class="inline-report-value positive" id="inlineSurplus">—</div>
+                  </div>
+                </div>
+                <div class="inline-report-divider"></div>
+                <div class="inline-report-cats" id="inlineCatList"></div>
+                <button class="inline-report-full-btn" onclick="openMonthlySummary()">
+                  <i class="fas fa-expand-alt"></i> Full Report
+                </button>
+              </div>
 
               <!-- rightPanelTxnList kept for JS compat (hidden) -->
               <div id="rightPanelTxnList" style="display:none"></div>
@@ -2366,6 +2397,174 @@
       });
     })();
     </script>
+
+  <!-- ═══ ADAPTIVE LAYOUT BRIDGE ═══════════════════════════════ -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Colour palette for category dots ──────────────────────
+    var CAT_COLORS = [
+      '#f97316','#818cf8','#34d399','#f59e0b','#ec4899',
+      '#06b6d4','#a78bfa','#10b981','#ef4444','#3b82f6'
+    ];
+
+    // ── Format currency ────────────────────────────────────────
+    function fmt(n) {
+      return '\u20b9' + Math.abs(n || 0).toLocaleString('en-IN');
+    }
+
+    // ── Update the inline monthly report panel ─────────────────
+    function refreshInlineReport() {
+      var panel = document.getElementById('inlineSummaryPanel');
+      if (!panel) return;
+
+      var txns = window.transactions || [];
+      if (!txns.length) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      // Current month
+      var now = new Date();
+      var yr  = now.getFullYear();
+      var mo  = now.getMonth();
+
+      var monthTxns = txns.filter(function(t) {
+        var d = new Date(t.date + 'T00:00:00');
+        return d.getFullYear() === yr && d.getMonth() === mo;
+      });
+
+      var inc = monthTxns
+        .filter(function(t) { return t.type === 'income'; })
+        .reduce(function(s, t) { return s + Math.abs(t.amount || 0); }, 0);
+
+      var exp = monthTxns
+        .filter(function(t) { return t.type !== 'income'; })
+        .reduce(function(s, t) { return s + Math.abs(t.amount || 0); }, 0);
+
+      var net     = inc - exp;
+      var surplus = net >= 0;
+
+      // Month label
+      var monthLabel = now.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+      var ml = document.getElementById('inlineReportMonth');
+      if (ml) ml.textContent = monthLabel;
+
+      // Values
+      var elInc = document.getElementById('inlineInc');
+      var elExp = document.getElementById('inlineExp');
+      var elNet = document.getElementById('inlineNet');
+      var elSurplus = document.getElementById('inlineSurplus');
+
+      if (elInc) elInc.textContent = fmt(inc);
+      if (elExp) elExp.textContent = fmt(exp);
+      if (elNet) {
+        elNet.textContent = (net >= 0 ? '+' : '-') + fmt(Math.abs(net));
+        elNet.className = 'inline-report-value ' + (net >= 0 ? 'positive' : 'negative');
+      }
+      if (elSurplus) {
+        elSurplus.textContent = (surplus ? '+' : '-') + fmt(Math.abs(net)) + (surplus ? ' Surplus' : ' Deficit');
+        elSurplus.className = 'inline-report-value ' + (surplus ? 'positive' : 'negative');
+      }
+
+      // Category breakdown
+      var cats = {};
+      monthTxns
+        .filter(function(t) { return t.type !== 'income'; })
+        .forEach(function(t) {
+          var c = t.category || 'Other';
+          cats[c] = (cats[c] || 0) + Math.abs(t.amount || 0);
+        });
+
+      var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
+      var catEl = document.getElementById('inlineCatList');
+      if (catEl) {
+        if (sorted.length === 0) {
+          catEl.innerHTML = '<div style="font-size:.72rem;color:var(--t3);text-align:center;padding:.4rem 0">No expenses this month</div>';
+        } else {
+          catEl.innerHTML = sorted.slice(0, 5).map(function(entry, i) {
+            var color = CAT_COLORS[i % CAT_COLORS.length];
+            return '<div class="irc-row">'
+              + '<span class="irc-name">'
+              + '<span class="irc-dot" style="background:' + color + '"></span>'
+              + entry[0]
+              + '</span>'
+              + '<span class="irc-amount">' + fmt(entry[1]) + '</span>'
+              + '</div>';
+          }).join('');
+        }
+      }
+
+      panel.style.display = '';
+    }
+
+    // ── Toggle insights-active class on dashboard grid ─────────
+    function syncGridState() {
+      var grid = document.getElementById('dashboardGrid');
+      if (!grid) return;
+
+      var insightsSec = document.getElementById('insightsSection');
+      var isVisible = insightsSec && insightsSec.style.display !== 'none';
+
+      // Show/hide inline report only when on desktop
+      var inlinePanel = document.getElementById('inlineSummaryPanel');
+      if (inlinePanel) {
+        var txns = window.transactions || [];
+        var hasData = txns.length > 0;
+        inlinePanel.style.display = hasData ? '' : 'none';
+      }
+    }
+
+    // ── Observe insightsSection visibility changes ─────────────
+    function watchInsights() {
+      var target = document.getElementById('insightsSection');
+      if (!target) {
+        setTimeout(watchInsights, 400);
+        return;
+      }
+
+      var obs = new MutationObserver(function() {
+        syncGridState();
+        refreshInlineReport();
+      });
+      obs.observe(target, { attributes: true, attributeFilter: ['style'] });
+
+      // Initial sync
+      syncGridState();
+    }
+
+    // ── Hook into refreshAll ───────────────────────────────────
+    var _hookTimer = setInterval(function() {
+      if (typeof window.refreshAll === 'function' && !window._adaptiveBridgeDone) {
+        var _origRefreshAll = window.refreshAll;
+        window.refreshAll = function() {
+          _origRefreshAll.apply(this, arguments);
+          setTimeout(function() {
+            syncGridState();
+            refreshInlineReport();
+          }, 80);
+        };
+        window._adaptiveBridgeDone = true;
+        clearInterval(_hookTimer);
+      }
+    }, 200);
+
+    // ── Init ──────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      watchInsights();
+      setTimeout(function() {
+        syncGridState();
+        refreshInlineReport();
+      }, 500);
+    });
+
+    // ── Export for manual refresh ─────────────────────────────
+    window.refreshInlineReport = refreshInlineReport;
+    window.syncDashboardGrid   = syncGridState;
+
+  })();
+  </script>
 
   </body>
 </html>
