@@ -6301,6 +6301,16 @@ function renderMonthlySummary() {
     }
     if (sortedCats.length > 0) {
       pieCanvas.style.display = "block";
+
+      // Build per-segment offset array — top category pops out
+      const offsets = sortedCats.map((_, i) => (i === 0 ? 22 : 0));
+      // Build border widths — top category gets thicker border for definition
+      const borderWidths = sortedCats.map((_, i) => (i === 0 ? 4 : 2));
+      // Top category gets a slightly lighter border colour
+      const borderColors = sortedCats.map((_, i) =>
+        i === 0 ? "rgba(255,255,255,0.25)" : "#0f172a",
+      );
+
       window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
         type: "doughnut",
         data: {
@@ -6309,22 +6319,34 @@ function renderMonthlySummary() {
             {
               data: sortedCats.map(([, a]) => a),
               backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
-              borderColor: "#0f172a",
-              borderWidth: 3,
-              hoverOffset: 0,
+              borderColor: borderColors,
+              borderWidth: borderWidths,
+              offset: offsets,
+              hoverOffset: 8,
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: "52%",
-          animation: { duration: 600 },
+          cutout: "58%",
+          animation: {
+            duration: 700,
+            easing: "easeOutQuart",
+          },
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: (ctx) => {
+                  const pct = exp > 0 ? Math.round((ctx.raw / exp) * 100) : 0;
+                  return ` ${ctx.label}: ₹${ctx.raw.toLocaleString("en-IN")} (${pct}%)`;
+                },
+              },
+            },
           },
-          layout: { padding: 10 },
+          layout: { padding: 20 },
         },
         plugins: [
           {
@@ -6338,13 +6360,23 @@ function renderMonthlySummary() {
                   exp > 0
                     ? Math.round((data.datasets[0].data[i] / exp) * 100)
                     : 0;
-                if (pct < 4) return;
+                if (pct < 5) return;
                 const angle = (arc.startAngle + arc.endAngle) / 2;
                 const r = (arc.innerRadius + arc.outerRadius) / 2;
                 const x = arc.x + Math.cos(angle) * r;
                 const y = arc.y + Math.sin(angle) * r;
-                ctx.font = "bold 12px system-ui, sans-serif";
-                ctx.fillStyle = "#ffffff";
+                // Top segment label: larger + white, others: smaller
+                if (i === 0) {
+                  ctx.font = "bold 13px DM Sans, system-ui, sans-serif";
+                  ctx.fillStyle = "#ffffff";
+                  ctx.shadowColor = "rgba(0,0,0,0.6)";
+                  ctx.shadowBlur = 4;
+                } else {
+                  ctx.font = "bold 11px system-ui, sans-serif";
+                  ctx.fillStyle = "rgba(255,255,255,0.9)";
+                  ctx.shadowColor = "transparent";
+                  ctx.shadowBlur = 0;
+                }
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText(pct + "%", x, y);
