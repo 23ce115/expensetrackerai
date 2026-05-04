@@ -5510,7 +5510,6 @@ function renderTxns(period) {
     return;
   }
 
-  // 🔥 RENDER WITH HIGHLIGHT
   const tableRows = visibleTxns
     .map((t) => {
       const q = searchQuery ? searchQuery.toLowerCase() : "";
@@ -5564,6 +5563,8 @@ function renderTxns(period) {
     .join("");
 
   body.innerHTML = tableRows;
+
+  body.innerHTML = tableRows;
 }
 
 function onSearchInput(val) {
@@ -5597,12 +5598,6 @@ function highlightText(text, query) {
 
   return safeText.replace(regex, `<span class="txn-highlight">$1</span>`);
 }
-
-const q = searchQuery ? searchQuery.toLowerCase() : "";
-
-const categoryHTML = highlightText(t.category, q);
-const descriptionHTML = highlightText(t.description || "-", q);
-const amountHTML = highlightText(fmt(Math.abs(t.amount)), q);
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    EXPENSE ANALYSER — INSIGHTS ENGINE
