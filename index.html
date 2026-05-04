@@ -2198,10 +2198,12 @@
       <div class="search-wrapper">
         <i class="fas fa-search"></i>
           <input 
+            id="txnSearch"
             type="text" 
             id="transactionSearchPage"
             class="search-input" 
             placeholder="Search transactions..." 
+            oninput="onSearchInput(this.value)"
           />
       </div>
       </div>
