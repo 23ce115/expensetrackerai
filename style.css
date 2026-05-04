@@ -1830,7 +1830,8 @@ select.form-input option,
   margin-bottom: 1.4rem;
 }
 .lock-logo {
-  font-size: 1.8rem;
+  width: 30px;
+  height: 30px;
   color: var(--accent);
   display: flex;
   align-items: center;
