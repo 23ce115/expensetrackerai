@@ -5579,9 +5579,13 @@ function renderInsights(sourceTxns = getAnalyticsTransactions()) {
   const allExp = spendingTxns;
   if (allExp.length < 3) {
     section.style.display = "none";
+    if (typeof window.syncDashboardGrid === "function")
+      window.syncDashboardGrid();
     return;
   }
   section.style.display = "block";
+  if (typeof window.syncDashboardGrid === "function")
+    window.syncDashboardGrid();
 
   const now = new Date();
   const thisMonth = spendingTxns.filter((t) => {
@@ -5815,6 +5819,11 @@ function refreshAll() {
   renderAllExpenses(currentPeriod, analyticsTxns);
   renderTxns(currentPeriod);
   renderInsights(analyticsTxns);
+  // Adaptive layout: sync inline report + grid state
+  if (typeof window.refreshInlineReport === "function")
+    window.refreshInlineReport();
+  if (typeof window.syncDashboardGrid === "function")
+    window.syncDashboardGrid();
 }
 window.refreshAll = refreshAll; // FIX: export immediately for cross-module access
 
