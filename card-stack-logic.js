@@ -261,15 +261,38 @@
       /* Update dots */
       renderDots(cards.length, clampedIdx);
 
-      /* Sync script.js state (non-switching, just index sync) */
+      /* Sync script.js state — full card switch pipeline for per-card transactions */
       try {
+        // syncActiveToCards saves current card's transactions before switching
+        if (typeof window.syncActiveToCards === "function") {
+          window.syncActiveToCards();
+        }
+        // loadActiveCard loads the new card's own transactions into `transactions`
+        if (typeof window.loadActiveCard === "function") {
+          window.loadActiveCard();
+        }
         if (typeof window.updateMyCardWidget === "function") {
           window.updateMyCardWidget();
         }
         if (typeof window.renderCardSwitcher === "function") {
           window.renderCardSwitcher();
         }
-      } catch (e) {}
+        // Reset search/filter state so new card's transactions render cleanly
+        if (typeof window.searchQuery !== "undefined") window.searchQuery = "";
+        const si = document.getElementById("txnSearch");
+        if (si) si.value = "";
+        if (typeof window.filterCfg !== "undefined")
+          window.filterCfg = { type: "all", cats: [] };
+        // Re-render transactions, charts, and summary for new card
+        if (typeof window.refreshAll === "function") {
+          window.refreshAll();
+        }
+        if (typeof window.processRecurring === "function") {
+          window.processRecurring();
+        }
+      } catch (e) {
+        console.warn("[CardStack] sync error:", e);
+      }
 
       setTimeout(() => {
         _isAnimating = false;
