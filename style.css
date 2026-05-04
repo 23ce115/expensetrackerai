@@ -1851,20 +1851,17 @@ select.form-input option,
   text-align: center;
 }
 .lock-logo {
-  width: 180px;
-  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto 1.75rem;
-  overflow: hidden;
+  margin: 0 auto 1.25rem;
 }
 .lock-logo img {
-  width: 100%;
-  height: 100%;
+  width: 200px;
+  height: auto;
   object-fit: contain;
   object-position: center;
-  padding: 18px;
+  padding: 0;
 }
 .lock-error,
 .auth-error {
