@@ -1854,10 +1854,10 @@ select.form-input option,
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto 1.25rem;
+  margin: 0 auto 0.5rem;
 }
 .lock-logo img {
-  width: 200px;
+  width: 260px;
   height: auto;
   object-fit: contain;
   object-position: center;
