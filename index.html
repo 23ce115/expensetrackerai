@@ -40,9 +40,7 @@
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOCK SCREEN â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="lockScreen" class="lock-screen" style="display: none">
       <div class="lock-card">
-        <div class="lock-header">
-          <div class="lock-logo"><img src="logo2.svg" alt="BlueLedger" /></div>
-        </div>
+        <div class="lock-logo"><img src="logo2.svg" alt="BlueLedger" /></div>
         <div class="lock-subtitle" id="lockSubtitle">Enter your password to continue</div>
 
         <!-- Password mode -->
@@ -538,23 +536,6 @@
               <!-- Bottom row: Expenses + Insights -->
               <div class="db-bottom-row">
 
-                <!-- All Expenses -->
-                <div class="db-panel">
-                  <div class="db-panel-hdr">
-                    <span class="db-panel-title">All Expenses <span id="expBadge" style="font-size:.66rem;font-weight:400;color:var(--c-muted)"></span></span>
-                    <button class="set-budgets-btn" onclick="openBudgetModal()"><i class="fas fa-sliders-h"></i> Budgets</button>
-                  </div>
-                  <div class="db-panel-sub">Breakdown by category</div>
-                  <div class="total-expenses" id="allExpTotal">₹0</div>
-                  <div class="period-values-row">
-                    <div class="period-val-item"><div class="pv-label">Daily</div><div class="pv-value" id="pvDaily">₹0</div></div>
-                    <div class="period-val-item"><div class="pv-label">Weekly</div><div class="pv-value" id="pvWeekly">₹0</div></div>
-                    <div class="period-val-item"><div class="pv-label">Monthly</div><div class="pv-value" id="pvMonthly">₹0</div></div>
-                  </div>
-                  <div class="color-bar"></div>
-                  <ul class="expense-categories" id="categoryList"></ul>
-                </div>
-
                 <!-- Insights -->
                 <div class="card insights-card" id="insightsSection" style="display:none">
                   <div class="card-header">
@@ -620,52 +601,60 @@
               <!-- My Card -->
               <!-- My Card -->
 <div class="db-panel db-card-panel">
-
-  <!-- Header: title + options -->
   <div class="db-panel-hdr">
     <span class="db-card-title">My Card</span>
-    <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)" 
-            title="Card options" aria-label="Card options">
-      <i class="fas fa-ellipsis-h"></i>
-    </button>
+    <button class="tb-icon-sm" onclick="openCardOptionsMenu(event)"><i class="fas fa-ellipsis-h"></i></button>
   </div>
 
-  <!-- Flip card container — JS renders into this -->
+  <!--
+    Premium interactive card stack.
+    JS renders .card-item elements into this container.
+    mouseleave on the CONTAINER resets hover state.
+  -->
   <div class="card-stack-v2" id="cardStackContainer">
+    <!-- Cards injected by renderCardStack() in script.js -->
+    <!-- Fallback placeholder shown until JS runs -->
     <div class="csv2-placeholder">
       <div class="csv2-shimmer"></div>
     </div>
   </div>
 
-  <!-- Dot pagination — JS renders into this -->
+  <!-- Dot-indicator pagination (rendered by JS) -->
   <div class="card-stack-dots" id="cardStackDots"></div>
 
-  <!-- Action buttons -->
+  <!-- Card action buttons -->
   <div class="card-action-row">
-    <button class="card-action-btn card-action-add" 
-            onclick="addNewCard()">
+    <button class="card-action-btn card-action-add" onclick="addNewCard()">
       <i class="fas fa-plus"></i>
       <span>Add Card</span>
     </button>
-    <button class="card-action-btn card-action-remove" 
-            onclick="confirmDeleteCard(window.activeCardIdx ?? 0)">
+    <button class="card-action-btn card-action-remove" onclick="confirmDeleteCard(window.activeCardIdx ?? 0)">
       <i class="fas fa-trash-alt"></i>
       <span>Remove</span>
     </button>
   </div>
-
 </div>
 
-              <!-- Recent Transactions mini list -->
+              <!-- All Expenses (moved from db-left) -->
               <div class="db-panel">
                 <div class="db-panel-hdr">
-                  <span class="db-panel-title">Transactions</span>
-                  <span class="db-view-all" onclick="openTxnFullPage()">View All <i class="fas fa-chevron-right" style="font-size:.6rem"></i></span>
+                  <span class="db-panel-title">All Expenses <span id="expBadge" style="font-size:.66rem;font-weight:400;color:var(--c-muted)"></span></span>
+                  <button class="set-budgets-btn" onclick="openBudgetModal()"><i class="fas fa-sliders-h"></i> Budgets</button>
                 </div>
-                <div id="rightPanelTxnList" class="rp-txn-list">
-                  <div class="rp-empty"><i class="fas fa-receipt"></i><span>No transactions yet</span></div>
+                <div class="db-panel-sub">Breakdown by category</div>
+                <div class="total-expenses" id="allExpTotal">₹0</div>
+                <div class="period-values-row">
+                  <div class="period-val-item"><div class="pv-label">Daily</div><div class="pv-value" id="pvDaily">₹0</div></div>
+                  <div class="period-val-item"><div class="pv-label">Weekly</div><div class="pv-value" id="pvWeekly">₹0</div></div>
+                  <div class="period-val-item"><div class="pv-label">Monthly</div><div class="pv-value" id="pvMonthly">₹0</div></div>
                 </div>
+                <div class="color-bar"></div>
+                <ul class="expense-categories" id="categoryList"></ul>
               </div>
+
+
+              <!-- rightPanelTxnList kept for JS compat (hidden) -->
+              <div id="rightPanelTxnList" style="display:none"></div>
 
 
             </div><!-- /db-right -->
