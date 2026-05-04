@@ -5430,26 +5430,39 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    TRANSACTION TABLE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
 function renderTxns(period) {
   let txns = getTxns(period);
   const totalAll = txns.length;
+
   const isFilteredBase =
     !!searchQuery || filterCfg.type !== "all" || filterCfg.cats.length > 0;
-  if (filterCfg.type !== "all")
+
+  // Filter by type
+  if (filterCfg.type !== "all") {
     txns = txns.filter((t) => t.type === filterCfg.type);
-  if (filterCfg.cats.length > 0)
+  }
+
+  // Filter by category
+  if (filterCfg.cats.length > 0) {
     txns = txns.filter((t) => filterCfg.cats.includes(t.category));
+  }
+
+  // 🔍 SEARCH FILTER (category + description + amount)
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
+
     txns = txns.filter(
       (t) =>
         t.category.toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q),
+        (t.description || "").toLowerCase().includes(q) ||
+        String(Math.abs(t.amount)).includes(q),
     );
   }
+
+  // Sorting
   txns = [...txns].sort((a, b) => {
     let va, vb;
+
     if (sortCfg.field === "date") {
       va = a.date;
       vb = b.date;
@@ -5460,14 +5473,20 @@ function renderTxns(period) {
       va = a.category;
       vb = b.category;
     }
+
     if (va < vb) return sortCfg.order === "asc" ? -1 : 1;
     if (va > vb) return sortCfg.order === "asc" ? 1 : -1;
     return 0;
   });
+
   const previewLimit = getTxnPreviewLimit(period);
+
   const shouldClamp =
     !isFilteredBase && !txnExpanded && txns.length > previewLimit;
+
   const visibleTxns = shouldClamp ? txns.slice(0, previewLimit) : txns;
+
+  // Count UI
   const countEl = document.getElementById("txnCount");
   if (countEl) {
     if (isFilteredBase) {
@@ -5478,88 +5497,73 @@ function renderTxns(period) {
       countEl.textContent = `${totalAll} transaction${totalAll !== 1 ? "s" : ""}`;
     }
   }
-  const filterBtn = safeGet("filterBtn");
 
-  safeToggleClass(
-    filterBtn,
-    "active-filter",
-    filterCfg.type !== "all" || filterCfg.cats.length > 0,
-  );
   const body = document.getElementById("txnBody");
-  const mobileList = document.getElementById("txnMobileList");
-  const footer = document.getElementById("txnListFooter");
+
   if (txns.length === 0) {
-    const emptyHtml = `<div class="empty-transactions"><i class="fas fa-receipt"></i>${searchQuery ? "No results" : "No transactions for this period"}</div>`;
-    body.innerHTML = `<tr><td colspan="6">${emptyHtml}</td></tr>`;
-    if (mobileList) mobileList.innerHTML = emptyHtml;
-    if (footer) footer.innerHTML = "";
+    body.innerHTML = `<tr><td colspan="6">
+      <div class="empty-transactions">
+        <i class="fas fa-receipt"></i>
+        ${searchQuery ? "No results found" : "No transactions"}
+      </div>
+    </td></tr>`;
     return;
   }
+
+  // 🔥 RENDER WITH HIGHLIGHT
   const tableRows = visibleTxns
     .map((t) => {
+      const q = searchQuery ? searchQuery.toLowerCase() : "";
+
+      const categoryHTML = highlightText(t.category, q);
+      const descriptionHTML = highlightText(t.description || "-", q);
+      const amountHTML = highlightText(fmt(Math.abs(t.amount)), q);
+
       const ds = new Date(t.date + "T00:00:00").toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
       });
+
       const isInc = t.type === "income";
-      const typeBadge = `<span class="${isInc ? "type-income" : "type-expense"}">${isInc ? "Income" : "Expense"}</span>`;
-      const recurIcon = t.recurringId
-        ? ` <i class="fas fa-sync-alt" style="font-size:.65rem;color:#94a3b8;" title="Recurring"></i>`
-        : "";
-      return `<tr>
-      <td>${ds}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:.35rem;"><span style="width:7px;height:7px;border-radius:50%;background:${getCatColor(t.category)};display:inline-block;"></span>${t.category}</span></td>
-      <td style="color:#9ca3af;font-size:.8rem;">${t.description || "-"}${t.notes ? `<span style="display:block;font-size:.7rem;color:#64748b;margin-top:1px;">${t.notes}</span>` : ""}${recurIcon}</td>
-      <td style="color:${isInc ? "#10b981" : "#ef4444"};font-weight:700;">${isInc ? "+" : "-"}${fmt(Math.abs(t.amount))}</td>
-      <td>${typeBadge}</td>
-      <td><button class="action-btn" onclick="openCtx(event,${t.id})"><i class="fas fa-ellipsis-h"></i></button></td>
-    </tr>`;
-    })
-    .join("");
-  const mobileCards = visibleTxns
-    .map((t) => {
-      const ds = new Date(t.date + "T00:00:00").toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      const isInc = t.type === "income";
-      const typeBadge = `<span class="${isInc ? "type-income" : "type-expense"}">${isInc ? "Income" : "Expense"}</span>`;
-      const recurringBadge = t.recurringId
-        ? `<span class="txn-mobile-pill"><i class="fas fa-sync-alt"></i>Recurring</span>`
-        : "";
-      return `<div class="txn-mobile-card">
-      <div class="txn-mobile-top">
-        <div class="txn-mobile-category">
-          <span class="txn-mobile-dot" style="background:${getCatColor(t.category)}"></span>
-          <span>${t.category}</span>
-        </div>
-        <div class="txn-mobile-right">
-          <div class="txn-mobile-amount ${isInc ? "txn-mobile-amount--income" : "txn-mobile-amount--expense"}">${isInc ? "+" : "-"}${fmt(Math.abs(t.amount))}</div>
-          <button class="action-btn txn-mobile-action" onclick="openCtx(event,${t.id})" aria-label="Transaction actions">
+
+      const typeBadge = `<span class="${isInc ? "type-income" : "type-expense"}">
+      ${isInc ? "Income" : "Expense"}
+    </span>`;
+
+      return `
+      <tr>
+        <td>${ds}</td>
+
+        <td>
+          <span style="display:flex;align-items:center;gap:.35rem;">
+            <span style="width:7px;height:7px;border-radius:50%;
+              background:${getCatColor(t.category)}"></span>
+            ${categoryHTML}
+          </span>
+        </td>
+
+        <td style="color:#9ca3af;">
+          ${descriptionHTML}
+        </td>
+
+        <td style="color:${isInc ? "#10b981" : "#ef4444"};font-weight:700;">
+          ${isInc ? "+" : "-"}${amountHTML}
+        </td>
+
+        <td>${typeBadge}</td>
+
+        <td>
+          <button onclick="openCtx(event,${t.id})">
             <i class="fas fa-ellipsis-h"></i>
           </button>
-        </div>
-      </div>
-      <div class="txn-mobile-desc">${t.description || "No description"}</div>
-      ${t.notes ? `<div class="txn-mobile-notes">${t.notes}</div>` : ""}
-      <div class="txn-mobile-meta">
-        <span class="txn-mobile-date"><i class="fas fa-calendar-alt"></i>${ds}</span>
-        <div class="txn-mobile-badges">${typeBadge}${recurringBadge}</div>
-      </div>
-    </div>`;
+        </td>
+      </tr>
+    `;
     })
     .join("");
+
   body.innerHTML = tableRows;
-  if (mobileList) mobileList.innerHTML = mobileCards;
-  if (footer) {
-    if (!isFilteredBase && txns.length > previewLimit) {
-      footer.innerHTML = `<button class="txn-toggle-btn" onclick="toggleTxnExpanded()">${txnExpanded ? "Show less" : `Show all ${txns.length} transactions`}</button>${txnExpanded ? "" : `<div class="txn-toggle-hint">Home is previewing the latest ${previewLimit} transactions for this view.</div>`}`;
-    } else {
-      footer.innerHTML = "";
-    }
-  }
 }
 
 function onSearchInput(val) {
@@ -5581,6 +5585,24 @@ if (searchQuery) {
     return categoryMatch || descriptionMatch || amountMatch;
   });
 }
+
+function highlightText(text, query) {
+  if (!query) return text;
+
+  const safeText = String(text);
+
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const regex = new RegExp(`(${escaped})`, "gi");
+
+  return safeText.replace(regex, `<span class="txn-highlight">$1</span>`);
+}
+
+const q = searchQuery ? searchQuery.toLowerCase() : "";
+
+const categoryHTML = highlightText(t.category, q);
+const descriptionHTML = highlightText(t.description || "-", q);
+const amountHTML = highlightText(fmt(Math.abs(t.amount)), q);
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    EXPENSE ANALYSER — INSIGHTS ENGINE
