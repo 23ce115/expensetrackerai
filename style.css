@@ -1852,7 +1852,6 @@ select.form-input option,
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;   
   border-radius: 20px;
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(10px);
@@ -6528,7 +6527,7 @@ body::before {
   }
   .cs-flip-card .ci-number {
     font-size: 0.78rem !important;
-    letter-spacing: 0.14em !important;
+    letter-spacing: 0.14em !important;f=
   }
   .cs-flip-arrow {
     width: 32px !important;
