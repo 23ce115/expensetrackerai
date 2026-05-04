@@ -6937,3 +6937,210 @@ body::before {
     display: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   TRANSACTIONS PANEL WITH SEARCH
+   Paste at the very end of style.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Hide topbar search completely ─────────────────────────────── */
+.topbar-search {
+  display: none !important;
+}
+
+/* Topbar: reclaim the space, keep it balanced */
+.topbar {
+  grid-template-columns: auto 1fr auto !important;
+}
+
+/* ── Transactions panel wrapper ─────────────────────────────────── */
+.rp-txn-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 1.2rem 1.25rem 1.1rem !important;
+  overflow: hidden !important;
+}
+
+.rp-txn-panel .db-panel-hdr {
+  flex-shrink: 0;
+  margin-bottom: 10px !important;
+}
+
+/* ── Search bar ─────────────────────────────────────────────────── */
+.rp-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.52rem 0.85rem;
+  margin-bottom: 8px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.rp-search-bar:focus-within {
+  border-color: rgba(129, 140, 248, 0.35);
+  background: rgba(129, 140, 248, 0.05);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.08);
+}
+
+.rp-search-icon {
+  color: rgba(129, 140, 248, 0.5);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.rp-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--t1, #f0f4ff);
+  font-size: 0.8rem;
+  font-family: "DM Sans", system-ui, sans-serif;
+  min-width: 0;
+}
+
+.rp-search-input::placeholder {
+  color: var(--t3, #3d4466);
+  font-size: 0.78rem;
+}
+
+.rp-search-clear {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--t3, #3d4466);
+  font-size: 0.62rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.rp-search-clear:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+/* ── Filter chips ───────────────────────────────────────────────── */
+.rp-filter-chips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.rp-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--t2, #8892b0);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: "DM Sans", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.rp-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--t1, #f0f4ff);
+}
+
+.rp-chip--active {
+  background: rgba(129, 140, 248, 0.12) !important;
+  border-color: rgba(129, 140, 248, 0.28) !important;
+  color: #818cf8 !important;
+}
+
+/* Income chip active */
+.rp-chip[data-filter="income"].rp-chip--active {
+  background: rgba(52, 211, 153, 0.1) !important;
+  border-color: rgba(52, 211, 153, 0.25) !important;
+  color: #34d399 !important;
+}
+
+/* Expense chip active */
+.rp-chip[data-filter="expense"].rp-chip--active {
+  background: rgba(251, 146, 60, 0.1) !important;
+  border-color: rgba(251, 146, 60, 0.25) !important;
+  color: #fb923c !important;
+}
+
+/* ── Transaction list ───────────────────────────────────────────── */
+.rp-txn-panel .rp-txn-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 320px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 140, 248, 0.15) transparent;
+}
+
+.rp-txn-panel .rp-txn-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.rp-txn-panel .rp-txn-list::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.2);
+  border-radius: 3px;
+}
+
+/* ── Search match highlight ─────────────────────────────────────── */
+mark.rp-hl {
+  background: rgba(129, 140, 248, 0.25);
+  color: #c7d2fe;
+  border-radius: 3px;
+  padding: 0 2px;
+  font-style: normal;
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.rp-txn-panel .rp-empty {
+  padding: 2rem 0.5rem;
+  text-align: center;
+  color: var(--t3, #3d4466);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rp-txn-panel .rp-empty i {
+  font-size: 1.6rem;
+  opacity: 0.25;
+}
+
+.rp-txn-panel .rp-empty span {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+/* ── Light theme ────────────────────────────────────────────────── */
+[data-theme="light"] .rp-search-bar {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="light"] .rp-search-bar:focus-within {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+[data-theme="light"] .rp-search-input {
+  color: #0f172a;
+}
+
+[data-theme="light"] mark.rp-hl {
+  background: rgba(99, 102, 241, 0.18);
+  color: #4f46e5;
+}
