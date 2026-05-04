@@ -235,6 +235,20 @@
 
     setTimeout(() => {
       /* Phase 2: swap content while card is edge-on */
+
+      /* ── CRITICAL ORDER: save OLD card FIRST, then move index ──
+         syncActiveToCards() writes window.transactions into cards[activeCardIdx].
+         It MUST run before activeCardIdx changes — otherwise it stamps the
+         new card's empty state over the old card's transaction history. */
+      try {
+        if (typeof window.syncActiveToCards === "function") {
+          window.syncActiveToCards();
+        }
+      } catch (e) {
+        console.warn("[CardStack] syncActiveToCards error:", e);
+      }
+
+      /* Safe to advance the index now — old card's data is preserved */
       window.activeCardIdx = clampedIdx;
 
       const newCard = cards[clampedIdx];
@@ -261,13 +275,9 @@
       /* Update dots */
       renderDots(cards.length, clampedIdx);
 
-      /* Sync script.js state — full card switch pipeline for per-card transactions */
+      /* Load new card's data and refresh all UI */
       try {
-        // syncActiveToCards saves current card's transactions before switching
-        if (typeof window.syncActiveToCards === "function") {
-          window.syncActiveToCards();
-        }
-        // loadActiveCard loads the new card's own transactions into `transactions`
+        // loadActiveCard reads cards[activeCardIdx].transactions → window.transactions
         if (typeof window.loadActiveCard === "function") {
           window.loadActiveCard();
         }
@@ -277,7 +287,7 @@
         if (typeof window.renderCardSwitcher === "function") {
           window.renderCardSwitcher();
         }
-        // Reset search/filter state so new card's transactions render cleanly
+        // Reset search/filter so new card's list renders cleanly
         if (typeof window.searchQuery !== "undefined") window.searchQuery = "";
         const si = document.getElementById("txnSearch");
         if (si) si.value = "";
@@ -291,7 +301,7 @@
           window.processRecurring();
         }
       } catch (e) {
-        console.warn("[CardStack] sync error:", e);
+        console.warn("[CardStack] load/refresh error:", e);
       }
 
       setTimeout(() => {
