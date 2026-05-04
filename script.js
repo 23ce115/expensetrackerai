@@ -7412,9 +7412,8 @@ function openPrivacyModal() {
 }
 
 // Close settings menu when clicking outside
-document.addEventListener("click", (e) => {
-  if (!e.target.closest("#settingsDropdown")) closeSettingsMenu();
-});
+// Removed: old settingsDropdown global click-to-close intercepted every click
+// and immediately closed the settings panel after opening it.
 
 function openResetModal() {
   openModal("resetModal");
