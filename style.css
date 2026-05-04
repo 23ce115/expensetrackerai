@@ -1808,6 +1808,9 @@ select.form-input option,
     0 0 60px rgba(99, 102, 241, 0.1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .lock-card::before,
 .auth-card::before {
@@ -1836,6 +1839,7 @@ select.form-input option,
   font-size: 0.81rem;
   color: var(--t3);
   margin-bottom: 1.4rem;
+  width: 100%;
 }
 
 .lock-header {
@@ -1847,23 +1851,25 @@ select.form-input option,
   text-align: center;
 }
 .lock-logo {
-  width: 110px;
-  height: 110px;
+  width: 130px;
+  height: 130px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(129, 140, 248, 0.15);
+  border-radius: 30px;
+  background: rgba(13, 14, 30, 0.8);
+  border: 1px solid rgba(129, 140, 248, 0.2);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 12px 40px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1.75rem;
+  overflow: hidden;
 }
 .lock-logo img {
-  width: 75%;
-  height: 75%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
+  object-position: center;
 }
 .lock-error,
 .auth-error {
