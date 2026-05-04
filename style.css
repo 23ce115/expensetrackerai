@@ -1847,7 +1847,7 @@ select.form-input option,
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   text-align: center;
 }
 .lock-logo {
