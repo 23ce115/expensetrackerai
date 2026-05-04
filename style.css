@@ -6148,8 +6148,7 @@ body::before {
   /* Rich shadow */
   box-shadow:
     0 20px 56px rgba(0, 0, 0, 0.55),
-    0 0 80px var(--card-accent-glow, rgba(129, 140, 248, 0.15)),
-    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    0 0 80px var(--card-accent-glow, rgba(129, 140, 248, 0.15));
 }
 
 /* Per-theme gradients (reuse existing data-theme system) */
@@ -6182,8 +6181,7 @@ body::before {
 .cs-flip-card:hover {
   box-shadow:
     0 28px 70px rgba(0, 0, 0, 0.65),
-    0 0 100px var(--card-accent-glow, rgba(129, 140, 248, 0.25)),
-    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+    0 0 100px var(--card-accent-glow, rgba(129, 140, 248, 0.25));
 }
 
 /* ── 5. CARD FACE CONTENTS ──────────────────────────────────────── */
@@ -6193,19 +6191,9 @@ body::before {
   width: 100%;
 }
 
-/* Shine overlay */
+/* Shine overlay — disabled, was causing white fog */
 .cs-flip-card__shine {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0) 50%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+  display: none;
 }
 
 /* Ambient glow blobs */
@@ -6222,7 +6210,7 @@ body::before {
   height: 120px;
   background: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.12) 0%,
+    var(--card-accent-glow, rgba(255, 255, 255, 0.04)) 0%,
     transparent 65%
   );
 }
@@ -6233,7 +6221,7 @@ body::before {
   height: 100px;
   background: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.07) 0%,
+    var(--card-accent-glow, rgba(255, 255, 255, 0.03)) 0%,
     transparent 65%
   );
 }
@@ -6337,23 +6325,8 @@ body::before {
     inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
 }
 
-/* Thin accent line on top edge — replaces the white shine */
 .cs-flip-card .ci-spending::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  border-radius: 99px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--card-accent, rgba(255, 255, 255, 0.15)) 50%,
-    transparent
-  );
-  opacity: 0.5;
-  pointer-events: none;
+  display: none;
 }
 
 .cs-flip-card .ci-spend-row {
