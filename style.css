@@ -7230,3 +7230,11 @@ mark.rp-hl {
     font-size: 0.95rem;
   }
 }
+
+.txn-highlight {
+  background: rgba(129, 140, 248, 0.25);
+  color: #c7d2fe;
+  padding: 0 2px;
+  border-radius: 4px;
+  font-weight: 600;
+}
