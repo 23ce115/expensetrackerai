@@ -1763,8 +1763,8 @@ select.form-input option,
 /* ════════════════════════════════════════════════════════════
    AUTH & LOCK
    ════════════════════════════════════════════════════════════ */
-  
-.lock-screen{
+
+.lock-screen {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1842,7 +1842,7 @@ select.form-input option,
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;           
+  width: 100%;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -1853,7 +1853,7 @@ select.form-input option,
   justify-content: center;
   align-items: center;
   border-radius: 20px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(10px);
 }
 .lock-logo img {
@@ -5989,7 +5989,7 @@ body::before {
 .ci-spending {
   margin-top: 0.85rem !important;
   padding-top: 0.7rem !important;
-  border-top: 1px solid rgba(255,255,255,0.07) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
 }
 
 /* 9. Spend row typography */
@@ -6047,7 +6047,7 @@ body::before {
 .card-action-row {
   margin-top: 14px !important;
   padding-top: 14px !important;
-  border-top: 1px solid rgba(255,255,255,0.05) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
   flex-shrink: 0 !important;
 }
 
@@ -6319,38 +6319,68 @@ body::before {
 }
 
 .cs-flip-card .ci-spending {
-  margin-top: 0.9rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.85rem;
+  padding: 0.6rem 0.75rem 0.65rem;
   position: relative;
   z-index: 3;
+
+  /* Premium glass box */
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+
+  /* Subtle inner highlight on top edge */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Micro-shine strip at top of glass panel */
+.cs-flip-card .ci-spending::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
 }
 
 .cs-flip-card .ci-spend-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.67rem;
-  color: rgba(255, 255, 255, 0.42);
-  margin-bottom: 0.25rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.36);
+  margin-bottom: 0.18rem;
 }
 
 .cs-flip-card .ci-spend-limit {
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.01em;
 }
 
 .cs-flip-card .ci-spend-used {
-  font-size: 0.63rem;
-  color: rgba(255, 255, 255, 0.35);
-  margin-bottom: 0.4rem;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.015em;
 }
 
 .cs-flip-card .ci-progress {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 99px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
 
 .cs-flip-card .ci-progress-fill {
@@ -6358,15 +6388,35 @@ body::before {
   border-radius: 99px;
   background: linear-gradient(
     90deg,
-    var(--card-accent, rgba(129, 140, 248, 0.8)),
-    rgba(255, 255, 255, 0.3)
+    var(--card-accent, rgba(129, 140, 248, 0.9)),
+    rgba(255, 255, 255, 0.45)
   );
-  transition: width 0.5s ease;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Glow dot at the progress tip */
+.cs-flip-card .ci-progress-fill::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 6px var(--card-accent, rgba(129, 140, 248, 0.8));
 }
 
 .cs-flip-card .ci-progress-danger {
-  background: linear-gradient(90deg, #ef4444, #fca5a5) !important;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(90deg, #ef4444cc, #fca5a5aa) !important;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.35);
+}
+
+.cs-flip-card .ci-progress-danger::after {
+  background: #fca5a5 !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6) !important;
 }
 
 /* ── 7. NAVIGATION ARROWS ───────────────────────────────────────── */
@@ -6527,7 +6577,7 @@ body::before {
   }
   .cs-flip-card .ci-number {
     font-size: 0.78rem !important;
-    letter-spacing: 0.14em !important;f=
+    letter-spacing: 0.14em !important;
   }
   .cs-flip-arrow {
     width: 32px !important;
@@ -6576,15 +6626,15 @@ body::before {
   width: 32px !important;
   height: 32px !important;
   font-size: 0.68rem !important;
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  color: rgba(255,255,255,0.35) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
 .cs-flip-arrow:hover {
-  background: rgba(129,140,248,0.1) !important;
-  border-color: rgba(129,140,248,0.22) !important;
-  color: rgba(255,255,255,0.75) !important;
+  background: rgba(129, 140, 248, 0.1) !important;
+  border-color: rgba(129, 140, 248, 0.22) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
   transform: scale(1.06) !important;
 }
 
