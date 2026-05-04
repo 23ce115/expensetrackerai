@@ -1851,12 +1851,12 @@ select.form-input option,
   text-align: center;
 }
 .lock-logo {
-  width: 130px;
-  height: 130px;
+  width: 180px;
+  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 30px;
+  border-radius: 36px;
   background: rgba(13, 14, 30, 0.8);
   border: 1px solid rgba(129, 140, 248, 0.2);
   box-shadow:
@@ -1866,10 +1866,11 @@ select.form-input option,
   overflow: hidden;
 }
 .lock-logo img {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   object-position: center;
+  padding: 18px;
 }
 .lock-error,
 .auth-error {
