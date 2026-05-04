@@ -6977,7 +6977,10 @@ body::before {
   border-radius: 12px;
   padding: 0.52rem 0.85rem;
   margin-bottom: 8px;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   flex-shrink: 0;
 }
 
@@ -7022,7 +7025,9 @@ body::before {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .rp-search-clear:hover {
@@ -7143,4 +7148,85 @@ mark.rp-hl {
 [data-theme="light"] mark.rp-hl {
   background: rgba(99, 102, 241, 0.18);
   color: #4f46e5;
+}
+
+/* ================================
+   TRANSACTION SEARCH RESPONSIVE
+================================ */
+
+/* Base (desktop already good, just ensure full width) */
+.txn-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 1.5rem;
+  margin-top: 10px;
+}
+
+.search-wrapper {
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+/* Focus glow (premium feel) */
+.search-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15);
+  background: rgba(129, 140, 248, 0.06);
+}
+
+/* ================================
+   TABLET (≤1024px)
+================================ */
+@media (max-width: 1024px) {
+  .txn-meta {
+    padding: 0 1rem;
+  }
+
+  .search-wrapper {
+    padding: 0.4rem 0.7rem;
+  }
+
+  .search-input {
+    font-size: 0.85rem;
+  }
+}
+
+/* ================================
+   MOBILE (≤768px)
+================================ */
+@media (max-width: 768px) {
+  .txn-meta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0 0.9rem;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    border-radius: 12px;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .search-input {
+    font-size: 0.9rem;
+  }
+}
+
+/* ================================
+   SMALL MOBILE (≤480px)
+================================ */
+@media (max-width: 480px) {
+  .txn-meta {
+    padding: 0 0.75rem;
+  }
+
+  .search-wrapper {
+    padding: 0.5rem 0.8rem;
+  }
+
+  .search-input {
+    font-size: 0.95rem;
+  }
 }
