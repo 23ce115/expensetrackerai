@@ -533,11 +533,8 @@
                 <div id="chartLabels" style="display:none"></div>
               </div>
 
-              <!-- Bottom row: Insights -->
-              <div class="db-bottom-row">
-
-                <!-- Insights -->
-                <div class="card insights-card section-insights" id="insightsSection" style="display:none">
+              <!-- Insights -->
+              <div class="card insights-card section-insights" id="insightsSection" style="display:none">
                   <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-brain" style="color:#a78bfa;margin-right:.4rem"></i>Insights</h3>
                     <div style="display:flex;align-items:center;gap:.5rem">
@@ -564,8 +561,6 @@
                     <div class="dow-bars" id="dowBars"></div>
                   </div>
                 </div>
-
-              </div><!-- /db-bottom-row -->
 
               <!-- Transactions table (shown when user has data) -->
               <div class="card" id="dashboardTxnCard" style="display:none;margin-bottom:1.25rem">
@@ -2403,32 +2398,47 @@
   (function() {
     'use strict';
 
-    // ── Colour palette for category dots ──────────────────────
     var CAT_COLORS = [
       '#f97316','#818cf8','#34d399','#f59e0b','#ec4899',
       '#06b6d4','#a78bfa','#10b981','#ef4444','#3b82f6'
     ];
 
-    // ── Format currency ────────────────────────────────────────
     function fmt(n) {
       return '\u20b9' + Math.abs(n || 0).toLocaleString('en-IN');
     }
 
-    // ── Update the inline monthly report panel ─────────────────
+    // ── Core: decide layout state and show/hide inline report ──
+    function syncDashboardGrid() {
+      var grid        = document.getElementById('dashboardGrid');
+      var insightsSec = document.getElementById('insightsSection');
+      var inlinePanel = document.getElementById('inlineSummaryPanel');
+      if (!grid || !insightsSec || !inlinePanel) return;
+
+      // Insights visible = section exists AND display is not 'none'
+      var insightsVisible = (insightsSec.style.display !== 'none'
+                             && insightsSec.style.display !== '');
+
+      if (insightsVisible) {
+        grid.classList.add('insights-active');
+        // Show inline report when insights are up
+        inlinePanel.style.display = '';
+        refreshInlineReport();
+      } else {
+        grid.classList.remove('insights-active');
+        // Hide inline report when no insights
+        inlinePanel.style.display = 'none';
+      }
+    }
+
+    // ── Populate the inline monthly report with live data ──────
     function refreshInlineReport() {
       var panel = document.getElementById('inlineSummaryPanel');
       if (!panel) return;
 
       var txns = window.transactions || [];
-      if (!txns.length) {
-        panel.style.display = 'none';
-        return;
-      }
-
-      // Current month
-      var now = new Date();
-      var yr  = now.getFullYear();
-      var mo  = now.getMonth();
+      var now  = new Date();
+      var yr   = now.getFullYear();
+      var mo   = now.getMonth();
 
       var monthTxns = txns.filter(function(t) {
         var d = new Date(t.date + 'T00:00:00');
@@ -2446,29 +2456,27 @@
       var net     = inc - exp;
       var surplus = net >= 0;
 
-      // Month label
       var monthLabel = now.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
       var ml = document.getElementById('inlineReportMonth');
       if (ml) ml.textContent = monthLabel;
 
-      // Values
-      var elInc = document.getElementById('inlineInc');
-      var elExp = document.getElementById('inlineExp');
-      var elNet = document.getElementById('inlineNet');
+      var elInc     = document.getElementById('inlineInc');
+      var elExp     = document.getElementById('inlineExp');
+      var elNet     = document.getElementById('inlineNet');
       var elSurplus = document.getElementById('inlineSurplus');
 
       if (elInc) elInc.textContent = fmt(inc);
       if (elExp) elExp.textContent = fmt(exp);
       if (elNet) {
-        elNet.textContent = (net >= 0 ? '+' : '-') + fmt(Math.abs(net));
+        elNet.textContent = (net >= 0 ? '+' : '') + fmt(net);
         elNet.className = 'inline-report-value ' + (net >= 0 ? 'positive' : 'negative');
       }
       if (elSurplus) {
-        elSurplus.textContent = (surplus ? '+' : '-') + fmt(Math.abs(net)) + (surplus ? ' Surplus' : ' Deficit');
+        elSurplus.textContent = (surplus ? '+' : '') + fmt(net) + (surplus ? ' Surplus' : ' Deficit');
         elSurplus.className = 'inline-report-value ' + (surplus ? 'positive' : 'negative');
       }
 
-      // Category breakdown
+      // Category rows
       var cats = {};
       monthTxns
         .filter(function(t) { return t.type !== 'income'; })
@@ -2478,90 +2486,48 @@
         });
 
       var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
-      var catEl = document.getElementById('inlineCatList');
+      var catEl  = document.getElementById('inlineCatList');
       if (catEl) {
-        if (sorted.length === 0) {
-          catEl.innerHTML = '<div style="font-size:.72rem;color:var(--t3);text-align:center;padding:.4rem 0">No expenses this month</div>';
+        if (!sorted.length) {
+          catEl.innerHTML = '<div style="font-size:.72rem;color:var(--t3);text-align:center;padding:.3rem 0">No expenses this month</div>';
         } else {
           catEl.innerHTML = sorted.slice(0, 5).map(function(entry, i) {
             var color = CAT_COLORS[i % CAT_COLORS.length];
             return '<div class="irc-row">'
-              + '<span class="irc-name">'
-              + '<span class="irc-dot" style="background:' + color + '"></span>'
-              + entry[0]
-              + '</span>'
+              + '<span class="irc-name"><span class="irc-dot" style="background:' + color + '"></span>' + entry[0] + '</span>'
               + '<span class="irc-amount">' + fmt(entry[1]) + '</span>'
               + '</div>';
           }).join('');
         }
       }
-
-      panel.style.display = '';
     }
 
-    // ── Toggle insights-active class on dashboard grid ─────────
-    function syncGridState() {
-      var grid = document.getElementById('dashboardGrid');
-      if (!grid) return;
-
-      var insightsSec = document.getElementById('insightsSection');
-      var isVisible = insightsSec && insightsSec.style.display !== 'none';
-
-      // Show/hide inline report only when on desktop
-      var inlinePanel = document.getElementById('inlineSummaryPanel');
-      if (inlinePanel) {
-        var txns = window.transactions || [];
-        var hasData = txns.length > 0;
-        inlinePanel.style.display = hasData ? '' : 'none';
-      }
-    }
-
-    // ── Observe insightsSection visibility changes ─────────────
+    // ── Watch insightsSection style changes via MutationObserver
     function watchInsights() {
       var target = document.getElementById('insightsSection');
-      if (!target) {
-        setTimeout(watchInsights, 400);
-        return;
-      }
+      if (!target) { setTimeout(watchInsights, 300); return; }
 
-      var obs = new MutationObserver(function() {
-        syncGridState();
-        refreshInlineReport();
-      });
-      obs.observe(target, { attributes: true, attributeFilter: ['style'] });
+      new MutationObserver(function() {
+        syncDashboardGrid();
+      }).observe(target, { attributes: true, attributeFilter: ['style'] });
 
-      // Initial sync
-      syncGridState();
+      syncDashboardGrid(); // run once immediately on attach
     }
 
-    // ── Hook into refreshAll ───────────────────────────────────
-    var _hookTimer = setInterval(function() {
-      if (typeof window.refreshAll === 'function' && !window._adaptiveBridgeDone) {
-        var _origRefreshAll = window.refreshAll;
-        window.refreshAll = function() {
-          _origRefreshAll.apply(this, arguments);
-          setTimeout(function() {
-            syncGridState();
-            refreshInlineReport();
-          }, 80);
-        };
-        window._adaptiveBridgeDone = true;
-        clearInterval(_hookTimer);
-      }
-    }, 200);
-
-    // ── Init ──────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', function() {
-      watchInsights();
-      setTimeout(function() {
-        syncGridState();
-        refreshInlineReport();
-      }, 500);
-    });
-
-    // ── Export for manual refresh ─────────────────────────────
+    // ── Expose globals for script.js hooks ────────────────────
+    window.syncDashboardGrid   = syncDashboardGrid;
     window.refreshInlineReport = refreshInlineReport;
-    window.syncDashboardGrid   = syncGridState;
+
+    // ── Boot ──────────────────────────────────────────────────
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        watchInsights();
+        setTimeout(syncDashboardGrid, 600);
+      });
+    } else {
+      watchInsights();
+      setTimeout(syncDashboardGrid, 600);
+    }
 
   })();
   </script>
