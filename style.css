@@ -6639,3 +6639,187 @@ body::before {
 .cs-flip-card .ci-spending {
   margin-top: 0.75rem !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADAPTIVE LAYOUT — STATE-DRIVEN DASHBOARD GRID
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Dashboard sections get smooth transitions */
+.section-revenue,
+.section-insights,
+.section-expenses,
+.section-report {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Grid area assignments ─────────────────────────────────── */
+.section-revenue {
+  grid-area: revenue;
+}
+.section-insights {
+  grid-area: insights;
+}
+.section-expenses {
+  grid-area: expenses;
+}
+.section-report {
+  grid-area: report;
+}
+
+/* ── DB-LEFT: default single-column flow ───────────────────── */
+/* db-left is already flex-column — section-insights inside
+   db-bottom-row will appear when insightsSection is visible */
+
+/* ── DB-RIGHT: when insights active, show inline report ─────── */
+.db-right {
+  position: relative;
+}
+
+/* ── The inner layout when insights are visible ─────────────── */
+/* On desktop: db-left gets chart + insights stacked (flex-col).
+   db-right gets expenses + inline report stacked (flex-col).
+   The outer db-grid already handles the 2-col split. */
+
+/* ── Default: db-bottom-row single-column (insights only) ──── */
+.db-bottom-row {
+  display: block;
+}
+
+/* ── Inline Monthly Report Panel ────────────────────────────── */
+.inline-report-month {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  background: var(--accent-dim);
+  border-radius: 20px;
+  border: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+.inline-report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0.85rem 0 0;
+}
+
+.inline-report-stat {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.6rem 0.7rem;
+  transition: background 0.2s;
+}
+
+.inline-report-stat:hover {
+  background: rgba(129, 140, 248, 0.05);
+}
+
+.inline-report-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.inline-report-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--t1);
+  font-family: "DM Sans", sans-serif;
+}
+
+.inline-report-value.positive {
+  color: var(--inc);
+}
+.inline-report-value.negative {
+  color: var(--exp);
+}
+
+.inline-report-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.85rem 0 0.7rem;
+}
+
+.inline-report-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.inline-report-cats::-webkit-scrollbar {
+  display: none;
+}
+
+.irc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.irc-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--t2);
+  font-weight: 500;
+}
+
+.irc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.irc-amount {
+  color: var(--exp);
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.inline-report-full-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.55rem;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  background: rgba(129, 140, 248, 0.06);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "DM Sans", sans-serif;
+}
+
+.inline-report-full-btn:hover {
+  background: rgba(129, 140, 248, 0.14);
+  border-color: rgba(129, 140, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ── RESPONSIVE: mobile always single column ─────────────────── */
+@media (max-width: 768px) {
+  .section-report {
+    display: none !important; /* use modal on mobile */
+  }
+}
+
+/* ── Insights active: widen left column slightly ─────────────── */
+/* When insights active, the db-grid already provides the 2-col.
+   Inside db-left, both revenue + insights are stacked naturally.
+   The inline report appears in db-right below expenses. */
