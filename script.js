@@ -22,21 +22,21 @@ const SYNC_POLL_MS = 30 * 1000;
 
 // safeNumber() lives in utils.js — removed duplicate
 
-// function safeGet(id) {
-//   return document.getElementById(id);
-// }
+function safeGet(id) {
+  return document.getElementById(id);
+}
 
-// function safeAddClass(el, className) {
-//   if (el) el.classList.add(className);
-// }
+function safeAddClass(el, className) {
+  if (el) el.classList.add(className);
+}
 
-// function safeRemoveClass(el, className) {
-//   if (el) el.classList.remove(className);
-// }
+function safeRemoveClass(el, className) {
+  if (el) el.classList.remove(className);
+}
 
-// function safeToggleClass(el, className, condition q    ) {
-//   if (el) el.classList.toggle(className, condition);
-// }
+function safeToggleClass(el, className, condition) {
+  if (el) el.classList.toggle(className, condition);
+}
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
 const BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
