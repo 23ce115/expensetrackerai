@@ -5567,6 +5567,21 @@ function onSearchInput(val) {
   renderTxns(currentPeriod);
 }
 
+if (searchQuery) {
+  const q = searchQuery.toLowerCase();
+
+  txns = txns.filter((t) => {
+    const categoryMatch = t.category.toLowerCase().includes(q);
+    const descriptionMatch = (t.description || "").toLowerCase().includes(q);
+
+    // Amount search (handles ₹500, 500, +500, etc.)
+    const amountStr = String(Math.abs(t.amount));
+    const amountMatch = amountStr.includes(q);
+
+    return categoryMatch || descriptionMatch || amountMatch;
+  });
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    EXPENSE ANALYSER — INSIGHTS ENGINE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -6661,7 +6676,7 @@ function switchCardForAdd(idx) {
 
 function openBnSettings() {
   safeAddClass(safeGet("bnSettingsPanel"), "open");
-  // No overlay for compact desktop panel - closed by outside click
+  safeAddClass(safeGet("bnSettingsOverlay"), "open");
   openBnSettingsWithSync();
 }
 
@@ -7412,15 +7427,8 @@ function openPrivacyModal() {
 }
 
 // Close settings menu when clicking outside
-document.addEventListener("click", (e) => {
-  // Close compact settings panel on outside click
-  const panel = document.getElementById("bnSettingsPanel");
-  if (panel && panel.classList.contains("open") &&
-      !e.target.closest("#bnSettingsPanel") &&
-      !e.target.closest(".sb-btn[title='Settings']")) {
-    closeBnSettings();
-  }
-});
+// Removed: old settingsDropdown global click-to-close intercepted every click
+// and immediately closed the settings panel after opening it.
 
 function openResetModal() {
   openModal("resetModal");
