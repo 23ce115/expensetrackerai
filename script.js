@@ -949,14 +949,14 @@ function resetAiCatBadge(type) {
    summary to Claude and answers in plain English.
 ────────────────────────────────────────────── */
 function openAskBl() {
-  safeAddClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-  safeAddClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+  safeAddClass(safeGet("askBlPanel"), "open");
+  safeAddClass(safeGet("askBlOverlay"), "open");
   setTimeout(() => safeGet("askBlInput")?.focus(), 300);
 }
 
 function closeAskBl() {
-  safeRemoveClass(safeGet("askBlPanel"), "ask-bl-panel--open");
-  safeRemoveClass(safeGet("askBlOverlay"), "ask-bl-overlay--open");
+  safeRemoveClass(safeGet("askBlPanel"), "open");
+  safeRemoveClass(safeGet("askBlOverlay"), "open");
 }
 
 // function _buildFinanceSummary() {
@@ -7177,61 +7177,13 @@ function loadTheme() {
 }
 
 function toggleSettingsMenu() {
-  const menu = safeGet("settingsMenu");
-  if (!menu) return; // ✅ critical guard
-
-  const isOpen = menu ? menu.classList.contains("open") : false;
-
-  safeToggleClass(menu, "open");
-
-  if (!isOpen) {
-    // Sync both sliders on open
-    const saved = localStorage.getItem("bl_glass_opacity") || "50";
-    ["glassSlider", "bnGlassSlider"].forEach((id) => {
-      const slider = document.getElementById(id);
-      if (slider) {
-        slider.value = saved;
-        slider.style.setProperty("--val", saved + "%");
-      }
-    });
-
-    // Update sync status row
-    const dot = document.getElementById("settingsSyncDot");
-    const label = document.getElementById("settingsSyncLabel");
-    if (dot && label) {
-      if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
-        const mins = Math.round(
-          (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
-        );
-        dot.style.background = "#10b981";
-        label.style.color = "#10b981";
-        label.textContent =
-          mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
-      } else if (syncConfig?.enabled) {
-        dot.style.background = "#f59e0b";
-        label.style.color = "#f59e0b";
-        label.textContent = "Sync connecting…";
-      } else {
-        dot.style.background = "#475569";
-        label.style.color = "#64748b";
-        label.textContent = "Sync not active";
-      }
-    }
-
-    // Reset sub-panels to closed
-    const glassPanel = document.getElementById("glassSliderPanel");
-    const txnPanel = document.getElementById("settingsTxnPanel");
-    const glassChevron = document.getElementById("glassChevron");
-    const txnChevron = document.getElementById("txnChevron");
-    if (glassPanel) glassPanel.style.display = "none";
-    if (txnPanel) txnPanel.style.display = "none";
-    if (glassChevron) glassChevron.style.transform = "";
-    if (txnChevron) txnChevron.style.transform = "";
-  }
+  // The old topbar dropdown (#settingsMenu) was removed.
+  // Route to the slide-up settings panel instead.
+  openBnSettings();
 }
 
 function closeSettingsMenu() {
-  safeRemoveClass(safeGet("settingsMenu"), "open");
+  closeBnSettings();
 }
 
 function toggleBnGlassSlider() {
@@ -8455,14 +8407,8 @@ function _syncTopbarSearch(val) {
    ═══════════════════════════════════════════════════════════════════ */
 
 function _openRecentTxnPanel() {
-  const panel = document.getElementById("rtpPanel");
-  const overlay = document.getElementById("rtpOverlay");
-  if (!panel) return;
-  panel.classList.add("rtp-panel--open");
-  overlay?.classList.add("rtp-overlay--open");
-  _renderRtpList();
-  /* Focus the RTP search */
-  setTimeout(() => document.getElementById("rtpSearch")?.focus(), 280);
+  // Slide panel HTML was removed; fall back to the full-page transactions view
+  openTxnFullPage();
 }
 
 function _closeRecentTxnPanel() {
