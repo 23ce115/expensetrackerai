@@ -6644,64 +6644,48 @@ body::before {
    ADAPTIVE LAYOUT — STATE-DRIVEN DASHBOARD GRID
    ═══════════════════════════════════════════════════════════════ */
 
-/* Dashboard sections get smooth transitions */
-.section-revenue,
-.section-insights,
+/* ── DEFAULT state: db-grid is already 2-col (left + right).
+      db-left = flex-col: stats → chart → txns
+      db-right = flex-col: card → expenses
+      Inline report hidden. Insights hidden (< 3 txns).
+   ─────────────────────────────────────────────────────────────── */
+
+/* Smooth layout transitions for key sections */
+.db-chart-card,
+#insightsSection,
 .section-expenses,
-.section-report {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+#inlineSummaryPanel {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
-/* ── Grid area assignments ─────────────────────────────────── */
-.section-revenue {
-  grid-area: revenue;
-}
-.section-insights {
-  grid-area: insights;
-}
-.section-expenses {
-  grid-area: expenses;
-}
-.section-report {
-  grid-area: report;
+/* ── INSIGHTS ACTIVE state:
+      db-grid switches to 2fr 1fr ratio (wider left col).
+      db-right shows inline report below expenses.
+   ─────────────────────────────────────────────────────────────── */
+#dashboardGrid.insights-active {
+  grid-template-columns: 2fr 360px;
 }
 
-/* ── DB-LEFT: default single-column flow ───────────────────── */
-/* db-left is already flex-column — section-insights inside
-   db-bottom-row will appear when insightsSection is visible */
-
-/* ── DB-RIGHT: when insights active, show inline report ─────── */
-.db-right {
-  position: relative;
-}
-
-/* ── The inner layout when insights are visible ─────────────── */
-/* On desktop: db-left gets chart + insights stacked (flex-col).
-   db-right gets expenses + inline report stacked (flex-col).
-   The outer db-grid already handles the 2-col split. */
-
-/* ── Default: db-bottom-row single-column (insights only) ──── */
-.db-bottom-row {
-  display: block;
-}
-
-/* ── Inline Monthly Report Panel ────────────────────────────── */
+/* ── Inline Monthly Report Panel ──────────────────────────────── */
 .inline-report-month {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.68rem;
+  font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: 2px 9px;
   background: var(--accent-dim);
   border-radius: 20px;
   border: 1px solid rgba(129, 140, 248, 0.2);
+  white-space: nowrap;
 }
 
 .inline-report-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
+  gap: 0.55rem;
   margin: 0.85rem 0 0;
 }
 
@@ -6709,28 +6693,29 @@ body::before {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 0.6rem 0.7rem;
+  padding: 0.55rem 0.65rem;
   transition: background 0.2s;
 }
 
 .inline-report-stat:hover {
-  background: rgba(129, 140, 248, 0.05);
+  background: rgba(129, 140, 248, 0.06);
 }
 
 .inline-report-label {
-  font-size: 0.65rem;
+  font-size: 0.63rem;
   font-weight: 700;
   color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.22rem;
 }
 
 .inline-report-value {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--t1);
   font-family: "DM Sans", sans-serif;
+  letter-spacing: -0.01em;
 }
 
 .inline-report-value.positive {
@@ -6743,14 +6728,14 @@ body::before {
 .inline-report-divider {
   height: 1px;
   background: var(--border);
-  margin: 0.85rem 0 0.7rem;
+  margin: 0.8rem 0 0.65rem;
 }
 
 .inline-report-cats {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 120px;
+  gap: 0.35rem;
+  max-height: 130px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -6763,7 +6748,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
 }
 
 .irc-name {
@@ -6772,6 +6757,10 @@ body::before {
   gap: 0.4rem;
   color: var(--t2);
   font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .irc-dot {
@@ -6785,6 +6774,8 @@ body::before {
   color: var(--exp);
   font-weight: 700;
   font-size: 0.72rem;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
 }
 
 .inline-report-full-btn {
@@ -6793,33 +6784,33 @@ body::before {
   justify-content: center;
   gap: 0.4rem;
   width: 100%;
-  margin-top: 0.8rem;
-  padding: 0.55rem;
+  margin-top: 0.75rem;
+  padding: 0.52rem;
   border-radius: var(--r-sm);
   border: 1px solid rgba(129, 140, 248, 0.2);
   background: rgba(129, 140, 248, 0.06);
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   font-family: "DM Sans", sans-serif;
+  letter-spacing: 0.01em;
 }
 
 .inline-report-full-btn:hover {
   background: rgba(129, 140, 248, 0.14);
-  border-color: rgba(129, 140, 248, 0.4);
+  border-color: rgba(129, 140, 248, 0.45);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.15);
 }
 
-/* ── RESPONSIVE: mobile always single column ─────────────────── */
-@media (max-width: 768px) {
-  .section-report {
-    display: none !important; /* use modal on mobile */
+/* ── Mobile: always single column, hide inline report ─────────── */
+@media (max-width: 1080px) {
+  #dashboardGrid.insights-active {
+    grid-template-columns: 1fr;
+  }
+  #inlineSummaryPanel {
+    display: none !important;
   }
 }
-
-/* ── Insights active: widen left column slightly ─────────────── */
-/* When insights active, the db-grid already provides the 2-col.
-   Inside db-left, both revenue + insights are stacked naturally.
-   The inline report appears in db-right below expenses. */
