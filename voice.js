@@ -4,18 +4,16 @@
    Depends on: utils.js, ai.js (must load first)
    ═══════════════════════════════════════════════════════════════ */
 
-"use strict";
-
 /* ── Constants ───────────────────────────────────────────────── */
-const VOICE_BACKEND_TIMEOUT_MS = 6500;
-const VOICE_IDLE_MESSAGE =
+if (typeof VOICE_BACKEND_TIMEOUT_MS === "undefined") var VOICE_BACKEND_TIMEOUT_MS = 6500;
+if (typeof VOICE_IDLE_MESSAGE === "undefined") var VOICE_IDLE_MESSAGE =
   "Tap the mic and speak a transaction. We'll fill the draft for you.";
-const VOICE_EXPENSE_ACTION_PATTERN =
+if (typeof VOICE_EXPENSE_ACTION_PATTERN === "undefined") var VOICE_EXPENSE_ACTION_PATTERN =
   "spend|spent|pay|paid|use|used|buy|bought|order|ordered|book|booked|give|gave|purchase|purchased|charge|charged|expense";
-const VOICE_INCOME_ACTION_PATTERN =
+if (typeof VOICE_INCOME_ACTION_PATTERN === "undefined") var VOICE_INCOME_ACTION_PATTERN =
   "receive|received|earn|earned|get|got|make|made|credit|credited|income|salary|refund|bonus";
 
-const VOICE_NUMBER_WORDS = {
+if (typeof VOICE_NUMBER_WORDS === "undefined") var VOICE_NUMBER_WORDS = {
   a: 1,
   an: 1,
   zero: 0,
@@ -48,12 +46,12 @@ const VOICE_NUMBER_WORDS = {
   ninety: 90,
 };
 
-const VOICE_NUMBER_WORD_PATTERN = Object.keys(VOICE_NUMBER_WORDS)
+if (typeof VOICE_NUMBER_WORD_PATTERN === "undefined") var VOICE_NUMBER_WORD_PATTERN = Object.keys(VOICE_NUMBER_WORDS)
   .sort((a, b) => b.length - a.length)
   .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
   .join("|");
 
-const VOICE_UI_COPY = {
+if (typeof VOICE_UI_COPY === "undefined") var VOICE_UI_COPY = {
   idle: {
     icon: "fa-microphone",
     title: "Log by voice",
@@ -92,9 +90,9 @@ const VOICE_UI_COPY = {
 };
 
 /* ── Internal state ─────────────────────────────────────────── */
-let _voiceRecognition = null;
-let _voiceBusy = false;
-let _voiceSession = { id: 0, type: "", resultReceived: false };
+if (typeof _voiceRecognition === "undefined") var _voiceRecognition = null;
+if (typeof _voiceBusy === "undefined") var _voiceBusy = false;
+if (typeof _voiceSession === "undefined") var _voiceSession = { id: 0, type: "", resultReceived: false };
 
 /* ══════════════════════════════════════════════════════════════
    PUBLIC ENTRY POINT
