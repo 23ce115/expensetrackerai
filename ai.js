@@ -5,24 +5,22 @@
    Depends on: utils.js (must load first)
    ═══════════════════════════════════════════════════════════════ */
 
-"use strict";
-
 /* ── Constants ───────────────────────────────────────────────── */
-const AI_MODEL = "claude-sonnet-4-20250514";
+if (typeof AI_MODEL === "undefined") var AI_MODEL = "claude-sonnet-4-20250514";
 
 /* ── Internal state ─────────────────────────────────────────── */
-let _aiCatTimers = {};
-let _aiCatGeneration = {};
-let _aiCatDismissed = {};
-let _aiCatState = {};
-let _askBlHistory = [];
-let _askBlBusy = false;
-let _aiInsightsBusy = false;
+if (typeof _aiCatTimers === "undefined") var _aiCatTimers = {};
+if (typeof _aiCatGeneration === "undefined") var _aiCatGeneration = {};
+if (typeof _aiCatDismissed === "undefined") var _aiCatDismissed = {};
+if (typeof _aiCatState === "undefined") var _aiCatState = {};
+if (typeof _askBlHistory === "undefined") var _askBlHistory = [];
+if (typeof _askBlBusy === "undefined") var _askBlBusy = false;
+if (typeof _aiInsightsBusy === "undefined") var _aiInsightsBusy = false;
 
 /* ══════════════════════════════════════════════════════════════
    KEYWORD MAPS
    ══════════════════════════════════════════════════════════════ */
-const _AI_KEYWORD_MAP = {
+if (typeof _AI_KEYWORD_MAP === "undefined") var _AI_KEYWORD_MAP = {
   Food: [
     "starbucks",
     "coffee",
@@ -356,7 +354,7 @@ const _AI_KEYWORD_MAP = {
   ],
 };
 
-const _AI_CATEGORY_SEEDS = {
+if (typeof _AI_CATEGORY_SEEDS === "undefined") var _AI_CATEGORY_SEEDS = {
   Food: [
     "coffee",
     "tea",
