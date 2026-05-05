@@ -2194,18 +2194,32 @@
         </button>
       </div>
 
-      <div class="txn-meta" style="padding: 0 1.5rem; margin-top: 10px;">
-      <div class="search-wrapper">
-        <i class="fas fa-search"></i>
-          <input 
-            id="txnSearch"
-            type="text" 
-            id="transactionSearchPage"
-            class="search-input" 
-            placeholder="Search transactions..." 
-            oninput="onSearchInput(this.value)"
+      <!-- Full-page search bar -->
+      <div class="txnfp-search-bar" id="txnFpSearchBar">
+        <div class="txnfp-search-inner">
+          <i class="fas fa-search txnfp-search-icon"></i>
+          <input
+            type="text"
+            id="txnFpSearchInput"
+            class="txnfp-search-input"
+            placeholder="Search by category, description or amount…"
+            autocomplete="off"
+            oninput="_txnFpOnSearch(this.value)"
           />
-      </div>
+          <button
+            class="txnfp-search-clear"
+            id="txnFpSearchClear"
+            onclick="_txnFpClearSearch()"
+            style="display:none"
+            aria-label="Clear search"
+          ><i class="fas fa-times"></i></button>
+        </div>
+        <div class="txnfp-chips">
+          <button class="txnfp-chip txnfp-chip--active" data-fptype="all"     onclick="_txnFpSetType(this,'all')">All</button>
+          <button class="txnfp-chip"                    data-fptype="income"  onclick="_txnFpSetType(this,'income')">Income</button>
+          <button class="txnfp-chip"                    data-fptype="expense" onclick="_txnFpSetType(this,'expense')">Expense</button>
+        </div>
+        <div class="txnfp-count" id="txnFpCount"></div>
       </div>
 
 
@@ -2311,7 +2325,7 @@
           txns = txns.filter(function(t) {
             var desc = (t.description || '').toLowerCase();
             var cat  = (t.category    || '').toLowerCase();
-            var amt  = String(Math.abs(t.amount || 0));
+            var amt  = String(Math.abs(t.amount)).includes;
             return desc.includes(q) || cat.includes(q) || amt.includes(q);
           });
         }
