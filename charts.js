@@ -3,17 +3,15 @@
    Premium Edition: gradient fills, smooth animations, no grid lines
    ═══════════════════════════════════════════════════════════════ */
 
-"use strict";
-
 /* ── Private chart state ──────────────────────────────────────── */
-let _overviewChart = null;
-let _categoryChart = null;
-let _currentOverviewPeriod = "monthly";
+if (typeof _overviewChart === "undefined") var _overviewChart = null;
+if (typeof _categoryChart === "undefined") var _categoryChart = null;
+if (typeof _currentOverviewPeriod === "undefined") var _currentOverviewPeriod = "monthly";
 
-const INCOME_COLOR = "#34d399";
-const EXPENSE_COLOR = "#f97316";
-const INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
-const EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
+if (typeof INCOME_COLOR === "undefined") var INCOME_COLOR = "#34d399";
+if (typeof EXPENSE_COLOR === "undefined") var EXPENSE_COLOR = "#f97316";
+if (typeof INCOME_COLOR_DIM === "undefined") var INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
+if (typeof EXPENSE_COLOR_DIM === "undefined") var EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
 
 /* ══════════════════════════════════════════════════════════════
    OVERVIEW CHART — init
