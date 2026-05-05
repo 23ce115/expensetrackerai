@@ -6226,12 +6226,11 @@ function renderBudgetModal() {
     .map(
       (c) => `
     <div class="budget-input-row">
-      <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:#e2e8f0;flex:1;">
-        <span style="width:8px;height:8px;border-radius:50%;background:${getCatColor(c)};display:inline-block;flex-shrink:0;"></span>${c}
+      <label class="budget-input-label">
+        <span class="budget-cat-dot" style="background:${getCatColor(c)}"></span>${c}
       </label>
       <input type="number" class="form-input budget-amt-input" placeholder="No limit" min="0"
-        value="${categoryBudgets[c] || ""}" data-cat="${c}"
-        style="width:130px;text-align:right;padding:.45rem .65rem;font-size:.85rem;"/>
+        value="${categoryBudgets[c] || ""}" data-cat="${c}" />
     </div>`,
     )
     .join("");
@@ -7232,300 +7231,89 @@ function toggleBnGlassSlider() {
   }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   FULL TRANSACTIONS PAGE — self-contained search + highlight
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-// State isolated from the dashboard search
-let _txnFpAllTxns = []; // master list rebuilt on every open
-let _txnFpQuery = ""; // current text query
-let _txnFpType = "all"; // 'all' | 'income' | 'expense'
-
-/** Escape a string for safe innerHTML insertion. */
-function _txnFpEscape(str) {
-  return String(str || "").replace(/[&<>"']/g, function (c) {
-    return {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c];
-  });
-}
-
-/**
- * Wrap every occurrence of `query` inside `text` with a highlight <mark>.
- * Escapes HTML first, so it is XSS-safe.
- */
-function _txnFpHighlight(text, query) {
-  const escaped = _txnFpEscape(text);
-  if (!query) return escaped;
-  const re = new RegExp(
-    "(" + query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
-    "gi",
-  );
-  return escaped.replace(re, '<mark class="txn-fp-hl">$1</mark>');
-}
-
-/** Build the master list from all cards (same data source as before). */
-function _txnFpBuildList() {
-  syncActiveToCards();
-  const list = [];
-  cards.forEach(function (card, ci) {
-    const cardName =
-      (card.userData &&
-        card.userData.nickname &&
-        card.userData.nickname.trim()) ||
-      (card.userData && card.userData.name && card.userData.name.trim()) ||
-      "Card " + (ci + 1);
-    const last4 = ((card.userData && card.userData.cardNumber) || "")
-      .replace(/\D/g, "")
-      .slice(-4);
-    const accountLabel = last4
-      ? cardName + " \u2022\u2022\u2022\u2022" + last4
-      : cardName;
-    (card.transactions || []).forEach(function (t) {
-      list.push(Object.assign({}, t, { _account: accountLabel }));
-    });
-  });
-  list.sort(function (a, b) {
-    return new Date(b.date) - new Date(a.date);
-  });
-  return list;
-}
-
-/** Core render — filters _txnFpAllTxns and writes to #txnPageBody with highlights. */
-function _txnFpRender() {
+function openTxnFullPage() {
+  const page = document.getElementById("txnFullPage");
+  if (!page) return;
   const body = document.getElementById("txnPageBody");
   const subtitle = document.getElementById("txnPageSubtitle");
-  const countEl = document.getElementById("txnFpCount");
-  if (!body) return;
 
-  const total = _txnFpAllTxns.length;
-  let txns = _txnFpAllTxns.slice();
-  const q = _txnFpQuery.toLowerCase().trim();
+  syncActiveToCards();
+  let allTxns = [];
+  cards.forEach((card, ci) => {
+    const cardName =
+      card.userData?.nickname?.trim() ||
+      card.userData?.name?.trim() ||
+      `Card ${ci + 1}`;
+    const last4 = (card.userData?.cardNumber || "")
+      .replace(/\D/g, "")
+      .slice(-4);
+    const accountLabel = last4 ? `${cardName} ••••${last4}` : cardName;
+    (card.transactions || []).forEach((t) =>
+      allTxns.push({ ...t, _account: accountLabel }),
+    );
+  });
 
-  // 1. Type filter
-  if (_txnFpType !== "all") {
-    txns = txns.filter(function (t) {
-      return t.type === _txnFpType;
-    });
-  }
-
-  // 2. Text search — category, description, amount (all three fields)
-  if (q) {
-    txns = txns.filter(function (t) {
-      return (
-        (t.category || "").toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q) ||
-        String(Math.abs(t.amount || 0)).includes(q)
-      );
-    });
-  }
-
-  // Update subtitle + result count pill
-  if (subtitle) {
-    const monthCount = new Set(
-      txns.map(function (t) {
-        return (t.date || "").slice(0, 7);
-      }),
-    ).size;
-    subtitle.textContent =
-      q || _txnFpType !== "all"
-        ? txns.length + " result" + (txns.length !== 1 ? "s" : "") + " found"
-        : total +
-          " transaction" +
-          (total !== 1 ? "s" : "") +
-          " \u00b7 " +
-          monthCount +
-          " month" +
-          (monthCount !== 1 ? "s" : "");
-  }
-  if (countEl) {
-    if (q || _txnFpType !== "all") {
-      countEl.textContent = txns.length + " of " + total;
-      countEl.style.display = "inline-block";
-    } else {
-      countEl.style.display = "none";
-    }
-  }
-
-  // Empty state
-  if (!txns.length) {
-    body.innerHTML =
-      '<div class="txnfp-empty">' +
-      '<i class="fas ' +
-      (q ? "fa-search" : "fa-inbox") +
-      '"></i>' +
-      '<div class="txnfp-empty-msg">' +
-      (q
-        ? "No results for &ldquo;" + _txnFpEscape(_txnFpQuery) + "&rdquo;"
-        : "No transactions yet") +
-      "</div>" +
-      (q
-        ? '<div class="txnfp-empty-hint">Try a different keyword or clear the search</div>'
-        : "") +
-      "</div>";
+  if (!allTxns.length) {
+    safeSetHTML(
+      body,
+      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>',
+    );
+    safeSetContent(subtitle, "No data");
+    safeRemoveClass(page, "txn-page-closing");
+    requestAnimationFrame(() => safeAddClass(page, "txn-page-open"));
     return;
   }
 
-  // Group by month
+  allTxns.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   const groups = {};
-  txns.forEach(function (t) {
+  allTxns.forEach((t) => {
     const d = new Date(t.date);
-    const key =
-      d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-    const lbl = d.toLocaleDateString("en-IN", {
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-IN", {
       month: "long",
       year: "numeric",
     });
-    if (!groups[key]) groups[key] = { label: lbl, txns: [] };
+    if (!groups[key]) groups[key] = { label, txns: [] };
     groups[key].txns.push(t);
   });
 
-  // Render groups with highlighted text
+  const monthCount = Object.keys(groups).length;
+  subtitle.textContent = `${allTxns.length} transactions · ${monthCount} month${monthCount !== 1 ? "s" : ""}`;
+
   body.innerHTML = Object.entries(groups)
-    .map(function (entry) {
-      const g = entry[1];
+    .map(([, g]) => {
       const rows = g.txns
-        .map(function (t) {
+        .map((t) => {
           const isInc = t.type === "income";
-          const amt = Math.abs(t.amount || 0);
-          const amtStr = amt.toLocaleString("en-IN");
+          const amt = Math.abs(t.amount);
           const dateStr = new Date(t.date).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
           });
-          const rawDesc =
-            (t.description && t.description.trim()) || t.category || "";
-          const rawCat = t.category || "";
-          const rawAmt = amtStr; // plain number string for matching
-
-          // Highlight category, description AND amount
-          const hlDesc = _txnFpHighlight(rawDesc.substring(0, 35), q);
-          const hlCat = _txnFpHighlight(rawCat, q);
-          // For amount highlight: check if query matches the numeric string
-          const hlAmt =
-            q && rawAmt.includes(q)
-              ? rawAmt.replace(
-                  new RegExp(
-                    "(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
-                    "gi",
-                  ),
-                  '<mark class="txn-fp-hl">$1</mark>',
-                )
-              : _txnFpEscape(rawAmt);
-
-          return (
-            '<div class="txn-full-row">' +
-            '<div class="txn-full-date">' +
-            _txnFpEscape(dateStr) +
-            "</div>" +
-            "<div>" +
-            '<div class="txn-full-desc">' +
-            hlDesc +
-            "</div>" +
-            '<div class="txn-full-cat">' +
-            hlCat +
-            "</div>" +
-            "</div>" +
-            '<div class="txn-full-account">' +
-            _txnFpEscape(t._account || "") +
-            "</div>" +
-            '<div class="txn-full-amt ' +
-            (isInc ? "pos" : "neg") +
-            '">' +
-            (isInc ? "+" : "\u2212") +
-            "\u20b9" +
-            hlAmt +
-            "</div>" +
-            "</div>"
+          const desc = (t.description?.trim() || t.category || "").substring(
+            0,
+            35,
           );
+          return `<div class="txn-full-row">
+        <div class="txn-full-date">${dateStr}</div>
+        <div><div class="txn-full-desc">${desc}</div><div class="txn-full-cat">${t.category}</div></div>
+        <div class="txn-full-account">${t._account}</div>
+        <div class="txn-full-amt ${isInc ? "pos" : "neg"}">${isInc ? "+" : "-"}₹${amt.toLocaleString("en-IN")}</div>
+      </div>`;
         })
         .join("");
-
-      return (
-        '<div class="txn-month-group">' +
-        '<div class="txn-month-label">' +
-        _txnFpEscape(g.label) +
-        "</div>" +
-        rows +
-        "</div>"
-      );
+      return `<div class="txn-month-group"><div class="txn-month-label">${g.label}</div>${rows}</div>`;
     })
     .join("");
-}
 
-/** oninput handler wired from HTML */
-window._txnFpOnSearch = function (val) {
-  _txnFpQuery = val;
-  const clrBtn = document.getElementById("txnFpSearchClear");
-  if (clrBtn) clrBtn.style.display = val ? "flex" : "none";
-  _txnFpRender();
-};
+  if (page) {
+    safeRemoveClass(page, "txn-page-closing");
 
-/** Clear button */
-window._txnFpClearSearch = function () {
-  const inp = document.getElementById("txnFpSearchInput");
-  const clr = document.getElementById("txnFpSearchClear");
-  if (inp) inp.value = "";
-  if (clr) clr.style.display = "none";
-  _txnFpQuery = "";
-  _txnFpRender();
-};
-
-/** Type chip filter */
-window._txnFpSetType = function (btn, type) {
-  _txnFpType = type;
-  document.querySelectorAll(".txnfp-chip").forEach(function (c) {
-    c.classList.toggle("txnfp-chip--active", c.dataset.fptype === type);
-  });
-  _txnFpRender();
-};
-
-function openTxnFullPage() {
-  const page = document.getElementById("txnFullPage");
-  if (!page) return;
-
-  // Reset state on every open
-  _txnFpQuery = "";
-  _txnFpType = "all";
-
-  const inp = document.getElementById("txnFpSearchInput");
-  const clr = document.getElementById("txnFpSearchClear");
-  const bar = document.getElementById("txnFpSearchBar");
-  if (inp) inp.value = "";
-  if (clr) clr.style.display = "none";
-  document.querySelectorAll(".txnfp-chip").forEach(function (c) {
-    c.classList.toggle("txnfp-chip--active", c.dataset.fptype === "all");
-  });
-
-  // Rebuild master list from all cards
-  _txnFpAllTxns = _txnFpBuildList();
-
-  const body = document.getElementById("txnPageBody");
-  const subtitle = document.getElementById("txnPageSubtitle");
-
-  if (!_txnFpAllTxns.length) {
-    if (bar) bar.style.display = "none";
-    safeSetHTML(
-      body,
-      '<div style="text-align:center;padding:3rem;color:#475569">' +
-        '<i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>' +
-        "No transactions yet" +
-        "</div>",
-    );
-    safeSetContent(subtitle, "No data");
-  } else {
-    if (bar) bar.style.display = "";
-    _txnFpRender();
+    requestAnimationFrame(() => {
+      safeAddClass(page, "txn-page-open");
+    });
   }
-
-  safeRemoveClass(page, "txn-page-closing");
-  requestAnimationFrame(function () {
-    safeAddClass(page, "txn-page-open");
-  });
 }
 
 function closeTxnFullPage() {
