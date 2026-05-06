@@ -679,46 +679,7 @@
                   <i class="fas fa-expand-alt"></i> Full Report
                 </button>
               </div>
-
-              <!-- rightPanelTxnList kept for JS compat (hidden) -->
-              <div id="rightPanelTxnList" style="display:none"></div>
-
-              <!-- Transactions Panel with Search -->
-              <div class="db-panel rp-txn-panel">
-                <div class="db-panel-hdr">
-                  <span class="db-panel-title">Transactions</span>
-                  <span class="db-view-all" onclick="openTxnFullPage()">View All <i class="fas fa-chevron-right" style="font-size:.6rem"></i></span>
-                </div>
-
-                <!-- Search bar -->
-                <div class="rp-search-bar">
-                  <i class="fas fa-search rp-search-icon"></i>
-                  <input
-                    type="text"
-                    id="rpTxnSearch"
-                    class="rp-search-input"
-                    placeholder="Search by description, category or amount…"
-                    autocomplete="off"
-                  />
-                  <button class="rp-search-clear" id="rpSearchClear" onclick="_rpClearSearch()" style="display:none" aria-label="Clear search">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-
-                <!-- Filter chips -->
-                <div class="rp-filter-chips">
-                  <button class="rp-chip rp-chip--active" data-filter="all" onclick="_rpFilter(this,'all')">All</button>
-                  <button class="rp-chip" data-filter="income" onclick="_rpFilter(this,'income')">Income</button>
-                  <button class="rp-chip" data-filter="expense" onclick="_rpFilter(this,'expense')">Expense</button>
-                </div>
-
-                <!-- Results list -->
-                <div id="rpTxnList" class="rp-txn-list">
-                  <div class="rp-empty"><i class="fas fa-receipt"></i><span>No transactions yet</span></div>
-                </div>
-              </div>
-
-
+              
             </div><!-- /db-right -->
 
           </div><!-- /db-grid -->
