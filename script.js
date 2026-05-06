@@ -4,48 +4,55 @@
    only encrypted ciphertext — unreadable without PIN.
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* ── Double-load guard: prevents SyntaxError if script is cached+loaded twice ── */
-if (typeof _BL_SCRIPT_LOADED !== "undefined") {
-  // Script already executed — skip re-declaration of all let/const
-  throw new Error("[BlueLedger] script.js already loaded — skipping duplicate execution");
+if (typeof sessionPin === "undefined") var sessionPin = null;
+if (typeof autoLockTimer === "undefined") var autoLockTimer = null;
+if (typeof pinBuffer === "undefined") var pinBuffer = "";
+if (typeof pinAttempts === "undefined") var pinAttempts = 0;
+if (typeof pinLockedUntil === "undefined") var pinLockedUntil = 0;
+if (typeof MAX_PIN_ATTEMPTS === "undefined") var MAX_PIN_ATTEMPTS = 5;
+if (typeof PIN_LOCKOUT_MS === "undefined") {
+var PIN_LOCKOUT_MS = 30 * 1000; // 30 seconds
+if (typeof AUTO_LOCK_MS === "undefined") var AUTO_LOCK_MS = 5 * 60 * 1000;
 }
-var _BL_SCRIPT_LOADED = true;
-
-
-if (typeof sessionPin === "undefined") var sessionPin = null; // guard: safe if re-declared by cached script
-let autoLockTimer = null;
-let pinBuffer = "";
-let pinAttempts = 0;
-let pinLockedUntil = 0;
-const MAX_PIN_ATTEMPTS = 5;
-const PIN_LOCKOUT_MS = 30 * 1000; // 30 seconds
-const AUTO_LOCK_MS = 5 * 60 * 1000;
-const STORAGE_KEY = "bl_vault";
-const VERIFY_TOKEN = "BL_OK_v1";
-const VAULT_SCHEMA_VERSION = 1;
-const SYNC_PENDING_KEY = "bl_sync_pending_v1";
-const SYNC_DEVICE_KEY = "bl_sync_device_v1";
-const SYNC_TABLE = "encrypted_vaults";
-const SYNC_POLL_MS = 30 * 1000;
+if (typeof STORAGE_KEY === "undefined") var STORAGE_KEY = "bl_vault";
+if (typeof VERIFY_TOKEN === "undefined") var VERIFY_TOKEN = "BL_OK_v1";
+if (typeof VAULT_SCHEMA_VERSION === "undefined") var VAULT_SCHEMA_VERSION = 1;
+if (typeof SYNC_PENDING_KEY === "undefined") var SYNC_PENDING_KEY = "bl_sync_pending_v1";
+if (typeof SYNC_DEVICE_KEY === "undefined") var SYNC_DEVICE_KEY = "bl_sync_device_v1";
+if (typeof SYNC_TABLE === "undefined") var SYNC_TABLE = "encrypted_vaults";
+if (typeof SYNC_POLL_MS === "undefined") var SYNC_POLL_MS = 30 * 1000;
 
 // safeNumber() lives in utils.js — removed duplicate
 
-// safeGet, safeAddClass, safeRemoveClass, safeToggleClass live in utils.js (loaded first)
-// Keeping thin fallbacks as function expressions so re-declaration never throws:
-if (typeof safeGet !== "function") var safeGet = function(id) { return document.getElementById(id); };
-if (typeof safeAddClass !== "function") var safeAddClass = function(el, c) { if (el) el.classList.add(c); };
-if (typeof safeRemoveClass !== "function") var safeRemoveClass = function(el, c) { if (el) el.classList.remove(c); };
-if (typeof safeToggleClass !== "function") var safeToggleClass = function(el, c, f) { if (el) el.classList.toggle(c, f); };
+function safeGet(id) {
+  return document.getElementById(id);
+}
+
+function safeAddClass(el, className) {
+  if (el) el.classList.add(className);
+}
+
+function safeRemoveClass(el, className) {
+  if (el) el.classList.remove(className);
+}
+
+function safeToggleClass(el, className, condition) {
+  if (el) el.classList.toggle(className, condition);
+}
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
-const BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
-const BL_SUPABASE_ANON_KEY =
+if (typeof BL_SUPABASE_URL === "undefined") var BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
+if (typeof BL_SUPABASE_ANON_KEY === "undefined") {
+var BL_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
-const AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
-const VERIFY_TOKEN_V2 = "BL_OK_v2";
-const WEBAUTHN_CRED_ID_KEY = "bl_webauthn_cred_id";
-const WEBAUTHN_PWD_VAULT_KEY = "bl_webauthn_pwd_vault";
-const WEBAUTHN_RP_ID_KEY = "bl_webauthn_rp_id";
+}
+if (typeof AUTH_MODE_KEY === "undefined") {
+var AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
+if (typeof VERIFY_TOKEN_V2 === "undefined") var VERIFY_TOKEN_V2 = "BL_OK_v2";
+}
+if (typeof WEBAUTHN_CRED_ID_KEY === "undefined") var WEBAUTHN_CRED_ID_KEY = "bl_webauthn_cred_id";
+if (typeof WEBAUTHN_PWD_VAULT_KEY === "undefined") var WEBAUTHN_PWD_VAULT_KEY = "bl_webauthn_pwd_vault";
+if (typeof WEBAUTHN_RP_ID_KEY === "undefined") var WEBAUTHN_RP_ID_KEY = "bl_webauthn_rp_id";
 
 function encrypt(data, pin) {
   return CryptoJS.AES.encrypt(JSON.stringify(data), pin).toString();
@@ -68,8 +75,8 @@ window.addEventListener("load", () => {
   document.body.style.setProperty("--y", "50%");
 });
 
-let cards = [];
-let activeCardIdx = 0;
+if (typeof cards === "undefined") var cards = [];
+if (typeof activeCardIdx === "undefined") var activeCardIdx = 0;
 // Expose to card-stack-logic.js (let variables don't auto-attach to window)
 Object.defineProperty(window, "cards", {
   get() {
@@ -89,42 +96,47 @@ Object.defineProperty(window, "activeCardIdx", {
   },
   configurable: true,
 });
-let addingNewCard = false;
+if (typeof addingNewCard === "undefined") var addingNewCard = false;
 
-let userData = null;
-let transactions = [];
-let customCategories = [];
-let categoryBudgets = {};
-let recurringTemplates = [];
+if (typeof userData === "undefined") var userData = null;
+if (typeof transactions === "undefined") var transactions = [];
+if (typeof customCategories === "undefined") var customCategories = [];
+if (typeof categoryBudgets === "undefined") var categoryBudgets = {};
+if (typeof recurringTemplates === "undefined") var recurringTemplates = [];
 
-let currentPeriod = "monthly"; // always monthly
-let chartPeriod = "monthly"; // FIXED: was commented out, now declared here
-let sortCfg = { field: "date", order: "desc" };
-let filterCfg = { type: "all", cats: [] };
-let ctxId = null;
-let searchQuery = "";
-let deleteTargetId = null;
-let summaryMonth = new Date().getMonth();
-let summaryYear = new Date().getFullYear();
-let txnExpanded = false;
-let pendingAddFlow = null;
-let syncConfig = null;
-let supabaseClient = null;
-let syncChannel = null;
-let syncPushTimer = null;
-let syncPollTimer = null;
-let syncBusy = false;
-let suppressSyncPush = false;
-let syncFocusHandlerBound = false;
+if (typeof currentPeriod === "undefined") {
+var currentPeriod = "monthly"; // always monthly
+if (typeof chartPeriod === "undefined") var chartPeriod = "monthly"; // FIXED: was commented out, now declared here
+if (typeof sortCfg === "undefined") var sortCfg = { field: "date", order: "desc" };
+}
+if (typeof filterCfg === "undefined") var filterCfg = { type: "all", cats: [] };
+if (typeof ctxId === "undefined") var ctxId = null;
+if (typeof searchQuery === "undefined") var searchQuery = "";
+if (typeof deleteTargetId === "undefined") var deleteTargetId = null;
+if (typeof summaryMonth === "undefined") var summaryMonth = new Date().getMonth();
+if (typeof summaryYear === "undefined") var summaryYear = new Date().getFullYear();
+if (typeof txnExpanded === "undefined") var txnExpanded = false;
+if (typeof pendingAddFlow === "undefined") var pendingAddFlow = null;
+if (typeof syncConfig === "undefined") var syncConfig = null;
+if (typeof supabaseClient === "undefined") var supabaseClient = null;
+if (typeof syncChannel === "undefined") var syncChannel = null;
+if (typeof syncPushTimer === "undefined") var syncPushTimer = null;
+if (typeof syncPollTimer === "undefined") var syncPollTimer = null;
+if (typeof syncBusy === "undefined") var syncBusy = false;
+if (typeof suppressSyncPush === "undefined") var suppressSyncPush = false;
+if (typeof syncFocusHandlerBound === "undefined") var syncFocusHandlerBound = false;
 
-const BASE_INCOME_CATS = [
+if (typeof BASE_INCOME_CATS === "undefined") {
+var BASE_INCOME_CATS = [
   "Salary",
   "Freelance",
   "Business",
   "Investment",
   "Insurance",
 ];
-const BASE_EXPENSE_CATS = [
+}
+if (typeof BASE_EXPENSE_CATS === "undefined") {
+var BASE_EXPENSE_CATS = [
   "Food",
   "Entertainment",
   "Shopping",
@@ -132,6 +144,7 @@ const BASE_EXPENSE_CATS = [
   "Health",
   "Investment",
 ];
+}
 // FIX: Define MONTH_NAMES here as fallback; main.js will re-use this via window.MONTH_NAMES
 if (!window.MONTH_NAMES) {
   window.MONTH_NAMES = [
@@ -149,9 +162,10 @@ if (!window.MONTH_NAMES) {
     "December",
   ];
 }
-const MONTH_NAMES = window.MONTH_NAMES;
+if (typeof MONTH_NAMES === "undefined") var MONTH_NAMES = window.MONTH_NAMES;
 
-const CAT_COLORS = {
+if (typeof CAT_COLORS === "undefined") {
+var CAT_COLORS = {
   Food: "#f97316",
   Entertainment: "#f59e0b",
   Shopping: "#eab308",
@@ -164,14 +178,17 @@ const CAT_COLORS = {
   Insurance: "#8b5cf6",
   Other: "#a78bfa",
 };
+}
 
-const CARD_ACCENT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
-const TXN_PREVIEW_LIMITS = {
+if (typeof CARD_ACCENT_COLORS === "undefined") var CARD_ACCENT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
+if (typeof TXN_PREVIEW_LIMITS === "undefined") {
+var TXN_PREVIEW_LIMITS = {
   daily: 6,
   weekly: 7,
   monthly: 8,
   picked: 8,
 };
+}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    AI FEATURES — AUTO-CATEGORIZATION & ASK BLUELEDGER
@@ -2746,8 +2763,9 @@ async function initSyncAfterUnlock(options = {}) {
    AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let _pendingCardSetup = null; // { name, email, password, userId }
-let _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
+if (typeof _pendingCardSetup === "undefined") {
+var _pendingCardSetup = null; // { name, email, password, userId }
+if (typeof _migrationVault === "undefined") var _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
 
 function showAuthScreen(tab = "login") {
   document.getElementById("authScreen").style.display = "flex";
@@ -2847,6 +2865,7 @@ async function openBiometricSetup() {
         _refreshBiometricSettingsRow();
       };
     }
+}
   } else {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac =
@@ -4357,10 +4376,10 @@ function showLockScreen(subtitle) {
 }
 
 // Bottom resets
-const errEl = safeGet("lockError");
+if (typeof errEl === "undefined") var errEl = safeGet("lockError");
 if (errEl) errEl.textContent = "";
 
-const attemptsEl = safeGet("lockAttempts");
+if (typeof attemptsEl === "undefined") var attemptsEl = safeGet("lockAttempts");
 if (attemptsEl) attemptsEl.textContent = "";
 
 function hideLockScreen() {
@@ -4742,7 +4761,7 @@ function addNewCard() {
   modal.style.display = "flex";
 }
 
-let deleteCardTargetIdx = null;
+if (typeof deleteCardTargetIdx === "undefined") var deleteCardTargetIdx = null;
 function confirmDeleteCard(idx) {
   if (cards.length <= 1) {
     notify("You need at least one card", "error");
@@ -4844,25 +4863,32 @@ document.addEventListener("mousemove", (e) => {
   document.body.style.setProperty("--y", e.clientY + "px");
 });
 
-const fmt = (n) => "₹" + safeNumber(n).toLocaleString("en-IN"); // FIX: guard undefined/null
-const toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const localDateStr = (d) => {
+if (typeof fmt === "undefined") {
+var fmt = (n) => "₹" + safeNumber(n).toLocaleString("en-IN"); // FIX: guard undefined/null
+if (typeof toDay === "undefined") var toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+if (typeof localDateStr === "undefined") {
+var localDateStr = (d) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return y + "-" + m + "-" + day;
 };
+}
 // const todayStr = () => localDateStr(new Date());
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    MONTH PICKER — view any past month in full
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let pickedMonth = null; // { year, month } when in "pick month" mode
-let pickerYear = new Date().getFullYear();
-let pickerSelected = null; // { year, month } currently highlighted in picker
+if (typeof pickedMonth === "undefined") {
+var pickedMonth = null; // { year, month } when in "pick month" mode
+if (typeof pickerYear === "undefined") var pickerYear = new Date().getFullYear();
+}
+if (typeof pickerSelected === "undefined") {
+var pickerSelected = null; // { year, month } currently highlighted in picker
 
-const MONTH_SHORT = [
+if (typeof MONTH_SHORT === "undefined") var MONTH_SHORT = [
   "Jan",
   "Feb",
   "Mar",
@@ -4876,6 +4902,7 @@ const MONTH_SHORT = [
   "Nov",
   "Dec",
 ];
+}
 
 function openMonthPicker() {
   safeRemoveClass(safeGet("periodMenu"), "open");
@@ -5034,12 +5061,16 @@ function getTxns(period, sourceTxns = transactions) {
   });
 }
 
-const sumInc = (tx) =>
+if (typeof sumInc === "undefined") {
+var sumInc = (tx) =>
   tx.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-const sumExp = (tx) =>
+}
+if (typeof sumExp === "undefined") {
+var sumExp = (tx) =>
   tx
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Math.abs(t.amount), 0);
+}
 
 function isTransferLikeTransaction(t) {
   if (!t || t.type !== "expense") return false;
@@ -7012,7 +7043,8 @@ function closeModal(id) {
   }
 }
 
-const ALL_MODALS = [
+if (typeof ALL_MODALS === "undefined") {
+var ALL_MODALS = [
   "incomeModal",
   "expenseModal",
   "editModal",
@@ -7030,6 +7062,7 @@ const ALL_MODALS = [
   "importModal",
   "privacyModal",
 ];
+}
 window.addEventListener("click", (e) => {
   ALL_MODALS.forEach((id) => {
     if (e.target === document.getElementById(id)) closeModal(id);
@@ -7040,7 +7073,7 @@ window.addEventListener("click", (e) => {
    TOAST NOTIFICATIONS
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-const activeNotifs = [];
+if (typeof activeNotifs === "undefined") var activeNotifs = [];
 function notify(msg, type = "success") {
   const c = {
     success: "linear-gradient(135deg,#34d399,#10b981)",
@@ -7454,14 +7487,17 @@ function openResetModal() {
    IMPORT CSV
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-let importedRows = [];
-const IMPORT_TEMPLATE_ROWS = [
+if (typeof importedRows === "undefined") var importedRows = [];
+if (typeof IMPORT_TEMPLATE_ROWS === "undefined") {
+var IMPORT_TEMPLATE_ROWS = [
   ["Date", "Type", "Category", "Description", "Amount", "Recurring"],
   ["2026-03-01", "expense", "Food", "Lunch", "250", "No"],
   ["2026-03-02", "income", "Salary", "March salary", "50000", "No"],
   ["2026-03-03", "expense", "Transport", "Cab to office", "180", "No"],
 ];
-const IMPORT_HEADER_ALIASES = {
+}
+if (typeof IMPORT_HEADER_ALIASES === "undefined") {
+var IMPORT_HEADER_ALIASES = {
   date: [
     "date",
     "transactiondate",
@@ -7505,6 +7541,7 @@ const IMPORT_HEADER_ALIASES = {
   debit: ["debit", "withdrawal", "expense", "moneyout", "dr"],
   recurring: ["recurring", "repeat", "isrecurring", "recurrence"],
 };
+}
 
 function getImportTemplateCsv() {
   return IMPORT_TEMPLATE_ROWS.map((row) => row.join(",")).join("\n");
