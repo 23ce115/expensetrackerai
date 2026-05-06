@@ -163,9 +163,17 @@ window.addEventListener("load", () => {
   }
 });
 
-/* ── Fire bootstrap ─────────────────────────────────────────── */
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", _bootApp);
-} else {
+/* ── Fire bootstrap (guarded against double-fire) ──────────── */
+if (typeof _BL_MAIN_BOOTED === "undefined") {
+  var _BL_MAIN_BOOTED = false;
+}
+function _bootAppOnce() {
+  if (_BL_MAIN_BOOTED) return;
+  _BL_MAIN_BOOTED = true;
   _bootApp();
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", _bootAppOnce);
+} else {
+  _bootAppOnce();
 }
