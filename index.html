@@ -460,17 +460,18 @@
           <!-- .main-content wrapper preserved for script.js querySelector -->
           <div class="main-content">
 
-          <!-- Title row — dynamic greeting -->
-          <div class="db-title-row">
-            <div class="db-greeting-block" id="dbGreetingBlock">
-              <div class="db-greeting-eyebrow" id="dbGreetingEyebrow"></div>
-              <h1 class="db-title db-greeting-name" id="dbGreetingName"></h1>
-              <p class="db-greeting-sub" id="dbGreetingSub"></p>
-            </div>
+          <!-- Filter pills (greeting moved to topbar only) -->
+          <div class="db-pills-row">
             <div class="db-pills">
               <button class="db-pill active" onclick="setDbFilter(this)">All</button>
               <button class="db-pill" onclick="setDbFilter(this);openMonthPicker()"><i class="fas fa-calendar" style="font-size:.65rem"></i> Month</button>
             </div>
+          </div>
+          <!-- Hidden compat stubs for greeting JS -->
+          <div id="dbGreetingBlock" style="display:none" aria-hidden="true">
+            <div id="dbGreetingEyebrow"></div>
+            <h1 id="dbGreetingName" class="db-title db-greeting-name"></h1>
+            <p id="dbGreetingSub"></p>
           </div>
 
           <!-- Two-column grid -->
