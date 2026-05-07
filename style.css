@@ -7612,7 +7612,7 @@ mark.txn-fp-hl {
 
 .db-greeting-name {
   font-family: "Syne", sans-serif;
-  font-size: 3rem;
+  font-size: 6rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--t1, #f0f4ff);
@@ -7629,7 +7629,7 @@ mark.txn-fp-hl {
 }
 
 .db-greeting-sub {
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 400;
   color: var(--t3, #64748b);
   opacity: 0.8;
