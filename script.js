@@ -80,31 +80,50 @@ window.addEventListener("load", () => {
 if (typeof cards === "undefined") var cards = [];
 if (typeof activeCardIdx === "undefined") var activeCardIdx = 0;
 // Expose to card-stack-logic.js (let variables don't auto-attach to window)
-Object.defineProperty(window, "cards", {
-  get() {
-    return cards;
-  },
-  set(v) {
-    cards = v;
-  },
-  configurable: true,
-});
-Object.defineProperty(window, "activeCardIdx", {
-  get() {
-    return activeCardIdx;
-  },
-  set(v) {
-    activeCardIdx = v;
-  },
-  configurable: true,
-});
+// Guard defineProperty: var already put cards on window as non-configurable,
+// so we use delete first to allow redefining with a getter/setter.
+try {
+  delete window.cards;
+  Object.defineProperty(window, "cards", {
+    get() {
+      return cards;
+    },
+    set(v) {
+      cards = v;
+    },
+    configurable: true,
+  });
+} catch (e) {}
+try {
+  delete window.activeCardIdx;
+  Object.defineProperty(window, "activeCardIdx", {
+    get() {
+      return activeCardIdx;
+    },
+    set(v) {
+      activeCardIdx = v;
+    },
+    configurable: true,
+  });
+} catch (e) {}
 if (typeof addingNewCard === "undefined") var addingNewCard = false;
 
 if (typeof userData === "undefined") var userData = null;
-if (typeof transactions === "undefined") var transactions = [];
-if (typeof customCategories === "undefined") var customCategories = [];
-if (typeof categoryBudgets === "undefined") var categoryBudgets = {};
-if (typeof recurringTemplates === "undefined") var recurringTemplates = [];
+if (typeof transactions === "undefined" || !Array.isArray(transactions))
+  var transactions = [];
+if (typeof customCategories === "undefined" || !Array.isArray(customCategories))
+  var customCategories = [];
+if (
+  typeof categoryBudgets === "undefined" ||
+  categoryBudgets === null ||
+  typeof categoryBudgets !== "object"
+)
+  var categoryBudgets = {};
+if (
+  typeof recurringTemplates === "undefined" ||
+  !Array.isArray(recurringTemplates)
+)
+  var recurringTemplates = [];
 
 if (typeof currentPeriod === "undefined") var currentPeriod = "monthly"; // always monthly
 if (typeof chartPeriod === "undefined") var chartPeriod = "monthly"; // FIXED: was commented out, now declared here
