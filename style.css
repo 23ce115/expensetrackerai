@@ -7907,41 +7907,58 @@ mark.txn-page-hl {
   }
 }
 
-/* ── Greeting block above stat cards (db-left) ───────────────── */
-.db-left-greeting {
-  padding: 0.5rem 0.1rem 0.9rem;
+/* ── Greeting above the full grid (desktop) ──────────────────── */
+.db-above-grid-greeting {
+  padding: 0.25rem 0.1rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 1rem;
+  margin-bottom: 0.15rem;
 }
 
-.db-left-greeting .db-greeting-name {
-  font-size: 1.35rem;
+.db-above-grid-greeting .db-greeting-name {
+  font-size: 1.45rem;
   font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--t1, #f0f4ff);
   margin: 0 0 0.2rem;
-  line-height: 1.2;
+  line-height: 1.15;
+  background: linear-gradient(
+    100deg,
+    var(--t1, #f0f4ff) 0%,
+    rgba(165, 180, 252, 0.92) 55%,
+    var(--t1, #f0f4ff) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.db-left-greeting .db-greeting-sub {
+.db-above-grid-greeting .db-greeting-sub {
   font-size: 0.75rem;
+  font-weight: 400;
   color: var(--t3, #64748b);
   margin: 0;
 }
 
-/* Mobile */
+/* Hidden on mobile — mobile uses db-mobile-greeting inside db-right */
 @media (max-width: 768px) {
-  .db-left-greeting {
-    padding: 0.4rem 0.25rem 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-  .db-left-greeting .db-greeting-name {
-    font-size: 1.15rem;
+  .db-above-grid-greeting {
+    display: none;
   }
 }
 
-/* Light theme */
-[data-theme="light"] .db-left-greeting {
+[data-theme="light"] .db-above-grid-greeting {
   border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .db-above-grid-greeting .db-greeting-name {
+  background: linear-gradient(100deg, #0f172a 0%, #4f46e5 55%, #0f172a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* db-left-greeting no longer used — hidden */
+.db-left-greeting {
+  display: none !important;
 }
 
 /* ── Greeting block above My Card (db-right) — DEPRECATED, greeting moved to db-left ─ */
