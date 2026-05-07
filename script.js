@@ -5632,6 +5632,7 @@ function renderTxns(period) {
   }
 
   const body = document.getElementById("txnBody");
+  if (!body) return; // dashboardTxnCard removed — nothing to render
 
   if (txns.length === 0) {
     body.innerHTML = `<tr><td colspan="6">
@@ -5694,8 +5695,6 @@ function renderTxns(period) {
     `;
     })
     .join("");
-
-  body.innerHTML = tableRows;
 
   body.innerHTML = tableRows;
 }
