@@ -10,15 +10,15 @@ if (typeof pinBuffer === "undefined") var pinBuffer = "";
 if (typeof pinAttempts === "undefined") var pinAttempts = 0;
 if (typeof pinLockedUntil === "undefined") var pinLockedUntil = 0;
 if (typeof MAX_PIN_ATTEMPTS === "undefined") var MAX_PIN_ATTEMPTS = 5;
-if (typeof PIN_LOCKOUT_MS === "undefined") {
-var PIN_LOCKOUT_MS = 30 * 1000; // 30 seconds
+if (typeof PIN_LOCKOUT_MS === "undefined") var PIN_LOCKOUT_MS = 30 * 1000; // 30 seconds
 if (typeof AUTO_LOCK_MS === "undefined") var AUTO_LOCK_MS = 5 * 60 * 1000;
-}
 if (typeof STORAGE_KEY === "undefined") var STORAGE_KEY = "bl_vault";
 if (typeof VERIFY_TOKEN === "undefined") var VERIFY_TOKEN = "BL_OK_v1";
 if (typeof VAULT_SCHEMA_VERSION === "undefined") var VAULT_SCHEMA_VERSION = 1;
-if (typeof SYNC_PENDING_KEY === "undefined") var SYNC_PENDING_KEY = "bl_sync_pending_v1";
-if (typeof SYNC_DEVICE_KEY === "undefined") var SYNC_DEVICE_KEY = "bl_sync_device_v1";
+if (typeof SYNC_PENDING_KEY === "undefined")
+  var SYNC_PENDING_KEY = "bl_sync_pending_v1";
+if (typeof SYNC_DEVICE_KEY === "undefined")
+  var SYNC_DEVICE_KEY = "bl_sync_device_v1";
 if (typeof SYNC_TABLE === "undefined") var SYNC_TABLE = "encrypted_vaults";
 if (typeof SYNC_POLL_MS === "undefined") var SYNC_POLL_MS = 30 * 1000;
 
@@ -41,18 +41,20 @@ function safeToggleClass(el, className, condition) {
 }
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
-if (typeof BL_SUPABASE_URL === "undefined") var BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
+if (typeof BL_SUPABASE_URL === "undefined")
+  var BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
 if (typeof BL_SUPABASE_ANON_KEY === "undefined") {
-var BL_SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
+  var BL_SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
 }
-if (typeof AUTH_MODE_KEY === "undefined") {
-var AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
+if (typeof AUTH_MODE_KEY === "undefined") var AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
 if (typeof VERIFY_TOKEN_V2 === "undefined") var VERIFY_TOKEN_V2 = "BL_OK_v2";
-}
-if (typeof WEBAUTHN_CRED_ID_KEY === "undefined") var WEBAUTHN_CRED_ID_KEY = "bl_webauthn_cred_id";
-if (typeof WEBAUTHN_PWD_VAULT_KEY === "undefined") var WEBAUTHN_PWD_VAULT_KEY = "bl_webauthn_pwd_vault";
-if (typeof WEBAUTHN_RP_ID_KEY === "undefined") var WEBAUTHN_RP_ID_KEY = "bl_webauthn_rp_id";
+if (typeof WEBAUTHN_CRED_ID_KEY === "undefined")
+  var WEBAUTHN_CRED_ID_KEY = "bl_webauthn_cred_id";
+if (typeof WEBAUTHN_PWD_VAULT_KEY === "undefined")
+  var WEBAUTHN_PWD_VAULT_KEY = "bl_webauthn_pwd_vault";
+if (typeof WEBAUTHN_RP_ID_KEY === "undefined")
+  var WEBAUTHN_RP_ID_KEY = "bl_webauthn_rp_id";
 
 function encrypt(data, pin) {
   return CryptoJS.AES.encrypt(JSON.stringify(data), pin).toString();
@@ -104,17 +106,18 @@ if (typeof customCategories === "undefined") var customCategories = [];
 if (typeof categoryBudgets === "undefined") var categoryBudgets = {};
 if (typeof recurringTemplates === "undefined") var recurringTemplates = [];
 
-if (typeof currentPeriod === "undefined") {
-var currentPeriod = "monthly"; // always monthly
+if (typeof currentPeriod === "undefined") var currentPeriod = "monthly"; // always monthly
 if (typeof chartPeriod === "undefined") var chartPeriod = "monthly"; // FIXED: was commented out, now declared here
-if (typeof sortCfg === "undefined") var sortCfg = { field: "date", order: "desc" };
-}
+if (typeof sortCfg === "undefined")
+  var sortCfg = { field: "date", order: "desc" };
 if (typeof filterCfg === "undefined") var filterCfg = { type: "all", cats: [] };
 if (typeof ctxId === "undefined") var ctxId = null;
 if (typeof searchQuery === "undefined") var searchQuery = "";
 if (typeof deleteTargetId === "undefined") var deleteTargetId = null;
-if (typeof summaryMonth === "undefined") var summaryMonth = new Date().getMonth();
-if (typeof summaryYear === "undefined") var summaryYear = new Date().getFullYear();
+if (typeof summaryMonth === "undefined")
+  var summaryMonth = new Date().getMonth();
+if (typeof summaryYear === "undefined")
+  var summaryYear = new Date().getFullYear();
 if (typeof txnExpanded === "undefined") var txnExpanded = false;
 if (typeof pendingAddFlow === "undefined") var pendingAddFlow = null;
 if (typeof syncConfig === "undefined") var syncConfig = null;
@@ -124,26 +127,27 @@ if (typeof syncPushTimer === "undefined") var syncPushTimer = null;
 if (typeof syncPollTimer === "undefined") var syncPollTimer = null;
 if (typeof syncBusy === "undefined") var syncBusy = false;
 if (typeof suppressSyncPush === "undefined") var suppressSyncPush = false;
-if (typeof syncFocusHandlerBound === "undefined") var syncFocusHandlerBound = false;
+if (typeof syncFocusHandlerBound === "undefined")
+  var syncFocusHandlerBound = false;
 
 if (typeof BASE_INCOME_CATS === "undefined") {
-var BASE_INCOME_CATS = [
-  "Salary",
-  "Freelance",
-  "Business",
-  "Investment",
-  "Insurance",
-];
+  var BASE_INCOME_CATS = [
+    "Salary",
+    "Freelance",
+    "Business",
+    "Investment",
+    "Insurance",
+  ];
 }
 if (typeof BASE_EXPENSE_CATS === "undefined") {
-var BASE_EXPENSE_CATS = [
-  "Food",
-  "Entertainment",
-  "Shopping",
-  "Transport",
-  "Health",
-  "Investment",
-];
+  var BASE_EXPENSE_CATS = [
+    "Food",
+    "Entertainment",
+    "Shopping",
+    "Transport",
+    "Health",
+    "Investment",
+  ];
 }
 // FIX: Define MONTH_NAMES here as fallback; main.js will re-use this via window.MONTH_NAMES
 if (!window.MONTH_NAMES) {
@@ -165,29 +169,30 @@ if (!window.MONTH_NAMES) {
 if (typeof MONTH_NAMES === "undefined") var MONTH_NAMES = window.MONTH_NAMES;
 
 if (typeof CAT_COLORS === "undefined") {
-var CAT_COLORS = {
-  Food: "#f97316",
-  Entertainment: "#f59e0b",
-  Shopping: "#eab308",
-  Transport: "#3b82f6",
-  Health: "#ec4899",
-  Investment: "#10b981",
-  Salary: "#06b6d4",
-  Freelance: "#0ea5e9",
-  Business: "#6366f1",
-  Insurance: "#8b5cf6",
-  Other: "#a78bfa",
-};
+  var CAT_COLORS = {
+    Food: "#f97316",
+    Entertainment: "#f59e0b",
+    Shopping: "#eab308",
+    Transport: "#3b82f6",
+    Health: "#ec4899",
+    Investment: "#10b981",
+    Salary: "#06b6d4",
+    Freelance: "#0ea5e9",
+    Business: "#6366f1",
+    Insurance: "#8b5cf6",
+    Other: "#a78bfa",
+  };
 }
 
-if (typeof CARD_ACCENT_COLORS === "undefined") var CARD_ACCENT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
+if (typeof CARD_ACCENT_COLORS === "undefined")
+  var CARD_ACCENT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
 if (typeof TXN_PREVIEW_LIMITS === "undefined") {
-var TXN_PREVIEW_LIMITS = {
-  daily: 6,
-  weekly: 7,
-  monthly: 8,
-  picked: 8,
-};
+  var TXN_PREVIEW_LIMITS = {
+    daily: 6,
+    weekly: 7,
+    monthly: 8,
+    picked: 8,
+  };
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2763,8 +2768,7 @@ async function initSyncAfterUnlock(options = {}) {
    AUTH — SIGNUP / LOGIN / BIOMETRIC / MIGRATION
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-if (typeof _pendingCardSetup === "undefined") {
-var _pendingCardSetup = null; // { name, email, password, userId }
+if (typeof _pendingCardSetup === "undefined") var _pendingCardSetup = null; // { name, email, password, userId }
 if (typeof _migrationVault === "undefined") var _migrationVault = null; // decrypted old PIN vault awaiting re-encryption
 
 function showAuthScreen(tab = "login") {
@@ -2865,7 +2869,6 @@ async function openBiometricSetup() {
         _refreshBiometricSettingsRow();
       };
     }
-}
   } else {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac =
@@ -4812,6 +4815,88 @@ function updateMyCardWidget() {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DYNAMIC DASHBOARD GREETING
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+(function _initGreeting() {
+  var SUBTITLES = [
+    "Your financial overview for today.",
+    "Track your spending, stay ahead.",
+    "Every rupee tracked. Every goal closer.",
+    "A clear view of your money.",
+  ];
+
+  function _getGreetingWord() {
+    var h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Good morning";
+    if (h >= 12 && h < 17) return "Good afternoon";
+    return "Good evening";
+  }
+
+  function _getFirstName() {
+    try {
+      if (typeof userData !== "undefined" && userData && userData.name) {
+        return userData.name.trim().split(/\s+/)[0];
+      }
+      if (typeof cards !== "undefined" && cards.length) {
+        var n = cards[0].userData && cards[0].userData.name;
+        if (n && n.trim()) return n.trim().split(/\s+/)[0];
+      }
+    } catch (e) {}
+    return "";
+  }
+
+  function _pickSubtitle() {
+    var dayOfYear = Math.floor(
+      (Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000,
+    );
+    return SUBTITLES[dayOfYear % SUBTITLES.length];
+  }
+
+  window.updateDashboardGreeting = function () {
+    var greetWord = _getGreetingWord();
+    var firstName = _getFirstName();
+    var fullGreet = firstName ? greetWord + ", " + firstName : greetWord;
+
+    var eyebrow = document.getElementById("dbGreetingEyebrow");
+    var nameEl = document.getElementById("dbGreetingName");
+    var subEl = document.getElementById("dbGreetingSub");
+    var block = document.getElementById("dbGreetingBlock");
+
+    if (eyebrow) {
+      var now = new Date();
+      eyebrow.textContent = now.toLocaleDateString("en-IN", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+    if (nameEl) nameEl.textContent = fullGreet;
+    if (subEl) subEl.textContent = _pickSubtitle();
+
+    if (block && !block.dataset.greeted) {
+      block.dataset.greeted = "1";
+      block.style.opacity = "0";
+      block.style.transform = "translateY(6px)";
+      requestAnimationFrame(function () {
+        block.style.transition = "opacity 0.55s ease, transform 0.55s ease";
+        block.style.opacity = "1";
+        block.style.transform = "translateY(0)";
+      });
+    }
+
+    var topbar = document.getElementById("topbarGreeting");
+    if (topbar) topbar.textContent = fullGreet;
+  };
+
+  document.addEventListener("DOMContentLoaded", function () {
+    window.updateDashboardGreeting();
+    setInterval(window.updateDashboardGreeting, 60000);
+  });
+})();
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    RECURRING TRANSACTIONS
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -4863,17 +4948,17 @@ document.addEventListener("mousemove", (e) => {
   document.body.style.setProperty("--y", e.clientY + "px");
 });
 
-if (typeof fmt === "undefined") {
-var fmt = (n) => "₹" + safeNumber(n).toLocaleString("en-IN"); // FIX: guard undefined/null
-if (typeof toDay === "undefined") var toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
+if (typeof fmt === "undefined")
+  var fmt = (n) => "₹" + safeNumber(n).toLocaleString("en-IN"); // FIX: guard undefined/null
+if (typeof toDay === "undefined")
+  var toDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 if (typeof localDateStr === "undefined") {
-var localDateStr = (d) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return y + "-" + m + "-" + day;
-};
+  var localDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  };
 }
 // const todayStr = () => localDateStr(new Date());
 
@@ -4881,27 +4966,26 @@ var localDateStr = (d) => {
    MONTH PICKER — view any past month in full
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-if (typeof pickedMonth === "undefined") {
-var pickedMonth = null; // { year, month } when in "pick month" mode
-if (typeof pickerYear === "undefined") var pickerYear = new Date().getFullYear();
-}
-if (typeof pickerSelected === "undefined") {
-var pickerSelected = null; // { year, month } currently highlighted in picker
+if (typeof pickedMonth === "undefined") var pickedMonth = null; // { year, month } when in "pick month" mode
+if (typeof pickerYear === "undefined")
+  var pickerYear = new Date().getFullYear();
+if (typeof pickerSelected === "undefined") var pickerSelected = null; // { year, month } currently highlighted in picker
 
-if (typeof MONTH_SHORT === "undefined") var MONTH_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+if (typeof MONTH_SHORT === "undefined") {
+  var MONTH_SHORT = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 }
 
 function openMonthPicker() {
@@ -5062,14 +5146,14 @@ function getTxns(period, sourceTxns = transactions) {
 }
 
 if (typeof sumInc === "undefined") {
-var sumInc = (tx) =>
-  tx.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  var sumInc = (tx) =>
+    tx.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
 }
 if (typeof sumExp === "undefined") {
-var sumExp = (tx) =>
-  tx
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  var sumExp = (tx) =>
+    tx
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
 }
 
 function isTransferLikeTransaction(t) {
@@ -7044,24 +7128,24 @@ function closeModal(id) {
 }
 
 if (typeof ALL_MODALS === "undefined") {
-var ALL_MODALS = [
-  "incomeModal",
-  "expenseModal",
-  "editModal",
-  "sortModal",
-  "filterModal",
-  "deleteModal",
-  "deleteCardModal",
-  "categoryModal",
-  "budgetModal",
-  "summaryModal",
-  "changePinModal",
-  "syncModal",
-  "resetModal",
-  "editLimitModal",
-  "importModal",
-  "privacyModal",
-];
+  var ALL_MODALS = [
+    "incomeModal",
+    "expenseModal",
+    "editModal",
+    "sortModal",
+    "filterModal",
+    "deleteModal",
+    "deleteCardModal",
+    "categoryModal",
+    "budgetModal",
+    "summaryModal",
+    "changePinModal",
+    "syncModal",
+    "resetModal",
+    "editLimitModal",
+    "importModal",
+    "privacyModal",
+  ];
 }
 window.addEventListener("click", (e) => {
   ALL_MODALS.forEach((id) => {
@@ -7264,123 +7348,281 @@ function toggleBnGlassSlider() {
   }
 }
 
-function openTxnFullPage() {
-  const page = document.getElementById("txnFullPage");
-  if (!page) return;
-  const body = document.getElementById("txnPageBody");
-  const subtitle = document.getElementById("txnPageSubtitle");
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FULL TRANSACTIONS PAGE — self-contained search + highlight
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+if (typeof _txnFpAllTxns === "undefined") var _txnFpAllTxns = [];
+if (typeof _txnFpQuery === "undefined") var _txnFpQuery = "";
+if (typeof _txnFpType === "undefined") var _txnFpType = "all";
+
+function _txnFpEscape(str) {
+  return String(str || "").replace(/[&<>"']/g, function (c) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c];
+  });
+}
+
+function _txnFpHighlight(text, query) {
+  var escaped = _txnFpEscape(text);
+  if (!query) return escaped;
+  var re = new RegExp(
+    "(" + query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
+    "gi",
+  );
+  return escaped.replace(re, '<mark class="txn-fp-hl">$1</mark>');
+}
+
+function _txnFpBuildList() {
   syncActiveToCards();
-  let allTxns = [];
-  cards.forEach((card, ci) => {
-    const cardName =
-      card.userData?.nickname?.trim() ||
-      card.userData?.name?.trim() ||
-      `Card ${ci + 1}`;
-    const last4 = (card.userData?.cardNumber || "")
+  var list = [];
+  cards.forEach(function (card, ci) {
+    var cardName =
+      (card.userData &&
+        card.userData.nickname &&
+        card.userData.nickname.trim()) ||
+      (card.userData && card.userData.name && card.userData.name.trim()) ||
+      "Card " + (ci + 1);
+    var last4 = ((card.userData && card.userData.cardNumber) || "")
       .replace(/\D/g, "")
       .slice(-4);
-    const accountLabel = last4 ? `${cardName} ••••${last4}` : cardName;
-    (card.transactions || []).forEach((t) =>
-      allTxns.push({ ...t, _account: accountLabel }),
-    );
+    var accountLabel = last4
+      ? cardName + " \u2022\u2022\u2022\u2022" + last4
+      : cardName;
+    (card.transactions || []).forEach(function (t) {
+      list.push(Object.assign({}, t, { _account: accountLabel }));
+    });
   });
+  list.sort(function (a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
+  return list;
+}
 
-  if (!allTxns.length) {
-    safeSetHTML(
-      body,
-      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>',
-    );
-    safeSetContent(subtitle, "No data");
-    safeRemoveClass(page, "txn-page-closing");
-    requestAnimationFrame(() => safeAddClass(page, "txn-page-open"));
+function _txnFpRender() {
+  var body = document.getElementById("txnPageBody");
+  var subtitle = document.getElementById("txnPageSubtitle");
+  var countEl = document.getElementById("txnFpCount");
+  if (!body) return;
+
+  var total = _txnFpAllTxns.length;
+  var txns = _txnFpAllTxns.slice();
+  var q = _txnFpQuery.toLowerCase().trim();
+
+  if (_txnFpType !== "all") {
+    txns = txns.filter(function (t) {
+      return t.type === _txnFpType;
+    });
+  }
+  if (q) {
+    txns = txns.filter(function (t) {
+      return (
+        (t.category || "").toLowerCase().includes(q) ||
+        (t.description || "").toLowerCase().includes(q) ||
+        String(Math.abs(t.amount || 0)).includes(q)
+      );
+    });
+  }
+
+  if (subtitle) {
+    var monthCount = new Set(
+      txns.map(function (t) {
+        return (t.date || "").slice(0, 7);
+      }),
+    ).size;
+    subtitle.textContent =
+      q || _txnFpType !== "all"
+        ? txns.length + " result" + (txns.length !== 1 ? "s" : "") + " found"
+        : total +
+          " transaction" +
+          (total !== 1 ? "s" : "") +
+          " \u00b7 " +
+          monthCount +
+          " month" +
+          (monthCount !== 1 ? "s" : "");
+  }
+  if (countEl) {
+    if (q || _txnFpType !== "all") {
+      countEl.textContent = txns.length + " of " + total;
+      countEl.style.display = "inline-block";
+    } else {
+      countEl.style.display = "none";
+    }
+  }
+
+  if (!txns.length) {
+    body.innerHTML =
+      '<div class="txnfp-empty">' +
+      '<i class="fas ' +
+      (q ? "fa-search" : "fa-inbox") +
+      '"></i>' +
+      '<div class="txnfp-empty-msg">' +
+      (q
+        ? "No results for \u201c" + _txnFpEscape(_txnFpQuery) + "\u201d"
+        : "No transactions yet") +
+      "</div>" +
+      (q
+        ? '<div class="txnfp-empty-hint">Try a different keyword or clear the search</div>'
+        : "") +
+      "</div>";
     return;
   }
 
-  allTxns.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const groups = {};
-  allTxns.forEach((t) => {
-    const d = new Date(t.date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("en-IN", {
-      month: "long",
-      year: "numeric",
-    });
-    if (!groups[key]) groups[key] = { label, txns: [] };
+  var groups = {};
+  txns.forEach(function (t) {
+    var d = new Date(t.date);
+    var key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    var lbl = d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    if (!groups[key]) groups[key] = { label: lbl, txns: [] };
     groups[key].txns.push(t);
   });
 
-  const monthCount = Object.keys(groups).length;
-  subtitle.textContent = `${allTxns.length} transactions · ${monthCount} month${monthCount !== 1 ? "s" : ""}`;
-
   body.innerHTML = Object.entries(groups)
-    .map(([, g]) => {
-      const rows = g.txns
-        .map((t) => {
-          const isInc = t.type === "income";
-          const amt = Math.abs(t.amount);
-          const dateStr = new Date(t.date).toLocaleDateString("en-IN", {
+    .map(function (entry) {
+      var g = entry[1];
+      var rows = g.txns
+        .map(function (t) {
+          var isInc = t.type === "income";
+          var amt = Math.abs(t.amount || 0);
+          var amtStr = amt.toLocaleString("en-IN");
+          var dateStr = new Date(t.date).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
           });
-          const desc = (t.description?.trim() || t.category || "").substring(
-            0,
-            35,
+          var rawDesc = (
+            (t.description && t.description.trim()) ||
+            t.category ||
+            ""
+          ).substring(0, 35);
+          var rawCat = t.category || "";
+          var hlDesc = _txnFpHighlight(rawDesc, q);
+          var hlCat = _txnFpHighlight(rawCat, q);
+          var hlAmt =
+            q && amtStr.includes(q)
+              ? amtStr.replace(
+                  new RegExp(
+                    "(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
+                    "gi",
+                  ),
+                  '<mark class="txn-fp-hl">$1</mark>',
+                )
+              : _txnFpEscape(amtStr);
+          return (
+            '<div class="txn-full-row">' +
+            '<div class="txn-full-date">' +
+            _txnFpEscape(dateStr) +
+            "</div>" +
+            "<div>" +
+            '<div class="txn-full-desc">' +
+            hlDesc +
+            "</div>" +
+            '<div class="txn-full-cat">' +
+            hlCat +
+            "</div>" +
+            "</div>" +
+            '<div class="txn-full-account">' +
+            _txnFpEscape(t._account || "") +
+            "</div>" +
+            '<div class="txn-full-amt ' +
+            (isInc ? "pos" : "neg") +
+            '">' +
+            (isInc ? "+" : "\u2212") +
+            "\u20b9" +
+            hlAmt +
+            "</div>" +
+            "</div>"
           );
-          return `<div class="txn-full-row">
-        <div class="txn-full-date">${dateStr}</div>
-        <div><div class="txn-full-desc">${desc}</div><div class="txn-full-cat">${t.category}</div></div>
-        <div class="txn-full-account">${t._account}</div>
-        <div class="txn-full-amt ${isInc ? "pos" : "neg"}">${isInc ? "+" : "-"}₹${amt.toLocaleString("en-IN")}</div>
-      </div>`;
         })
         .join("");
-      return `<div class="txn-month-group"><div class="txn-month-label">${g.label}</div>${rows}</div>`;
+      return (
+        '<div class="txn-month-group"><div class="txn-month-label">' +
+        _txnFpEscape(g.label) +
+        "</div>" +
+        rows +
+        "</div>"
+      );
     })
     .join("");
+}
 
-  if (page) {
-    safeRemoveClass(page, "txn-page-closing");
+window._txnFpOnSearch = function (val) {
+  _txnFpQuery = val;
+  var clr = document.getElementById("txnFpSearchClear");
+  if (clr) clr.style.display = val ? "flex" : "none";
+  _txnFpRender();
+};
 
-    requestAnimationFrame(() => {
-      safeAddClass(page, "txn-page-open");
-    });
+window._txnFpClearSearch = function () {
+  var inp = document.getElementById("txnFpSearchInput");
+  var clr = document.getElementById("txnFpSearchClear");
+  if (inp) inp.value = "";
+  if (clr) clr.style.display = "none";
+  _txnFpQuery = "";
+  _txnFpRender();
+};
+
+window._txnFpSetType = function (btn, type) {
+  _txnFpType = type;
+  document.querySelectorAll(".txnfp-chip").forEach(function (c) {
+    c.classList.toggle("txnfp-chip--active", c.dataset.fptype === type);
+  });
+  _txnFpRender();
+};
+
+function openTxnFullPage() {
+  var page = document.getElementById("txnFullPage");
+  if (!page) return;
+
+  _txnFpQuery = "";
+  _txnFpType = "all";
+  var inp = document.getElementById("txnFpSearchInput");
+  var clr = document.getElementById("txnFpSearchClear");
+  var bar = document.getElementById("txnFpSearchBar");
+  if (inp) inp.value = "";
+  if (clr) clr.style.display = "none";
+  document.querySelectorAll(".txnfp-chip").forEach(function (c) {
+    c.classList.toggle("txnfp-chip--active", c.dataset.fptype === "all");
+  });
+
+  _txnFpAllTxns = _txnFpBuildList();
+
+  var body = document.getElementById("txnPageBody");
+  var subtitle = document.getElementById("txnPageSubtitle");
+
+  if (!_txnFpAllTxns.length) {
+    if (bar) bar.style.display = "none";
+    safeSetHTML(
+      body,
+      '<div style="text-align:center;padding:3rem;color:#475569">' +
+        '<i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>' +
+        "No transactions yet" +
+        "</div>",
+    );
+    if (subtitle) subtitle.textContent = "No data";
+  } else {
+    if (bar) bar.style.display = "";
+    _txnFpRender();
   }
+
+  safeRemoveClass(page, "txn-page-closing");
+  requestAnimationFrame(function () {
+    safeAddClass(page, "txn-page-open");
+  });
 }
 
 function closeTxnFullPage() {
-  const page = safeGet("txnFullPage");
+  var page = safeGet("txnFullPage");
   if (!page) return;
-
   safeAddClass(page, "txn-page-closing");
   safeRemoveClass(page, "txn-page-open");
-
-  setTimeout(() => {
+  setTimeout(function () {
     safeRemoveClass(page, "txn-page-closing");
   }, 600);
-}
-
-function openBnSettingsWithSync() {
-  const dot = document.getElementById("bnSyncDot");
-  const label = document.getElementById("bnSyncLabel");
-  if (dot && label) {
-    if (syncConfig?.enabled && syncConfig?.lastSyncedAt) {
-      const mins = Math.round(
-        (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
-      );
-      dot.style.background = "#10b981";
-      label.style.color = "#10b981";
-      label.textContent = mins < 1 ? "Synced just now" : `Synced ${mins}m ago`;
-    } else if (syncConfig?.enabled) {
-      dot.style.background = "#f59e0b";
-      label.style.color = "#f59e0b";
-      label.textContent = "Sync connecting…";
-    }
-  }
-  const saved = localStorage.getItem("bl_glass_opacity") || "50";
-  const sl = document.getElementById("bnGlassSlider");
-  if (sl) sl.value = saved;
 }
 
 function toggleGlassSlider() {
@@ -7489,58 +7731,58 @@ function openResetModal() {
 
 if (typeof importedRows === "undefined") var importedRows = [];
 if (typeof IMPORT_TEMPLATE_ROWS === "undefined") {
-var IMPORT_TEMPLATE_ROWS = [
-  ["Date", "Type", "Category", "Description", "Amount", "Recurring"],
-  ["2026-03-01", "expense", "Food", "Lunch", "250", "No"],
-  ["2026-03-02", "income", "Salary", "March salary", "50000", "No"],
-  ["2026-03-03", "expense", "Transport", "Cab to office", "180", "No"],
-];
+  var IMPORT_TEMPLATE_ROWS = [
+    ["Date", "Type", "Category", "Description", "Amount", "Recurring"],
+    ["2026-03-01", "expense", "Food", "Lunch", "250", "No"],
+    ["2026-03-02", "income", "Salary", "March salary", "50000", "No"],
+    ["2026-03-03", "expense", "Transport", "Cab to office", "180", "No"],
+  ];
 }
 if (typeof IMPORT_HEADER_ALIASES === "undefined") {
-var IMPORT_HEADER_ALIASES = {
-  date: [
-    "date",
-    "transactiondate",
-    "txndate",
-    "entrydate",
-    "posteddate",
-    "valuedate",
-  ],
-  type: [
-    "type",
-    "transactiontype",
-    "entrytype",
-    "kind",
-    "flow",
-    "incomeexpense",
-    "creditdebit",
-    "drcr",
-  ],
-  category: [
-    "category",
-    "categories",
-    "group",
-    "expensecategory",
-    "incomecategory",
-  ],
-  description: [
-    "description",
-    "desc",
-    "details",
-    "detail",
-    "merchant",
-    "narration",
-    "note",
-    "notes",
-    "remark",
-    "remarks",
-    "particulars",
-  ],
-  amount: ["amount", "value", "total", "sum", "transactionamount"],
-  credit: ["credit", "deposit", "income", "moneyin", "cr"],
-  debit: ["debit", "withdrawal", "expense", "moneyout", "dr"],
-  recurring: ["recurring", "repeat", "isrecurring", "recurrence"],
-};
+  var IMPORT_HEADER_ALIASES = {
+    date: [
+      "date",
+      "transactiondate",
+      "txndate",
+      "entrydate",
+      "posteddate",
+      "valuedate",
+    ],
+    type: [
+      "type",
+      "transactiontype",
+      "entrytype",
+      "kind",
+      "flow",
+      "incomeexpense",
+      "creditdebit",
+      "drcr",
+    ],
+    category: [
+      "category",
+      "categories",
+      "group",
+      "expensecategory",
+      "incomecategory",
+    ],
+    description: [
+      "description",
+      "desc",
+      "details",
+      "detail",
+      "merchant",
+      "narration",
+      "note",
+      "notes",
+      "remark",
+      "remarks",
+      "particulars",
+    ],
+    amount: ["amount", "value", "total", "sum", "transactionamount"],
+    credit: ["credit", "deposit", "income", "moneyin", "cr"],
+    debit: ["debit", "withdrawal", "expense", "moneyout", "dr"],
+    recurring: ["recurring", "repeat", "isrecurring", "recurrence"],
+  };
 }
 
 function getImportTemplateCsv() {
