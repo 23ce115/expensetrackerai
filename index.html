@@ -391,11 +391,15 @@
         <!-- TOPBAR -->
         <header class="topbar">
           <div class="topbar-left">
-            <span class="topbar-title" id="topbarGreeting">My Dashboard</span>
-            <span id="headerDate" style="font-size:.72rem;color:var(--c-muted);margin-left:.75rem"></span>
+            <div class="topbar-date-block">
+              <span class="topbar-date-day" id="topbarDayName"></span>
+              <span class="topbar-date-full" id="headerDate"></span>
+            </div>
             <!-- Card switcher injected by JS -->
             <div id="cardSwitcher" class="card-switcher"></div>
           </div>
+          <!-- hidden compat stub so JS writing topbarGreeting doesn't error -->
+          <span id="topbarGreeting" style="display:none"></span>
 
           <!-- topbar search moved to Transactions panel -->
           <div id="topbarSearch" style="display:none"></div>
@@ -467,12 +471,7 @@
               <button class="db-pill" onclick="setDbFilter(this);openMonthPicker()"><i class="fas fa-calendar" style="font-size:.65rem"></i> Month</button>
             </div>
           </div>
-          <!-- Hidden compat stubs for greeting JS -->
-          <div id="dbGreetingBlock" style="display:none" aria-hidden="true">
-            <div id="dbGreetingEyebrow"></div>
-            <h1 id="dbGreetingName" class="db-title db-greeting-name"></h1>
-            <p id="dbGreetingSub"></p>
-          </div>
+
 
           <!-- Two-column grid -->
           <div class="db-grid" id="dashboardGrid">
@@ -570,6 +569,13 @@
 
             <!-- RIGHT -->
             <div class="db-right">
+
+              <!-- Greeting block above My Card -->
+              <div class="db-right-greeting" id="dbGreetingBlock">
+                <div class="db-greeting-eyebrow" id="dbGreetingEyebrow"></div>
+                <h2 class="db-greeting-name" id="dbGreetingName"></h2>
+                <p class="db-greeting-sub" id="dbGreetingSub"></p>
+              </div>
 
               <!-- My Card -->
               <!-- My Card -->
