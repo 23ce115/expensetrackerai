@@ -5904,16 +5904,38 @@ function renderInsights(sourceTxns = getAnalyticsTransactions()) {
     )
     .join("");
 
-  // Insight cards
+  // Insight cards — premium bento grid
   const cards = [];
   const topCat = sorted[0];
   if (topCat && totalThisMonth > 0) {
     const pct = Math.round((topCat[1] / totalThisMonth) * 100);
     cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:rgba(249,115,22,.15);color:#f97316"><i class="fas fa-fire"></i></div>
+      <div class="insight-icon" style="background:rgba(249,115,22,.12);color:#f97316;box-shadow:0 0 16px rgba(249,115,22,.12)"><i class="fas fa-fire"></i></div>
       <div class="insight-body">
         <div class="insight-value" style="color:#f97316">${pct}% on ${topCat[0]}</div>
-        <div class="insight-label">Top spending category this month</div>
+        <div class="insight-label">Top spend this month</div>
+      </div></div>`);
+  }
+  if (savingsRate !== null) {
+    const color =
+      savingsRate >= 20 ? "#10b981" : savingsRate >= 0 ? "#f59e0b" : "#ef4444";
+    const glow =
+      savingsRate >= 20
+        ? "rgba(16,185,129,.12)"
+        : savingsRate >= 0
+          ? "rgba(245,158,11,.12)"
+          : "rgba(239,68,68,.12)";
+    const label =
+      savingsRate >= 20
+        ? "Great savings rate"
+        : savingsRate >= 0
+          ? "Try to save more"
+          : "Spending > income";
+    cards.push(`<div class="insight-card">
+      <div class="insight-icon" style="background:${glow};color:${color};box-shadow:0 0 16px ${glow}"><i class="fas fa-piggy-bank"></i></div>
+      <div class="insight-body">
+        <div class="insight-value" style="color:${color}">${savingsRate}% saved</div>
+        <div class="insight-label">${label}</div>
       </div></div>`);
   }
   if (totalLastMonth > 0) {
@@ -5921,55 +5943,40 @@ function renderInsights(sourceTxns = getAnalyticsTransactions()) {
     const dp = Math.abs(Math.round((diff / totalLastMonth) * 100));
     const up = diff > 0;
     const diffColor = up ? "#ef4444" : "#10b981";
+    const diffGlow = up ? "rgba(239,68,68,.12)" : "rgba(16,185,129,.12)";
     cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:${up ? "rgba(239,68,68,.15)" : "rgba(16,185,129,.15)"};color:${diffColor}">
+      <div class="insight-icon" style="background:${diffGlow};color:${diffColor};box-shadow:0 0 16px ${diffGlow}">
         <i class="fas fa-arrow-${up ? "up" : "down"}"></i></div>
       <div class="insight-body">
-        <div class="insight-value" style="color:${diffColor}">${dp}% ${up ? "more" : "less"} than last month</div>
-        <div class="insight-label">${fmt(totalThisMonth)} vs ${fmt(totalLastMonth)} last month</div>
-      </div></div>`);
-  }
-  if (savingsRate !== null) {
-    const color =
-      savingsRate >= 20 ? "#10b981" : savingsRate >= 0 ? "#f59e0b" : "#ef4444";
-    const label =
-      savingsRate >= 20
-        ? "Great savings rate!"
-        : savingsRate >= 0
-          ? "Try to save more"
-          : "Spending exceeds income";
-    cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:rgba(167,139,250,.15);color:#a78bfa"><i class="fas fa-piggy-bank"></i></div>
-      <div class="insight-body">
-        <div class="insight-value" style="color:${color}">${savingsRate}% savings rate</div>
-        <div class="insight-label">${label}</div>
+        <div class="insight-value" style="color:${diffColor}">${dp}% ${up ? "up" : "down"}</div>
+        <div class="insight-label">vs last month</div>
       </div></div>`);
   }
   if (dailyAvg > 0) {
     cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-calendar-day"></i></div>
+      <div class="insight-icon" style="background:rgba(59,130,246,.12);color:#3b82f6;box-shadow:0 0 16px rgba(59,130,246,.1)"><i class="fas fa-calendar-day"></i></div>
       <div class="insight-body">
-        <div class="insight-value" style="color:#3b82f6">${fmt(Math.round(dailyAvg))} / day</div>
-        <div class="insight-label">Average daily spending so far this month</div>
+        <div class="insight-value" style="color:#3b82f6">${fmt(Math.round(dailyAvg))}<span style="font-size:.7em;font-weight:600;opacity:.7">/day</span></div>
+        <div class="insight-label">Daily avg this month</div>
       </div></div>`);
   }
   if (sorted.length >= 2) {
     const second = sorted[1];
     const sp = Math.round((second[1] / totalThisMonth) * 100);
     cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:rgba(236,72,153,.15);color:#ec4899"><i class="fas fa-tags"></i></div>
+      <div class="insight-icon" style="background:rgba(236,72,153,.12);color:#ec4899;box-shadow:0 0 16px rgba(236,72,153,.1)"><i class="fas fa-tags"></i></div>
       <div class="insight-body">
         <div class="insight-value" style="color:#ec4899">${sp}% on ${second[0]}</div>
-        <div class="insight-label">Second biggest category this month</div>
+        <div class="insight-label">#2 category</div>
       </div></div>`);
   }
   const maxDow = dow.indexOf(Math.max(...dow));
   if (dow[maxDow] > 0) {
     cards.push(`<div class="insight-card">
-      <div class="insight-icon" style="background:rgba(245,158,11,.15);color:#f59e0b"><i class="fas fa-clock"></i></div>
+      <div class="insight-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;box-shadow:0 0 16px rgba(245,158,11,.1)"><i class="fas fa-clock"></i></div>
       <div class="insight-body">
-        <div class="insight-value" style="color:#f59e0b">${dowNames[maxDow]} is your biggest spend day</div>
-        <div class="insight-label">${fmt(Math.round(dow[maxDow]))} on ${dowNames[maxDow]}s recently</div>
+        <div class="insight-value" style="color:#f59e0b">${dowNames[maxDow]}</div>
+        <div class="insight-label">Biggest spend day · ${fmt(Math.round(dow[maxDow]))}</div>
       </div></div>`);
   }
   document.getElementById("insightsGrid").innerHTML = cards.join("");
@@ -5998,16 +6005,23 @@ function renderInsights(sourceTxns = getAnalyticsTransactions()) {
 
   // Day of week bars
   const dowSect = document.getElementById("dowSection");
+  const dowShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   if (dow.some((v) => v > 0)) {
     dowSect.style.display = "block";
-    document.getElementById("dowBars").innerHTML = dowNames
+    document.getElementById("dowBars").innerHTML = dowShort
       .map((name, i) => {
-        const h = Math.round((dow[i] / dowMax) * 64);
+        const h = Math.round((dow[i] / dowMax) * 40);
         const isMax = i === maxDow;
+        const barColor = isMax
+          ? "linear-gradient(180deg,#f59e0b,#f97316)"
+          : "linear-gradient(180deg,rgba(59,130,246,.55),rgba(59,130,246,.25))";
+        const glow = isMax ? "0 0 8px rgba(245,158,11,.45)" : "none";
         return `<div class="dow-col">
-        <div class="dow-bar-wrap"><div class="dow-bar" style="height:${Math.max(h, 3)}px;background:${isMax ? "#f59e0b" : "#3b82f6"};"></div></div>
-        <div class="dow-label" style="color:${isMax ? "#f59e0b" : "#64748b"}">${name}</div>
-      </div>`;
+          <div class="dow-bar-wrap">
+            <div class="dow-bar" style="height:${Math.max(h, 3)}px;background:${barColor};box-shadow:${glow}"></div>
+          </div>
+          <div class="dow-label" style="color:${isMax ? "#f59e0b" : "var(--t3)"};font-weight:${isMax ? "700" : "500"}">${name}</div>
+        </div>`;
       })
       .join("");
   } else {
