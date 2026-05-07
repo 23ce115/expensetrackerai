@@ -6456,104 +6456,8 @@ function renderMonthlySummary() {
   document.getElementById("summaryBiggest").textContent = biggest
     ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
     : "—";
-  // Pie chart
-  const pieCanvas = document.getElementById("summaryPieCanvas");
-  if (pieCanvas) {
-    if (window._summaryPieChart) {
-      window._summaryPieChart.destroy();
-      window._summaryPieChart = null;
-    }
-    if (sortedCats.length > 0) {
-      pieCanvas.style.display = "block";
-
-      // Build per-segment offset array — top category pops out
-      const offsets = sortedCats.map((_, i) => (i === 0 ? 22 : 0));
-      // Build border widths — top category gets thicker border for definition
-      const borderWidths = sortedCats.map((_, i) => (i === 0 ? 4 : 2));
-      // Top category gets a slightly lighter border colour
-      const borderColors = sortedCats.map((_, i) =>
-        i === 0 ? "rgba(255,255,255,0.25)" : "#0f172a",
-      );
-
-      window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
-        type: "doughnut",
-        data: {
-          labels: sortedCats.map(([c]) => c),
-          datasets: [
-            {
-              data: sortedCats.map(([, a]) => a),
-              backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
-              borderColor: borderColors,
-              borderWidth: borderWidths,
-              offset: offsets,
-              hoverOffset: 8,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "58%",
-          animation: {
-            duration: 700,
-            easing: "easeOutQuart",
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: (ctx) => {
-                  const pct = exp > 0 ? Math.round((ctx.raw / exp) * 100) : 0;
-                  return ` ${ctx.label}: ₹${ctx.raw.toLocaleString("en-IN")} (${pct}%)`;
-                },
-              },
-            },
-          },
-          layout: { padding: 20 },
-        },
-        plugins: [
-          {
-            id: "doughnutLabels",
-            afterDraw(chart) {
-              const { ctx, data } = chart;
-              const meta = chart.getDatasetMeta(0);
-              ctx.save();
-              meta.data.forEach((arc, i) => {
-                const pct =
-                  exp > 0
-                    ? Math.round((data.datasets[0].data[i] / exp) * 100)
-                    : 0;
-                if (pct < 5) return;
-                const angle = (arc.startAngle + arc.endAngle) / 2;
-                const r = (arc.innerRadius + arc.outerRadius) / 2;
-                const x = arc.x + Math.cos(angle) * r;
-                const y = arc.y + Math.sin(angle) * r;
-                // Top segment label: larger + white, others: smaller
-                if (i === 0) {
-                  ctx.font = "bold 13px DM Sans, system-ui, sans-serif";
-                  ctx.fillStyle = "#ffffff";
-                  ctx.shadowColor = "rgba(0,0,0,0.6)";
-                  ctx.shadowBlur = 4;
-                } else {
-                  ctx.font = "bold 11px system-ui, sans-serif";
-                  ctx.fillStyle = "rgba(255,255,255,0.9)";
-                  ctx.shadowColor = "transparent";
-                  ctx.shadowBlur = 0;
-                }
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(pct + "%", x, y);
-              });
-              ctx.restore();
-            },
-          },
-        ],
-      });
-    } else {
-      pieCanvas.style.display = "none";
-    }
-  }
+  // Pie chart — shared helper
+  _renderSummaryPie(sortedCats, exp);
   // Legend list below pie
   document.getElementById("summaryCatList").innerHTML =
     sortedCats.length === 0
@@ -6826,7 +6730,28 @@ function switchCardForAdd(idx) {
 function openBnSettings() {
   safeAddClass(safeGet("bnSettingsPanel"), "open");
   safeAddClass(safeGet("bnSettingsOverlay"), "open");
-  openBnSettingsWithSync();
+  // Update sync status dot + label inline (openBnSettingsWithSync was never defined)
+  var dot = document.getElementById("bnSyncDot");
+  var label = document.getElementById("bnSyncLabel");
+  if (dot && label) {
+    if (syncConfig && syncConfig.enabled && syncConfig.lastSyncedAt) {
+      var mins = Math.round(
+        (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
+      );
+      dot.style.background = "#10b981";
+      label.style.color = "#10b981";
+      label.textContent =
+        mins < 1 ? "Synced just now" : "Synced " + mins + "m ago";
+    } else if (syncConfig && syncConfig.enabled) {
+      dot.style.background = "#f59e0b";
+      label.style.color = "#f59e0b";
+      label.textContent = "Sync enabled — not yet synced";
+    } else {
+      dot.style.background = "#475569";
+      label.style.color = "#64748b";
+      label.textContent = "Sync not active";
+    }
+  }
 }
 
 function openBnReport() {
@@ -6955,11 +6880,103 @@ function openPeriodReport(period) {
           </div></div>`;
           })
           .join("");
+
+  // ── Render doughnut pie chart (same as monthly summary) ──
+  _renderSummaryPie(sortedCats, exp);
+
   openModal("summaryModal");
 }
 
+function _renderSummaryPie(sortedCats, exp) {
+  const pieCanvas = document.getElementById("summaryPieCanvas");
+  if (!pieCanvas) return;
+  if (window._summaryPieChart) {
+    window._summaryPieChart.destroy();
+    window._summaryPieChart = null;
+  }
+  if (!sortedCats.length) {
+    pieCanvas.style.display = "none";
+    return;
+  }
+  pieCanvas.style.display = "block";
+  const offsets = sortedCats.map((_, i) => (i === 0 ? 22 : 0));
+  const borderWidths = sortedCats.map((_, i) => (i === 0 ? 4 : 2));
+  const borderColors = sortedCats.map((_, i) =>
+    i === 0 ? "rgba(255,255,255,0.25)" : "#0f172a",
+  );
+  window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: sortedCats.map(([c]) => c),
+      datasets: [
+        {
+          data: sortedCats.map(([, a]) => a),
+          backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
+          borderColor: borderColors,
+          borderWidth: borderWidths,
+          offset: offsets,
+          hoverOffset: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "58%",
+      animation: { duration: 700, easing: "easeOutQuart" },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: (ctx) => {
+              const pct = exp > 0 ? Math.round((ctx.raw / exp) * 100) : 0;
+              return ` ${ctx.label}: ₹${ctx.raw.toLocaleString("en-IN")} (${pct}%)`;
+            },
+          },
+        },
+      },
+      layout: { padding: 20 },
+    },
+    plugins: [
+      {
+        id: "doughnutLabels",
+        afterDraw(chart) {
+          const { ctx, data } = chart;
+          const meta = chart.getDatasetMeta(0);
+          ctx.save();
+          meta.data.forEach((arc, i) => {
+            const pct =
+              exp > 0 ? Math.round((data.datasets[0].data[i] / exp) * 100) : 0;
+            if (pct < 5) return;
+            const angle = (arc.startAngle + arc.endAngle) / 2;
+            const r = (arc.innerRadius + arc.outerRadius) / 2;
+            const x = arc.x + Math.cos(angle) * r;
+            const y = arc.y + Math.sin(angle) * r;
+            if (i === 0) {
+              ctx.font = "bold 13px DM Sans, system-ui, sans-serif";
+              ctx.fillStyle = "#ffffff";
+              ctx.shadowColor = "rgba(0,0,0,0.6)";
+              ctx.shadowBlur = 4;
+            } else {
+              ctx.font = "bold 11px system-ui, sans-serif";
+              ctx.fillStyle = "rgba(255,255,255,0.9)";
+              ctx.shadowColor = "transparent";
+              ctx.shadowBlur = 0;
+            }
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(pct + "%", x, y);
+          });
+          ctx.restore();
+        },
+      },
+    ],
+  });
+}
+
 function openYearlyReport() {
-  setSummaryModalMeta("Yearly Report", "Monthly Breakdown", false);
+  setSummaryModalMeta("Yearly Report", "Top Categories", false);
   const now = new Date();
   const year = now.getFullYear();
   const yearTxns = transactions.filter(
@@ -6968,80 +6985,73 @@ function openYearlyReport() {
   const inc = sumInc(yearTxns);
   const exp = sumExp(yearTxns.filter((t) => t.type === "expense"));
   const net = inc - exp;
-  const rate = inc > 0 ? Math.round(((inc - exp) / inc) * 100) : 0;
 
-  // Build monthly breakdown for the year
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const breakdown = months
-    .map((m, i) => {
-      const mt = yearTxns.filter(
-        (t) => new Date(t.date + "T00:00:00").getMonth() === i,
-      );
-      const mi = sumInc(mt),
-        me = sumExp(mt.filter((t) => t.type === "expense"));
-      return { month: m, income: mi, expense: me };
-    })
-    .filter((r) => r.income > 0 || r.expense > 0);
-
-  // Reuse summary modal with yearly data
-  document.getElementById("summaryMonthTitle").textContent = "Year " + year;
-  document.getElementById("summaryInc").textContent = fmt(inc);
-  document.getElementById("summaryExp").textContent = fmt(exp);
-  document.getElementById("summaryNet").textContent = fmt(Math.abs(net));
-  document.getElementById("summaryNet").className =
-    "summary-value " + (net >= 0 ? "positive" : "negative");
-  document.getElementById("summaryRate").textContent = rate + "%";
-  document.getElementById("summaryRate").className =
-    "summary-value " + (rate >= 20 ? "positive" : rate >= 0 ? "" : "negative");
-
-  // Top category
+  // Build category breakdown (same style as weekly)
   const cats = {};
   yearTxns
     .filter((t) => t.type === "expense")
     .forEach((t) => {
       cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount);
     });
-  const topCat = Object.entries(cats).sort((a, b) => b[1] - a[1])[0];
-  document.getElementById("summaryTopCat").textContent = topCat
-    ? topCat[0] + " (" + fmt(topCat[1]) + ")"
-    : "—";
-
-  // Biggest single expense
+  const sortedCats = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+  const topCat = sortedCats[0];
   const biggest = yearTxns
     .filter((t) => t.type === "expense")
     .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))[0];
+
+  // Header stats
+  document.getElementById("summaryMonthTitle").textContent = "Year " + year;
+  document.getElementById("summaryInc").textContent = fmt(inc);
+  document.getElementById("summaryExp").textContent = fmt(exp);
+  document.getElementById("summaryNet").textContent =
+    (net >= 0 ? "+" : "-") + fmt(Math.abs(net));
+  document.getElementById("summaryNet").className =
+    "summary-value " + (net >= 0 ? "positive" : "negative");
+
+  // Surplus / Deficit — same style as weekly
+  const surplusEl = document.getElementById("summaryRate");
+  if (net >= 0) {
+    surplusEl.textContent = "+" + fmt(net) + " Surplus";
+    surplusEl.className = "summary-value positive";
+  } else {
+    surplusEl.textContent = "-" + fmt(Math.abs(net)) + " Deficit";
+    surplusEl.className = "summary-value negative";
+  }
+
+  document.getElementById("summaryTopCat").textContent = topCat
+    ? topCat[0] + " (" + fmt(topCat[1]) + ")"
+    : "—";
   document.getElementById("summaryBiggest").textContent = biggest
-    ? fmt(Math.abs(biggest.amount)) +
-      " – " +
-      (biggest.description || biggest.category)
+    ? (biggest.description || biggest.category) +
+      " (" +
+      fmt(Math.abs(biggest.amount)) +
+      ")"
     : "—";
 
-  // Monthly breakdown table
+  // Category bar list (matching weekly style)
   document.getElementById("summaryCatList").innerHTML =
-    breakdown
-      .map(
-        (r) =>
-          `<div class="summary-year-row">
-      <span class="summary-year-month">${r.month}</span>
-      <span class="summary-year-income">+${fmt(r.income)}</span>
-      <span class="summary-year-expense">-${fmt(r.expense)}</span>
-      <span class="summary-year-net" style="color:${r.income >= r.expense ? "#10b981" : "#ef4444"}">${fmt(Math.abs(r.income - r.expense))}</span>
-    </div>`,
-      )
-      .join("") || "<div class='summary-empty'>No transactions this year</div>";
+    sortedCats.length === 0
+      ? "<p style='color:#64748b;font-size:.85rem;text-align:center;padding:1rem 0;'>No expenses this year</p>"
+      : sortedCats
+          .map(([c, a]) => {
+            const pct = exp > 0 ? Math.round((a / exp) * 100) : 0;
+            return `<div class="summary-cat-row">
+            <div style="display:flex;align-items:center;gap:.5rem;min-width:110px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:${getCatColor(c)};display:inline-block;flex-shrink:0;"></span>
+              <span style="font-size:.82rem;">${c}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.75rem;flex:1;justify-content:flex-end;">
+              <div class="summary-cat-bar-bg"><div class="summary-cat-bar-fill" style="width:${pct}%;background:${getCatColor(c)};"></div></div>
+              <span style="font-size:.8rem;font-weight:600;min-width:75px;text-align:right;">${fmt(a)}</span>
+              <span style="font-size:.75rem;color:#64748b;min-width:32px;text-align:right;">${pct}%</span>
+            </div>
+          </div>`;
+          })
+          .join("");
+
+  // ── Doughnut pie chart ──
+  _renderSummaryPie(sortedCats, exp);
+
   openModal("summaryModal");
 }
 
