@@ -4904,6 +4904,25 @@ function updateMyCardWidget() {
     if (nameEl) nameEl.textContent = fullGreet;
     if (subEl) subEl.textContent = _pickSubtitle();
 
+    // ── Mobile-only greeting above My Card ──
+    var mobileNameEl = document.getElementById("dbMobileGreetingName");
+    var mobileSubEl = document.getElementById("dbMobileGreetingSub");
+    var mobileBlock = document.getElementById("dbMobileGreetingBlock");
+
+    if (mobileNameEl) mobileNameEl.textContent = fullGreet;
+    if (mobileSubEl) mobileSubEl.textContent = _pickSubtitle();
+
+    if (mobileBlock && !mobileBlock.dataset.greeted) {
+      mobileBlock.dataset.greeted = "1";
+      mobileBlock.style.opacity = "0";
+      mobileBlock.style.transform = "translateY(6px)";
+      requestAnimationFrame(function () {
+        mobileBlock.style.transition =
+          "opacity 0.55s ease, transform 0.55s ease";
+        mobileBlock.style.opacity = "1";
+        mobileBlock.style.transform = "translateY(0)";
+      });
+    }
     if (block && !block.dataset.greeted) {
       block.dataset.greeted = "1";
       block.style.opacity = "0";
