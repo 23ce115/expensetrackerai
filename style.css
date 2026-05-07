@@ -6414,7 +6414,7 @@ select.form-input option,
   }
 
   #headerDate {
-    display: none !important;
+    display: block !important;
   }
 }
 
@@ -7497,8 +7497,46 @@ mark.txn-page-hl {
   color: var(--t1, #f0f4ff);
 }
 
-/* ── Greeting block above My Card (db-right) ─────────────────── */
+/* ── Greeting block above stat cards (db-left) ───────────────── */
+.db-left-greeting {
+  padding: 0.5rem 0.1rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1rem;
+}
+
+.db-left-greeting .db-greeting-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--t1, #f0f4ff);
+  margin: 0 0 0.2rem;
+  line-height: 1.2;
+}
+
+.db-left-greeting .db-greeting-sub {
+  font-size: 0.75rem;
+  color: var(--t3, #64748b);
+  margin: 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .db-left-greeting {
+    padding: 0.4rem 0.25rem 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .db-left-greeting .db-greeting-name {
+    font-size: 1.15rem;
+  }
+}
+
+/* Light theme */
+[data-theme="light"] .db-left-greeting {
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+
+/* ── Greeting block above My Card (db-right) — DEPRECATED, greeting moved to db-left ─ */
 .db-right-greeting {
+  display: none;
   padding: 0.5rem 0.1rem 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   margin-bottom: 1rem;
