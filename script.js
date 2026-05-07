@@ -7593,45 +7593,204 @@ window._txnFpSetType = function (btn, type) {
   _txnFpRender();
 };
 
+// ── All Transactions Full Page ──────────────────────────────────
+var _txnPageAllTxns = [];
+var _txnPageTypeFilter = "all";
+
 function openTxnFullPage() {
   var page = document.getElementById("txnFullPage");
   if (!page) return;
 
-  _txnFpQuery = "";
-  _txnFpType = "all";
-  var inp = document.getElementById("txnFpSearchInput");
-  var clr = document.getElementById("txnFpSearchClear");
-  var bar = document.getElementById("txnFpSearchBar");
-  if (inp) inp.value = "";
-  if (clr) clr.style.display = "none";
-  document.querySelectorAll(".txnfp-chip").forEach(function (c) {
-    c.classList.toggle("txnfp-chip--active", c.dataset.fptype === "all");
+  syncActiveToCards();
+  _txnPageAllTxns = [];
+  cards.forEach(function (card, ci) {
+    var cardName =
+      (card.userData &&
+        (card.userData.nickname || card.userData.name || "").trim()) ||
+      "Card " + (ci + 1);
+    var raw4 = ((card.userData && card.userData.cardNumber) || "")
+      .replace(/\D/g, "")
+      .slice(-4);
+    var accountLabel = raw4
+      ? cardName + " \u2022\u2022\u2022\u2022" + raw4
+      : cardName;
+    (card.transactions || []).forEach(function (t) {
+      _txnPageAllTxns.push(Object.assign({}, t, { _account: accountLabel }));
+    });
   });
 
-  _txnFpAllTxns = _txnFpBuildList();
+  _txnPageAllTxns.sort(function (a, b) {
+    return new Date(b.date) - new Date(a.date);
+  });
 
-  var body = document.getElementById("txnPageBody");
-  var subtitle = document.getElementById("txnPageSubtitle");
+  // Reset search UI
+  var si = document.getElementById("txnPageSearch");
+  var sc = document.getElementById("txnPageSearchClear");
+  if (si) si.value = "";
+  if (sc) sc.style.display = "none";
+  _txnPageTypeFilter = "all";
+  document.querySelectorAll(".txn-page-chip").forEach(function (c) {
+    c.classList.toggle("txn-page-chip--active", c.dataset.tf === "all");
+  });
 
-  if (!_txnFpAllTxns.length) {
-    if (bar) bar.style.display = "none";
-    safeSetHTML(
-      body,
-      '<div style="text-align:center;padding:3rem;color:#475569">' +
-        '<i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>' +
-        "No transactions yet" +
-        "</div>",
-    );
-    if (subtitle) subtitle.textContent = "No data";
-  } else {
-    if (bar) bar.style.display = "";
-    _txnFpRender();
-  }
+  _txnPageRender("", "all");
 
   safeRemoveClass(page, "txn-page-closing");
   requestAnimationFrame(function () {
     safeAddClass(page, "txn-page-open");
   });
+}
+
+function _txnPageRender(query, typeFilter) {
+  var body = document.getElementById("txnPageBody");
+  var subtitle = document.getElementById("txnPageSubtitle");
+  if (!body) return;
+
+  var q = (query || "").toLowerCase().trim();
+
+  var filtered = _txnPageAllTxns.filter(function (t) {
+    if (typeFilter === "income" && (t.type === "income") === false)
+      return false;
+    if (typeFilter === "income" && t.type !== "income") return false;
+    if (typeFilter === "expense" && t.type === "income") return false;
+    if (q) {
+      var desc = (t.description || "").toLowerCase();
+      var cat = (t.category || "").toLowerCase();
+      var amt = String(Math.abs(t.amount || 0));
+      if (!desc.includes(q) && !cat.includes(q) && !amt.includes(q))
+        return false;
+    }
+    return true;
+  });
+
+  if (!_txnPageAllTxns.length) {
+    body.innerHTML =
+      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem"></i>No transactions yet</div>';
+    if (subtitle) subtitle.textContent = "No data";
+    return;
+  }
+
+  if (!filtered.length) {
+    body.innerHTML =
+      '<div style="text-align:center;padding:3rem;color:#475569"><i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:.75rem;opacity:.4"></i><div style="font-size:.88rem">No matching transactions</div></div>';
+    var mc = new Set(
+      _txnPageAllTxns.map(function (t) {
+        return (t.date || "").slice(0, 7);
+      }),
+    ).size;
+    if (subtitle)
+      subtitle.textContent =
+        _txnPageAllTxns.length +
+        " transactions \u00b7 " +
+        mc +
+        " month" +
+        (mc !== 1 ? "s" : "");
+    return;
+  }
+
+  function hl(str) {
+    if (!q) return str;
+    var safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return str.replace(
+      new RegExp("(" + safe + ")", "gi"),
+      '<mark class="txn-page-hl">$1</mark>',
+    );
+  }
+
+  var groups = {};
+  filtered.forEach(function (t) {
+    var d = new Date(t.date);
+    var key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    var lbl = d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    if (!groups[key]) groups[key] = { label: lbl, txns: [] };
+    groups[key].txns.push(t);
+  });
+
+  var monthCount = Object.keys(groups).length;
+  if (subtitle)
+    subtitle.textContent =
+      filtered.length +
+      " transaction" +
+      (filtered.length !== 1 ? "s" : "") +
+      " \u00b7 " +
+      monthCount +
+      " month" +
+      (monthCount !== 1 ? "s" : "");
+
+  body.innerHTML = Object.entries(groups)
+    .map(function (entry) {
+      var g = entry[1];
+      var rows = g.txns
+        .map(function (t) {
+          var isInc = t.type === "income";
+          var amt = Math.abs(t.amount || 0);
+          var dateStr = new Date(t.date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+          });
+          var desc = (t.description || "").trim() || t.category || "";
+          desc = desc.substring(0, 35);
+          var cat = t.category || "";
+          var amtStr = "\u20b9" + amt.toLocaleString("en-IN");
+          return (
+            '<div class="txn-full-row">' +
+            '<div class="txn-full-date">' +
+            dateStr +
+            "</div>" +
+            '<div><div class="txn-full-desc">' +
+            hl(desc) +
+            "</div>" +
+            '<div class="txn-full-cat">' +
+            hl(cat) +
+            "</div></div>" +
+            '<div class="txn-full-account">' +
+            t._account +
+            "</div>" +
+            '<div class="txn-full-amt ' +
+            (isInc ? "pos" : "neg") +
+            '">' +
+            (isInc ? "+" : "-") +
+            hl(amtStr) +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+      return (
+        '<div class="txn-month-group"><div class="txn-month-label">' +
+        g.label +
+        "</div>" +
+        rows +
+        "</div>"
+      );
+    })
+    .join("");
+}
+
+function _txnPageFilter() {
+  var inp = document.getElementById("txnPageSearch");
+  var clr = document.getElementById("txnPageSearchClear");
+  var q = inp ? inp.value : "";
+  if (clr) clr.style.display = q ? "" : "none";
+  _txnPageRender(q, _txnPageTypeFilter);
+}
+
+function _txnPageClearSearch() {
+  var inp = document.getElementById("txnPageSearch");
+  var clr = document.getElementById("txnPageSearchClear");
+  if (inp) inp.value = "";
+  if (clr) clr.style.display = "none";
+  _txnPageRender("", _txnPageTypeFilter);
+  if (inp) inp.focus();
+}
+
+function _txnPageChip(el, filter) {
+  _txnPageTypeFilter = filter;
+  document.querySelectorAll(".txn-page-chip").forEach(function (c) {
+    c.classList.toggle("txn-page-chip--active", c.dataset.tf === filter);
+  });
+  var q = (document.getElementById("txnPageSearch") || {}).value || "";
+  _txnPageRender(q, filter);
 }
 
 function closeTxnFullPage() {
