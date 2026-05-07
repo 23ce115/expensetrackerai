@@ -619,6 +619,33 @@
   </div>
 </div>
 
+              <!-- Mobile-only stat cards (shown between My Card and All Expenses on mobile) -->
+              <div class="db-mobile-stats">
+
+                <div class="db-stat-card" onclick="showCardInfo('income')">
+                  <div class="dsc-icon dsc-icon--income"><i class="fas fa-arrow-trend-up"></i></div>
+                  <div class="dsc-label">Income</div>
+                  <div class="amount income-amount" id="dashIncomeMobile">₹0</div>
+                  <div class="change" id="dashIncomeChangeMobile"><i class="fas fa-minus"></i>&nbsp;No transactions yet</div>
+                </div>
+
+                <div class="db-stat-card" onclick="showCardInfo('expense')">
+                  <div class="dsc-icon dsc-icon--expense"><i class="fas fa-arrow-trend-down"></i></div>
+                  <div class="dsc-label">Expenses</div>
+                  <div class="amount expense-amount" id="dashExpenseMobile">₹0</div>
+                  <div class="change" id="dashExpenseChangeMobile"><i class="fas fa-minus"></i>&nbsp;No transactions yet</div>
+                </div>
+
+                <div class="db-stat-card" onclick="showCardInfo('net')">
+                  <div class="dsc-icon dsc-icon--net"><i class="fas fa-scale-balanced"></i></div>
+                  <div class="dsc-label">Net Balance</div>
+                  <div class="amount net-positive" id="dashNetMobile">₹0</div>
+                  <div style="font-size:.68rem;color:var(--c-muted);margin-bottom:.2rem" id="dashNetSignMobile">Surplus</div>
+                  <div class="change" id="dashNetChangeMobile"><i class="fas fa-minus"></i>&nbsp;No transactions yet</div>
+                </div>
+
+              </div>
+
               <!-- All Expenses (moved from db-left) -->
               <div class="db-panel section-expenses">
                 <div class="db-panel-hdr">
