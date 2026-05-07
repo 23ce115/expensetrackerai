@@ -5536,6 +5536,19 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
     netEl.className = "amount " + (net >= 0 ? "net-positive" : "net-negative");
   }
   if (signEl) signEl.textContent = net >= 0 ? "Surplus" : "Deficit";
+
+  // ── Mirror values to mobile stat duplicates ──
+  var mInc = document.getElementById("dashIncomeMobile");
+  var mExp = document.getElementById("dashExpenseMobile");
+  var mNet = document.getElementById("dashNetMobile");
+  var mSign = document.getElementById("dashNetSignMobile");
+  if (mInc) mInc.textContent = fmt(inc) + ".00";
+  if (mExp) mExp.textContent = fmt(exp) + ".00";
+  if (mNet) {
+    mNet.textContent = fmt(Math.abs(net)) + ".00";
+    mNet.className = "amount " + (net >= 0 ? "net-positive" : "net-negative");
+  }
+  if (mSign) mSign.textContent = net >= 0 ? "Surplus" : "Deficit";
   const compLabel = {
     daily: "vs Yesterday",
     weekly: "vs Last Week",
@@ -5546,6 +5559,9 @@ function renderDashboard(period, sourceTxns = getAnalyticsTransactions()) {
   renderChange("dashIncomeChange", inc, pInc, compLabel, true);
   renderChange("dashExpenseChange", exp, pExp, compLabel, false);
   renderChange("dashNetChange", net, pInc - pExp, compLabel, true);
+  renderChange("dashIncomeChangeMobile", inc, pInc, compLabel, true);
+  renderChange("dashExpenseChangeMobile", exp, pExp, compLabel, false);
+  renderChange("dashNetChangeMobile", net, pInc - pExp, compLabel, true);
   const pLabel = period.charAt(0).toUpperCase() + period.slice(1);
   ["badge1", "badge2", "badge3", "txnBadge"].forEach((id) => {
     const el = document.getElementById(id);
