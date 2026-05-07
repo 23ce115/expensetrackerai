@@ -7552,6 +7552,30 @@ mark.txn-page-hl {
   background-clip: text;
 }
 
+/* Mobile: hide original stat cards, show mobile-positioned ones instead */
+@media (max-width: 768px) {
+  .db-left .db-stats {
+    display: none;
+  }
+}
+
+/* Mobile stat cards block (between My Card and All Expenses) */
+.db-mobile-stats {
+  display: none; /* hidden on desktop */
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md, 1rem);
+}
+
+.db-mobile-stats .db-stat-card:last-child {
+  grid-column: 1 / -1; /* Net Balance spans full width like on desktop mobile */
+}
+
+@media (max-width: 768px) {
+  .db-mobile-stats {
+    display: grid;
+  }
+}
+
 /* ── Greeting block above stat cards (db-left) ───────────────── */
 .db-left-greeting {
   padding: 0.5rem 0.1rem 0.9rem;
