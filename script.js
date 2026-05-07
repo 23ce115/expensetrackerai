@@ -4894,13 +4894,13 @@ function updateMyCardWidget() {
       });
     }
 
-    // ── Greeting block above My Card ──
+    // ── Greeting block above stat cards ──
     var eyebrow = document.getElementById("dbGreetingEyebrow");
     var nameEl = document.getElementById("dbGreetingName");
     var subEl = document.getElementById("dbGreetingSub");
     var block = document.getElementById("dbGreetingBlock");
 
-    if (eyebrow) eyebrow.textContent = greetWord.toUpperCase();
+    if (eyebrow) eyebrow.textContent = ""; // eyebrow removed from HTML, no-op
     if (nameEl) nameEl.textContent = fullGreet;
     if (subEl) subEl.textContent = _pickSubtitle();
 
