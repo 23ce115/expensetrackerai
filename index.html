@@ -555,30 +555,14 @@
                   </div>
                 </div>
 
-              <!-- Transactions table (shown when user has data) -->
-              <div class="card" id="dashboardTxnCard" style="display:none;margin-bottom:1.25rem">
-                <div class="section-header">
-                  <h3 class="card-title">Recent Transactions <span id="txnBadge" style="font-size:.66rem;color:var(--c-muted);font-weight:400"></span></h3>
-                  <div class="filters">
-                    <button class="filter-btn" id="sortBtn" onclick="openSortModal()"><i class="fas fa-sort"></i> Sort</button>
-                    <button class="filter-btn" id="filterBtn" onclick="openFilterModal()"><i class="fas fa-filter"></i> Filter</button>
-                  </div>
-                </div>
-                <div class="txn-meta">
-                  <div class="search-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" id="txnSearch" placeholder="Search description or category…" oninput="onSearchInput(this.value)" />
-                  </div>
-                  <span class="txn-count-badge" id="txnCount"></span>
-                </div>
-                <div class="table-wrapper">
-                  <table class="transaction-table">
-                    <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Type</th><th>Action</th></tr></thead>
-                    <tbody id="txnBody"></tbody>
-                  </table>
-                </div>
-                <div class="txn-mobile-list" id="txnMobileList"></div>
-                <div class="txn-list-footer" id="txnListFooter"></div>
+              <!-- dashboardTxnCard hidden; JS-compat stubs kept -->
+              <div id="dashboardTxnCard" style="display:none" aria-hidden="true">
+                <span id="txnBadge"></span>
+                <input type="text" id="txnSearch" style="display:none" />
+                <span id="txnCount" style="display:none"></span>
+                <tbody id="txnBody" style="display:none"></tbody>
+                <div id="txnMobileList" style="display:none"></div>
+                <div id="txnListFooter" style="display:none"></div>
               </div>
 
             </div><!-- /db-left -->
@@ -2177,6 +2161,33 @@
       </div>
 
 
+      <!-- Search + filter chips -->
+      <div class="txn-page-search-area">
+        <div class="txn-page-search-wrap">
+          <i class="fas fa-search txn-page-search-icon"></i>
+          <input
+            type="text"
+            id="txnPageSearch"
+            class="txn-page-search-input"
+            placeholder="Search by description, category or amount…"
+            autocomplete="off"
+            oninput="_txnPageFilter()"
+          />
+          <button class="txn-page-search-clear" id="txnPageSearchClear"
+            onclick="_txnPageClearSearch()" style="display:none" aria-label="Clear">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="txn-page-chips">
+          <button class="txn-page-chip txn-page-chip--active" data-tf="all"
+            onclick="_txnPageChip(this,'all')">All</button>
+          <button class="txn-page-chip" data-tf="income"
+            onclick="_txnPageChip(this,'income')">Income</button>
+          <button class="txn-page-chip" data-tf="expense"
+            onclick="_txnPageChip(this,'expense')">Expense</button>
+        </div>
+      </div>
+
       <div class="txn-page-body" id="txnPageBody">
         <div style="text-align:center;padding:3rem;color:#475569">
           <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:.75rem;display:block"></i>
@@ -2279,7 +2290,7 @@
           txns = txns.filter(function(t) {
             var desc = (t.description || '').toLowerCase();
             var cat  = (t.category    || '').toLowerCase();
-            var amt  = String(Math.abs(t.amount)).includes;
+            var amt  = String(Math.abs(t.amount || 0));
             return desc.includes(q) || cat.includes(q) || amt.includes(q);
           });
         }
