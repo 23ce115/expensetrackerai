@@ -4876,21 +4876,31 @@ function updateMyCardWidget() {
     var greetWord = _getGreetingWord();
     var firstName = _getFirstName();
     var fullGreet = firstName ? greetWord + ", " + firstName : greetWord;
+    var now = new Date();
 
-    var eyebrow = document.getElementById("dbGreetingEyebrow");
-    var nameEl = document.getElementById("dbGreetingName");
-    var subEl = document.getElementById("dbGreetingSub");
-    var block = document.getElementById("dbGreetingBlock");
-
-    if (eyebrow) {
-      var now = new Date();
-      eyebrow.textContent = now.toLocaleDateString("en-IN", {
-        weekday: "long",
+    // ── Topbar: day name + full date only (no greeting) ──
+    var dayNameEl = document.getElementById("topbarDayName");
+    var headerDateEl = document.getElementById("headerDate");
+    if (dayNameEl) {
+      dayNameEl.textContent = now
+        .toLocaleDateString("en-IN", { weekday: "long" })
+        .toUpperCase();
+    }
+    if (headerDateEl) {
+      headerDateEl.textContent = now.toLocaleDateString("en-IN", {
         day: "numeric",
         month: "long",
         year: "numeric",
       });
     }
+
+    // ── Greeting block above My Card ──
+    var eyebrow = document.getElementById("dbGreetingEyebrow");
+    var nameEl = document.getElementById("dbGreetingName");
+    var subEl = document.getElementById("dbGreetingSub");
+    var block = document.getElementById("dbGreetingBlock");
+
+    if (eyebrow) eyebrow.textContent = greetWord.toUpperCase();
     if (nameEl) nameEl.textContent = fullGreet;
     if (subEl) subEl.textContent = _pickSubtitle();
 
@@ -4905,6 +4915,7 @@ function updateMyCardWidget() {
       });
     }
 
+    // hidden compat stub
     var topbar = document.getElementById("topbarGreeting");
     if (topbar) topbar.textContent = fullGreet;
   };
