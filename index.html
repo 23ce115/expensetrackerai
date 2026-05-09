@@ -379,7 +379,7 @@
           <button class="sb-btn sb-ai" onclick="openAskBl()" title="Ask AI">
             <i class="fas fa-comment-dots"></i>
           </button>
-          <button class="sb-btn" onclick="toggleSettingsMenu()" title="Settings">
+          <button class="sb-btn" id="sbSettings" onclick="openSettingsPage()" title="Settings">
             <i class="fas fa-cog"></i>
           </button>
         </div>
@@ -2449,6 +2449,252 @@
       });
     })();
     </script>
+
+  <!-- ═══ DEDICATED SETTINGS PAGE ════════════════════════════════ -->
+  <div id="settingsPage" class="settings-page" style="display:none">
+
+    <!-- Sidebar replica for desktop (mirrors app-layout sidebar) -->
+    <div class="sp-sidebar-spacer"></div>
+
+    <!-- Settings content area -->
+    <div class="sp-body">
+      <!-- Header -->
+      <div class="sp-header">
+        <button class="sp-back-btn" onclick="closeSettingsPage()" aria-label="Back">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="sp-header-text">
+          <h1 class="sp-title">Settings</h1>
+          <p class="sp-subtitle">Manage your preferences and account</p>
+        </div>
+        <div class="sp-header-badge">
+          <span class="sp-sync-dot" id="spSyncDot"></span>
+          <span class="sp-sync-label" id="spSyncLabel">Not synced</span>
+        </div>
+      </div>
+
+      <!-- Settings groups -->
+      <div class="sp-groups">
+
+        <!-- ── GENERAL ─────────────────────────────────────── -->
+        <div class="sp-group">
+          <div class="sp-group-label">General</div>
+          <div class="sp-group-body">
+
+            <div class="sp-row" onclick="toggleTheme()">
+              <div class="sp-row-icon sp-icon--purple"><i class="fas fa-moon" id="spThemeIcon"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Appearance</div>
+                <div class="sp-row-sub" id="spThemeLabel">Dark Mode</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="openMonthPicker()">
+              <div class="sp-row-icon sp-icon--blue"><i class="fas fa-calendar-check"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Pick Month</div>
+                <div class="sp-row-sub">Filter data by a specific month</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--teal"><i class="fas fa-bell"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Notifications</div>
+                <div class="sp-row-sub">Budget alerts &amp; reminders</div>
+              </div>
+              <div class="sp-toggle-wrap">
+                <label class="sp-toggle">
+                  <input type="checkbox" id="spNotifToggle" onchange="saveSettingsToggle('notifications', this.checked)" />
+                  <span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--green"><i class="fas fa-coins"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Currency</div>
+                <div class="sp-row-sub">Indian Rupee (₹)</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── ACCOUNT ─────────────────────────────────────── -->
+        <div class="sp-group">
+          <div class="sp-group-label">Account</div>
+          <div class="sp-group-body">
+
+            <div class="sp-row" onclick="closeSettingsPage();lockApp()">
+              <div class="sp-row-icon sp-icon--orange"><i class="fas fa-lock"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Lock App</div>
+                <div class="sp-row-sub">Immediately lock BlueLedger</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" id="spBiometricRow" onclick="closeSettingsPage();openBiometricSetup()" style="display:none">
+              <div class="sp-row-icon sp-icon--blue"><i class="fas fa-fingerprint"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title" id="spBiometricLabel">Biometric Login</div>
+                <div class="sp-row-sub">Face ID or fingerprint unlock</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="closeSettingsPage();openChangePinModal()">
+              <div class="sp-row-icon sp-icon--purple"><i class="fas fa-key"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Change Password</div>
+                <div class="sp-row-sub">Update your account password</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="closeSettingsPage();openSyncModal()">
+              <div class="sp-row-icon sp-icon--teal"><i class="fas fa-cloud"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Cloud Sync &amp; Backup</div>
+                <div class="sp-row-sub">Keep your data safe across devices</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── DATA ───────────────────────────────────────── -->
+        <div class="sp-group">
+          <div class="sp-group-label">Data</div>
+          <div class="sp-group-body">
+
+            <div class="sp-row" onclick="closeSettingsPage();exportCSV()">
+              <div class="sp-row-icon sp-icon--green"><i class="fas fa-download"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Export Data</div>
+                <div class="sp-row-sub">Download your transactions as CSV</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="closeSettingsPage();openImportModal()">
+              <div class="sp-row-icon sp-icon--blue"><i class="fas fa-upload"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Import Data</div>
+                <div class="sp-row-sub">Import transactions from CSV</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="closeSettingsPage();openSyncModal()">
+              <div class="sp-row-icon sp-icon--purple"><i class="fas fa-database"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Backup &amp; Restore</div>
+                <div class="sp-row-sub">Cloud backup via Supabase sync</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider sp-row--danger" onclick="closeSettingsPage();openResetModal()">
+              <div class="sp-row-icon sp-icon--red"><i class="fas fa-trash-alt"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Reset Data</div>
+                <div class="sp-row-sub">Permanently delete all transactions</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── SUPPORT ─────────────────────────────────────── -->
+        <div class="sp-group">
+          <div class="sp-group-label">Support</div>
+          <div class="sp-group-body">
+
+            <div class="sp-row" onclick="closeSettingsPage();openPrivacyModal()">
+              <div class="sp-row-icon sp-icon--teal"><i class="fas fa-shield-alt"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Privacy Policy</div>
+                <div class="sp-row-sub">How we handle your data</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--blue"><i class="fas fa-circle-question"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">FAQs</div>
+                <div class="sp-row-sub">Common questions answered</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--orange"><i class="fas fa-flag"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Report a Problem</div>
+                <div class="sp-row-sub">Tell us something isn't working</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--green"><i class="fas fa-lightbulb"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Request a Feature</div>
+                <div class="sp-row-sub">Help shape the roadmap</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider" onclick="">
+              <div class="sp-row-icon sp-icon--purple"><i class="fas fa-info-circle"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">About BlueLedger</div>
+                <div class="sp-row-sub">Version 2.0 · AES-256 encrypted</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── DANGER ZONE ─────────────────────────────────── -->
+        <div class="sp-group sp-group--danger-zone">
+          <div class="sp-group-body">
+
+            <div class="sp-row sp-row--danger" onclick="closeSettingsPage();doSignOut()">
+              <div class="sp-row-icon sp-icon--red"><i class="fas fa-sign-out-alt"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Log Out</div>
+                <div class="sp-row-sub">Sign out of your account</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+            <div class="sp-row sp-row--divider sp-row--danger" onclick="closeSettingsPage();openResetModal()">
+              <div class="sp-row-icon sp-icon--red"><i class="fas fa-user-slash"></i></div>
+              <div class="sp-row-content">
+                <div class="sp-row-title">Sign Out &amp; Delete Data</div>
+                <div class="sp-row-sub">Permanently remove all your data</div>
+              </div>
+              <i class="fas fa-chevron-right sp-row-chevron"></i>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /sp-groups -->
+    </div><!-- /sp-body -->
+
+  </div><!-- /settingsPage -->
 
   <!-- ═══ ADAPTIVE LAYOUT BRIDGE ═══════════════════════════════ -->
   <script>
