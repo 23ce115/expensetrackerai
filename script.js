@@ -2526,6 +2526,17 @@ function populateSyncModal() {
   }
 }
 
+// Typed error so sync functions can distinguish an expired session
+// from a real network/server error without logging noise.
+function SessionExpiredError(msg) {
+  this.name = "SessionExpiredError";
+  this.message = msg || "Session expired";
+}
+SessionExpiredError.prototype = Object.create(Error.prototype);
+
+// Whether we've already wired the auth-state listener for this client instance
+var _authListenerBound = false;
+
 function getBLClient() {
   if (!supabaseClient) {
     if (!window.supabase?.createClient)
@@ -2542,7 +2553,41 @@ function getBLClient() {
       },
     );
   }
+
+  // Attach once: listen for Supabase auth events so we stop
+  // polling the moment the refresh token is gone.
+  if (!_authListenerBound) {
+    _authListenerBound = true;
+    supabaseClient.auth.onAuthStateChange(function (event) {
+      if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED_ERROR") {
+        stopCloudSync();
+        updateSyncStatus(
+          "warn",
+          "Session expired",
+          "Your session has expired. Lock the app and log in again to reconnect sync.",
+        );
+      }
+    });
+  }
+
   return supabaseClient;
+}
+
+// Resolves to the current Supabase session, or throws SessionExpiredError
+// if no valid session exists. Call this before any authenticated DB operation.
+async function _requireSession() {
+  const client = getBLClient();
+  const { data } = await client.auth.getSession();
+  if (!data?.session) {
+    stopCloudSync();
+    updateSyncStatus(
+      "warn",
+      "Session expired",
+      "Your session has expired. Lock the app and log in again to reconnect sync.",
+    );
+    throw new SessionExpiredError();
+  }
+  return data.session;
 }
 
 function ensureSupabaseClient(url, anonKey) {
@@ -2579,6 +2624,8 @@ function scheduleSyncPush() {
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(() => {
     pushCloudVault("auto").catch((e) => {
+      if (e instanceof SessionExpiredError || e?.name === "SessionExpiredError")
+        return;
       console.warn("Cloud push failed", e);
       updateSyncStatus(
         "warn",
@@ -2590,6 +2637,7 @@ function scheduleSyncPush() {
 }
 
 async function fetchRemoteVault() {
+  await _requireSession();
   const client = getBLClient();
   const { data, error } = await client
     .from(SYNC_TABLE)
@@ -2601,6 +2649,7 @@ async function fetchRemoteVault() {
 }
 
 async function upsertRemoteVault(payload) {
+  await _requireSession();
   const client = getBLClient();
   const ciphertext = encrypt(payload, syncConfig.syncKeyHex);
   const { error } = await client.from(SYNC_TABLE).upsert(
@@ -2727,9 +2776,14 @@ function subscribeToCloudChanges() {
       },
       (payload) => {
         if (payload.new?.updated_by === syncConfig.deviceId) return;
-        pullRemoteVault("event").catch((e) =>
-          console.warn("Realtime pull failed", e),
-        );
+        pullRemoteVault("event").catch((e) => {
+          if (
+            e instanceof SessionExpiredError ||
+            e?.name === "SessionExpiredError"
+          )
+            return;
+          console.warn("Realtime pull failed", e);
+        });
       },
     )
     .subscribe();
@@ -2759,7 +2813,14 @@ async function initSyncAfterUnlock(options = {}) {
     subscribeToCloudChanges();
     clearInterval(syncPollTimer);
     syncPollTimer = setInterval(() => {
-      pullRemoteVault("poll").catch((e) => console.warn("Sync poll failed", e));
+      pullRemoteVault("poll").catch((e) => {
+        if (
+          e instanceof SessionExpiredError ||
+          e?.name === "SessionExpiredError"
+        )
+          return;
+        console.warn("Sync poll failed", e);
+      });
     }, SYNC_POLL_MS);
     if (options.forceSyncNow) {
       await pullRemoteVault("manual");
@@ -2772,7 +2833,13 @@ async function initSyncAfterUnlock(options = {}) {
         "focus",
         () => {
           if (sessionPin && syncConfig?.enabled)
-            pullRemoteVault("focus").catch(() => {});
+            pullRemoteVault("focus").catch((e) => {
+              if (
+                e instanceof SessionExpiredError ||
+                e?.name === "SessionExpiredError"
+              )
+                return;
+            });
         },
         { passive: true },
       );
