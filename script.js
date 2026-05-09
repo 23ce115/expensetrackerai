@@ -6788,30 +6788,85 @@ function switchCardForAdd(idx) {
 }
 
 function openBnSettings() {
-  safeAddClass(safeGet("bnSettingsPanel"), "open");
-  safeAddClass(safeGet("bnSettingsOverlay"), "open");
-  // Update sync status dot + label inline (openBnSettingsWithSync was never defined)
-  var dot = document.getElementById("bnSyncDot");
-  var label = document.getElementById("bnSyncLabel");
-  if (dot && label) {
-    if (syncConfig && syncConfig.enabled && syncConfig.lastSyncedAt) {
-      var mins = Math.round(
-        (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
-      );
-      dot.style.background = "#10b981";
-      label.style.color = "#10b981";
-      label.textContent =
-        mins < 1 ? "Synced just now" : "Synced " + mins + "m ago";
-    } else if (syncConfig && syncConfig.enabled) {
-      dot.style.background = "#f59e0b";
-      label.style.color = "#f59e0b";
-      label.textContent = "Sync enabled — not yet synced";
-    } else {
-      dot.style.background = "#475569";
-      label.style.color = "#64748b";
-      label.textContent = "Sync not active";
-    }
+  // Route to the new dedicated settings page
+  openSettingsPage();
+}
+
+function openSettingsPage() {
+  var page = document.getElementById("settingsPage");
+  if (!page) return;
+  page.style.display = "flex";
+  // Force reflow before adding class for transition to work
+  void page.offsetWidth;
+  safeAddClass(page, "sp-open");
+
+  // Mark settings tab active on mobile bottom nav
+  document.querySelectorAll(".bn-tab").forEach(function (t) {
+    safeRemoveClass(t, "bn-tab--active");
+  });
+  safeAddClass(safeGet("bnSettings"), "bn-tab--active");
+
+  // Mark settings button active on sidebar
+  document.querySelectorAll(".sb-btn").forEach(function (t) {
+    safeRemoveClass(t, "active");
+  });
+  safeAddClass(safeGet("sbSettings"), "active");
+
+  // Update sync status
+  _updateSpSyncStatus();
+
+  // Update theme label
+  var themeLabel = document.getElementById("spThemeLabel");
+  var themeIcon = document.getElementById("spThemeIcon");
+  var isDark = document.documentElement.getAttribute("data-theme") !== "light";
+  if (themeLabel) themeLabel.textContent = isDark ? "Dark Mode" : "Light Mode";
+  if (themeIcon) themeIcon.className = isDark ? "fas fa-moon" : "fas fa-sun";
+
+  // Show biometric row if available
+  var hasBio = localStorage.getItem("bl_webauthn_cred_id");
+  var bioRow = document.getElementById("spBiometricRow");
+  var bioLabel = document.getElementById("spBiometricLabel");
+  if (bioRow) bioRow.style.display = hasBio ? "flex" : "flex"; // always show
+  if (bioLabel)
+    bioLabel.textContent = hasBio
+      ? "Manage Biometric Login"
+      : "Set Up Face ID / Fingerprint";
+}
+
+function _updateSpSyncStatus() {
+  var dot = document.getElementById("spSyncDot");
+  var label = document.getElementById("spSyncLabel");
+  if (!dot || !label) return;
+  if (
+    typeof syncConfig !== "undefined" &&
+    syncConfig &&
+    syncConfig.enabled &&
+    syncConfig.lastSyncedAt
+  ) {
+    var mins = Math.round(
+      (Date.now() - new Date(syncConfig.lastSyncedAt)) / 60000,
+    );
+    dot.style.background = "#10b981";
+    label.style.color = "#10b981";
+    label.textContent =
+      mins < 1 ? "Synced just now" : "Synced " + mins + "m ago";
+  } else if (
+    typeof syncConfig !== "undefined" &&
+    syncConfig &&
+    syncConfig.enabled
+  ) {
+    dot.style.background = "#f59e0b";
+    label.style.color = "#f59e0b";
+    label.textContent = "Sync enabled";
+  } else {
+    dot.style.background = "#475569";
+    label.style.color = "#64748b";
+    label.textContent = "Not synced";
   }
+}
+
+function saveSettingsToggle(key, value) {
+  localStorage.setItem("bl_setting_" + key, value ? "1" : "0");
 }
 
 function openBnReport() {
@@ -7116,14 +7171,31 @@ function openYearlyReport() {
 }
 
 function closeBnSettings() {
-  safeRemoveClass(safeGet("bnSettingsPanel"), "open");
-  safeRemoveClass(safeGet("bnSettingsOverlay"), "open");
+  closeSettingsPage();
+}
 
-  document.querySelectorAll(".bn-tab").forEach((t) => {
+function closeSettingsPage() {
+  var page = document.getElementById("settingsPage");
+  if (!page) return;
+  safeRemoveClass(page, "sp-open");
+  // Hide after transition
+  setTimeout(function () {
+    if (!page.classList.contains("sp-open")) {
+      page.style.display = "none";
+    }
+  }, 300);
+
+  // Restore home as active
+  document.querySelectorAll(".bn-tab").forEach(function (t) {
     safeRemoveClass(t, "bn-tab--active");
   });
-
   safeAddClass(safeGet("bnHome"), "bn-tab--active");
+
+  // Restore sidebar home button
+  document.querySelectorAll(".sb-btn").forEach(function (t) {
+    safeRemoveClass(t, "active");
+  });
+  safeAddClass(safeGet("sbHome"), "active");
 }
 
 function toggleActionSheet() {
@@ -7413,13 +7485,16 @@ function loadTheme() {
 }
 
 function toggleSettingsMenu() {
-  // The old topbar dropdown (#settingsMenu) was removed.
-  // Route to the slide-up settings panel instead.
-  openBnSettings();
+  var page = document.getElementById("settingsPage");
+  if (page && page.classList.contains("sp-open")) {
+    closeSettingsPage();
+  } else {
+    openSettingsPage();
+  }
 }
 
 function closeSettingsMenu() {
-  closeBnSettings();
+  closeSettingsPage();
 }
 
 function toggleBnGlassSlider() {
@@ -8856,6 +8931,7 @@ function _clearAiSuggestion(type) {
     "closeBnSheet",
     "closeModal",
     "closeSettingsMenu",
+    "closeSettingsPage",
     "closeTxnFullPage",
     "closeTxnDetails",
     "completeCardSetup",
@@ -8889,6 +8965,8 @@ function _clearAiSuggestion(type) {
     "openResetModal",
     "openSyncModal",
     "openTxnFullPage",
+    "openSettingsPage",
+    "saveSettingsToggle",
     "openChangePinModal",
     "openPrivacyModal",
     "openMonthPicker",
