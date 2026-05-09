@@ -8030,6 +8030,9 @@ mark.txn-page-hl {
     opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  /* Guarantee full viewport coverage — no inherited constraints */
+  width: 100vw;
+  height: 100vh;
 }
 
 .settings-page.sp-open {
@@ -8051,13 +8054,14 @@ mark.txn-page-hl {
   padding-top: 20px;
 }
 
-/* Body */
+/* Body — must fill all remaining width after sidebar spacer */
 .sp-body {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  width: 100%;
 }
 
 /* ── Header ──────────────────────────────────────────────── */
@@ -8174,10 +8178,11 @@ mark.txn-page-hl {
   gap: 2.5rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(129, 140, 248, 0.15) transparent;
-  /* Wide content area — matches dashboard layout */
-  max-width: 1060px;
+  /* Fill full available width — no centering dead zones */
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
+  align-self: stretch;
 }
 
 .sp-groups::-webkit-scrollbar {
@@ -8195,6 +8200,7 @@ mark.txn-page-hl {
   display: flex;
   flex-direction: column;
   gap: 0;
+  width: 100%;
 }
 
 .sp-group-label {
@@ -8222,6 +8228,7 @@ mark.txn-page-hl {
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
   overflow: hidden;
+  width: 100%;
   /* Layered depth — no glass, just solid surface */
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.3),
@@ -8236,7 +8243,8 @@ mark.txn-page-hl {
   gap: 1.1rem;
   padding: 0 1.4rem;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition:
+    background 0.14s ease;
   min-height: 80px;
   position: relative;
   -webkit-tap-highlight-color: transparent;
@@ -8276,7 +8284,7 @@ mark.txn-page-hl {
   font-size: 0.9rem;
   flex-shrink: 0;
   /* Subtle inner border for depth */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 .sp-icon--blue {
@@ -8338,9 +8346,7 @@ mark.txn-page-hl {
   color: var(--t3);
   flex-shrink: 0;
   opacity: 0.45;
-  transition:
-    opacity 0.14s ease,
-    transform 0.14s ease;
+  transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
 /* Danger rows */
@@ -8434,9 +8440,7 @@ mark.txn-page-hl {
 [data-theme="light"] .sp-group-body {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.07);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 
 [data-theme="light"] .sp-row--divider {
@@ -8464,7 +8468,7 @@ mark.txn-page-hl {
 }
 
 [data-theme="light"] .sp-group-label::after {
-  background: rgba(0, 0, 0, 0.07);
+  background: rgba(0,0,0,0.07);
 }
 
 [data-theme="light"] .sp-row-sub {
@@ -8556,21 +8560,11 @@ mark.txn-page-hl {
   animation: sp-row-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.settings-page.sp-open .sp-group:nth-child(1) {
-  animation-delay: 0.03s;
-}
-.settings-page.sp-open .sp-group:nth-child(2) {
-  animation-delay: 0.08s;
-}
-.settings-page.sp-open .sp-group:nth-child(3) {
-  animation-delay: 0.13s;
-}
-.settings-page.sp-open .sp-group:nth-child(4) {
-  animation-delay: 0.18s;
-}
-.settings-page.sp-open .sp-group:nth-child(5) {
-  animation-delay: 0.23s;
-}
+.settings-page.sp-open .sp-group:nth-child(1) { animation-delay: 0.03s; }
+.settings-page.sp-open .sp-group:nth-child(2) { animation-delay: 0.08s; }
+.settings-page.sp-open .sp-group:nth-child(3) { animation-delay: 0.13s; }
+.settings-page.sp-open .sp-group:nth-child(4) { animation-delay: 0.18s; }
+.settings-page.sp-open .sp-group:nth-child(5) { animation-delay: 0.23s; }
 
 @keyframes sp-row-in {
   from {
