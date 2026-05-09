@@ -1,17 +1,164 @@
 /* ═══════════════════════════════════════════════════════════════
    charts.js — BlueLedger Chart Rendering (Chart.js) — FINAL
    Premium Edition: gradient fills, smooth animations, no grid lines
+   Responsive Edition: ResizeObserver + debounced resize, no stale canvas
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Private chart state ──────────────────────────────────────── */
-if (typeof _overviewChart === "undefined") var _overviewChart = null;
-if (typeof _categoryChart === "undefined") var _categoryChart = null;
-if (typeof _currentOverviewPeriod === "undefined") var _currentOverviewPeriod = "monthly";
+"use strict";
 
-if (typeof INCOME_COLOR === "undefined") var INCOME_COLOR = "#34d399";
-if (typeof EXPENSE_COLOR === "undefined") var EXPENSE_COLOR = "#f97316";
-if (typeof INCOME_COLOR_DIM === "undefined") var INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
-if (typeof EXPENSE_COLOR_DIM === "undefined") var EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
+/* ── Private chart state ──────────────────────────────────────── */
+let _overviewChart = null;
+let _categoryChart = null;
+let _currentOverviewPeriod = "monthly";
+
+// ResizeObserver instance — single observer, torn down cleanly on rebuild
+let _overviewResizeObserver = null;
+// Debounce timer handle
+let _resizeDebounceTimer = null;
+// Track last known container width to avoid no-op rebuilds
+let _lastContainerWidth = 0;
+
+const INCOME_COLOR = "#34d399";
+const EXPENSE_COLOR = "#f97316";
+const INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
+const EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE RESIZE SYSTEM
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Debounce a function call. Returns a cancel handle.
+ */
+function _debounce(fn, delay) {
+  let timer = null;
+  const debounced = function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+  debounced.cancel = () => clearTimeout(timer);
+  return debounced;
+}
+
+/**
+ * Fully destroy the overview chart and clean up all associated
+ * resources: Chart.js instance, canvas element, ResizeObserver.
+ * Safe to call multiple times.
+ */
+function _destroyOverviewChart() {
+  // 1. Tear down the ResizeObserver first — prevents it firing
+  //    during destruction and triggering a rebuild loop.
+  if (_overviewResizeObserver) {
+    _overviewResizeObserver.disconnect();
+    _overviewResizeObserver = null;
+  }
+
+  // 2. Cancel any in-flight debounce timers.
+  if (_resizeDebounceTimer) {
+    clearTimeout(_resizeDebounceTimer);
+    _resizeDebounceTimer = null;
+  }
+
+  // 3. Destroy Chart.js instance (releases WebGL/2D context resources).
+  if (_overviewChart) {
+    _overviewChart.destroy();
+    _overviewChart = null;
+  }
+
+  _lastContainerWidth = 0;
+}
+
+/**
+ * Reset a canvas element so Chart.js gets a clean slate.
+ * Stale width/height attributes are the primary cause of
+ * the "stretched chart" bug after viewport switches.
+ */
+function _resetCanvas(canvas) {
+  if (!canvas) return;
+  // Remove explicit width/height attributes — let CSS + Chart.js own them.
+  canvas.removeAttribute("width");
+  canvas.removeAttribute("height");
+  canvas.style.width = "100%";
+  canvas.style.height = "";
+  canvas.style.maxHeight = "220px";
+}
+
+/**
+ * Attach a ResizeObserver to the chart container. When the
+ * container's width changes by more than 1px, the chart is
+ * rebuilt after a short debounce so rapid DevTools drags
+ * don't trigger a flood of rebuilds.
+ */
+function _attachResizeObserver(container) {
+  if (!container) return;
+  if (!window.ResizeObserver) {
+    // Fallback for older browsers: window resize event.
+    _attachWindowResizeFallback();
+    return;
+  }
+
+  const debouncedRebuild = _debounce(() => {
+    const newWidth = container.getBoundingClientRect().width;
+    // Skip if width hasn't meaningfully changed (avoids sub-pixel jitter).
+    if (Math.abs(newWidth - _lastContainerWidth) < 2) return;
+    _lastContainerWidth = newWidth;
+    _rebuildOverviewChart();
+  }, 120);
+
+  _overviewResizeObserver = new ResizeObserver(debouncedRebuild);
+  _overviewResizeObserver.observe(container);
+}
+
+/**
+ * Window-resize fallback for browsers without ResizeObserver.
+ * Uses a module-scoped debounced handler stored on window so
+ * it can be removed without leaking listeners.
+ */
+function _attachWindowResizeFallback() {
+  // Remove any previously attached handler first.
+  if (window.__blChartResizeHandler) {
+    window.removeEventListener("resize", window.__blChartResizeHandler);
+  }
+  window.__blChartResizeHandler = _debounce(() => {
+    _rebuildOverviewChart();
+  }, 150);
+  window.addEventListener("resize", window.__blChartResizeHandler, {
+    passive: true,
+  });
+}
+
+/**
+ * Rebuild the overview chart in-place:
+ *  1. Destroy the existing instance (clears stale canvas state).
+ *  2. Re-create the canvas fresh inside the container.
+ *  3. Re-run _buildOverviewChart on the new canvas.
+ *
+ * The ResizeObserver is intentionally NOT detached here because
+ * _destroyOverviewChart() is NOT called — we only destroy the
+ * Chart.js instance and reset the canvas, preserving the observer.
+ */
+function _rebuildOverviewChart() {
+  // Destroy chart instance only — keep the observer alive.
+  if (_overviewChart) {
+    _overviewChart.destroy();
+    _overviewChart = null;
+  }
+
+  const container = safeGet("chartContainer");
+  if (!container) return;
+
+  // Remove the old canvas and create a fresh one.
+  // A fresh canvas element guarantees no stale internal dimensions.
+  const old = safeGet("overviewCanvas");
+  if (old) old.remove();
+
+  const canvas = document.createElement("canvas");
+  canvas.id = "overviewCanvas";
+  _resetCanvas(canvas);
+  container.appendChild(canvas);
+
+  _buildOverviewChart(canvas);
+}
 
 /* ══════════════════════════════════════════════════════════════
    OVERVIEW CHART — init
@@ -21,15 +168,14 @@ function initOverviewChart() {
   const container = safeGet("chartContainer");
   if (!container) return;
 
-  if (_overviewChart) {
-    _overviewChart.destroy();
-    _overviewChart = null;
-  }
+  // Full teardown — destroy chart, observer, debounce timers.
+  _destroyOverviewChart();
 
   container.innerHTML = "";
   container.style.position = "relative";
   container.style.padding = "0";
 
+  // ── Period controls ──────────────────────────────────────────
   const cardHeader =
     container.closest(".card")?.querySelector(".card-header") ||
     container.closest(".db-chart-card")?.querySelector(".dcc-header");
@@ -46,23 +192,27 @@ function initOverviewChart() {
     cardHeader.appendChild(controls);
   }
 
+  // ── Fresh canvas ─────────────────────────────────────────────
   const canvas = document.createElement("canvas");
   canvas.id = "overviewCanvas";
-  canvas.style.width = "100%";
-  canvas.style.maxHeight = "220px";
+  _resetCanvas(canvas);
   container.appendChild(canvas);
 
   const labelsDiv = safeGet("chartLabels");
   if (labelsDiv) labelsDiv.style.display = "none";
 
   _buildOverviewChart(canvas);
+
+  // Attach the resize observer AFTER the chart is built so the
+  // initial render width is captured as the baseline.
+  _lastContainerWidth = container.getBoundingClientRect().width;
+  _attachResizeObserver(container);
 }
 
 /* ── Create gradient fill for chart ───────────────────────────── */
 function _makeGradient(ctx, color, alpha1 = 0.28, alpha2 = 0.0) {
   try {
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-    // parse hex color
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
@@ -86,6 +236,7 @@ function _buildOverviewChart(canvas) {
   const data = getChartData(_currentOverviewPeriod);
   if (!data || data.length === 0) return;
 
+  // Guard: destroy any lingering instance that might have snuck in.
   if (_overviewChart) {
     _overviewChart.destroy();
     _overviewChart = null;
@@ -140,7 +291,10 @@ function _buildOverviewChart(canvas) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      // Must be false — true causes Chart.js to lock the canvas to its
+      // initial aspect ratio and ignore container width changes, which
+      // is the root cause of the "stretched chart after resize" bug.
+      maintainAspectRatio: false,
       animation: {
         duration: 700,
         easing: "easeOutQuart",
@@ -274,7 +428,7 @@ function updateOverviewChart(period) {
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
-  // Rebuild gradients (canvas context may have changed)
+  // Rebuild gradients (canvas context dimensions may have changed).
   const ctx = canvas.getContext("2d");
   _overviewChart.data.datasets[0].backgroundColor = _makeGradient(
     ctx,
