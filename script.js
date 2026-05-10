@@ -7094,8 +7094,8 @@ function _renderSummaryPie(sortedCats, exp) {
         {
           data: sortedCats.map(([, a]) => a),
           backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
-          borderColor: borderColors,
-          borderWidth: borderWidths,
+          borderColor: "transparent",
+          borderWidth: 0,
           offset: offsets,
           hoverOffset: 8,
         },
