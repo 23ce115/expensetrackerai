@@ -3608,8 +3608,7 @@ select.form-input option,
   gap: 0.48rem;
 }
 
-.mp-cell
-{
+.mp-cell {
   cursor: pointer;
 }
 
