@@ -3608,6 +3608,11 @@ select.form-input option,
   gap: 0.48rem;
 }
 
+.mp-cell
+{
+  cursor: pointer;
+}
+
 .mp-month-btn {
   padding: 0.52rem 0.22rem;
   border-radius: 7px;
