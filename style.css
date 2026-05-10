@@ -9000,3 +9000,1040 @@ mark.txn-page-hl {
     transform: translateY(0);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BlueLedger — Light Mode Premium Refinement
+   Drop this AFTER the main style.css link tag.
+   Targets only [data-theme="light"] so dark mode is untouched.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────────────────────
+   CORE TOKEN OVERRIDES
+   Replaces the existing [data-theme="light"] block with a richer,
+   more balanced palette.
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  /* Page backgrounds — layered off-white, not pure white */
+  --bg: #f3f4f6; /* outermost page */
+  --bg2: #eef0f5; /* secondary surface / sidebar tint */
+  --bg3: #e8edf4; /* tertiary surface */
+
+  /* Card / panel surfaces */
+  --surface-1: #ffffff;
+  --surface-2: #f9fafb;
+  --surface-3: #f1f5f9;
+
+  /* Borders — soft, low-contrast separators */
+  --border: rgba(15, 23, 42, 0.08);
+  --border-hi: rgba(99, 102, 241, 0.18);
+
+  /* Glass / blur tint */
+  --glass: rgba(255, 255, 255, 0.82);
+
+  /* Typography */
+  --t1: #0f172a; /* deep slate — primary */
+  --t2: #334155; /* secondary */
+  --t3: #64748b; /* muted / captions */
+  --t4: #cbd5e1; /* disabled / dividers */
+
+  /* Accent tokens — restrained, not glow-heavy */
+  --accent: #5b5ef6;
+  --accent-deep: #4338ca;
+  --accent-dim: rgba(91, 94, 246, 0.08);
+  --accent-glow: rgba(91, 94, 246, 0.12);
+  --border-hi: rgba(91, 94, 246, 0.18);
+
+  /* Semantic colors stay consistent */
+  --inc: #10b981;
+  --inc-dim: rgba(16, 185, 129, 0.08);
+  --exp: #f97316;
+  --exp-dim: rgba(249, 115, 22, 0.08);
+
+  /* Shadows — soft, no harsh dark drops */
+  --shadow-sm:
+    0 1px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:
+    0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
+  --shadow-lg:
+    0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-xl:
+    0 20px 48px rgba(15, 23, 42, 0.12), 0 8px 20px rgba(15, 23, 42, 0.07);
+  --glow-accent: 0 0 0 rgba(91, 94, 246, 0); /* no purple glow in light mode */
+}
+
+/* ────────────────────────────────────────────────────────────────
+   AMBIENT BACKGROUND — Remove the dark radial glows in light mode
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(
+      ellipse 70% 50% at -5% -5%,
+      rgba(99, 102, 241, 0.05) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 105% 0%,
+      rgba(139, 92, 246, 0.04) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg, #f3f4f6 0%, #eef0f5 100%);
+}
+
+[data-theme="light"] body::after {
+  background: radial-gradient(
+    circle,
+    rgba(91, 94, 246, 0.02) 0%,
+    transparent 65%
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SIDEBAR
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .sidebar {
+  background: #ffffff;
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .sidebar-bottom {
+  border-top-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .sb-btn {
+  color: var(--t3);
+}
+
+[data-theme="light"] .sb-btn:hover {
+  background: rgba(91, 94, 246, 0.07);
+  color: var(--t2);
+}
+
+[data-theme="light"] .sb-btn.active,
+[data-theme="light"] .sb-btn.bn-tab--active {
+  background: rgba(91, 94, 246, 0.1);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+[data-theme="light"] .sb-btn.active::before {
+  background: linear-gradient(180deg, var(--accent-deep), var(--accent));
+  box-shadow: none;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   TOPBAR
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .tb-icon,
+[data-theme="light"] .tb-icon-sm {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: var(--t3);
+}
+
+[data-theme="light"] .tb-icon:hover,
+[data-theme="light"] .tb-icon-sm:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+[data-theme="light"] .tb-ghost {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.1);
+  color: var(--t2);
+}
+
+[data-theme="light"] .tb-ghost:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SETTINGS DROPDOWN MENU
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .settings-menu {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+}
+
+[data-theme="light"] .settings-menu-item {
+  color: var(--t2);
+}
+
+[data-theme="light"] .settings-menu-item:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--t1);
+}
+
+[data-theme="light"] .settings-close-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .settings-close-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+[data-theme="light"] .settings-menu-divider {
+  background: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .settings-sync-row:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DASHBOARD — STAT CARDS
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-stat-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .db-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(91, 94, 246, 0.15);
+}
+
+[data-theme="light"] .db-stat-card::before {
+  background: linear-gradient(
+    135deg,
+    rgba(91, 94, 246, 0.02) 0%,
+    transparent 55%
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CHART CARD
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-chart-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .db-chart-card::before {
+  background: none;
+}
+
+[data-theme="light"] .cpc-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .cpc-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t2);
+}
+
+[data-theme="light"] .cpc-btn--active {
+  background: rgba(91, 94, 246, 0.08) !important;
+  border-color: rgba(91, 94, 246, 0.2) !important;
+  color: var(--accent) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   GENERIC PANELS
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-panel {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .db-panel:hover {
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .db-panel::before {
+  background: none;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   LEGACY .card (used by Insights, txn panels)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .card::before {
+  background: none;
+}
+
+[data-theme="light"] .card-menu-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .card-menu-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DASHBOARD — PILLS
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-pill {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t2);
+}
+
+[data-theme="light"] .db-pill:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+[data-theme="light"] .db-pill.active {
+  background: rgba(91, 94, 246, 0.08);
+  border-color: rgba(91, 94, 246, 0.22);
+  color: var(--accent);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   MY CARD PANEL (right column)
+   Keep the gradient card itself dark (it's a debit card visual),
+   but theme the surrounding panel.
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-card-panel {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+[data-theme="light"] .set-budgets-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .set-budgets-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+/* Transaction rows within right panel */
+[data-theme="light"] .rp-txn-row {
+  border-bottom-color: rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .rp-txn-row:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   EXPENSE CATEGORY LIST
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .expense-categories li:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   INSIGHTS CARD — Fix the harsh dark background
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .insights-card {
+  background: #f8f9fb !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Individual insight bento cards */
+[data-theme="light"] .insight-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .insights-grid .insight-card:first-child {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.05) 0%,
+    rgba(249, 115, 22, 0.02) 100%
+  );
+  border-color: rgba(249, 115, 22, 0.14);
+}
+
+[data-theme="light"] .insights-badge {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: var(--t3);
+}
+
+[data-theme="light"] .ai-insights-btn {
+  background: rgba(91, 94, 246, 0.07);
+  border-color: rgba(91, 94, 246, 0.18);
+  color: var(--accent-deep);
+  box-shadow: none;
+}
+
+[data-theme="light"] .ai-insights-btn:hover {
+  background: rgba(91, 94, 246, 0.12);
+  border-color: rgba(91, 94, 246, 0.28);
+  box-shadow: none;
+}
+
+/* Month-end prediction bar area */
+[data-theme="light"] .ai-prediction-section,
+[data-theme="light"] .insights-prediction {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .ai-alert-item {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.14);
+}
+
+[data-theme="light"] .ai-tip-card {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .ai-tip-card:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .ai-refresh-btn,
+[data-theme="light"] .ai-dismiss-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t2);
+}
+
+[data-theme="light"] .ai-refresh-btn:hover {
+  background: rgba(91, 94, 246, 0.08);
+  border-color: rgba(91, 94, 246, 0.2);
+  color: var(--accent-deep);
+}
+
+[data-theme="light"] .ai-dismiss-btn:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.18);
+  color: #dc2626;
+}
+
+[data-theme="light"] .ai-insights-panel {
+  background: rgba(91, 94, 246, 0.04);
+  border-color: rgba(91, 94, 246, 0.12);
+}
+
+[data-theme="light"] #anomalyAlerts .anomaly-alert {
+  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+[data-theme="light"] #anomalyAlerts .anomaly-alert i {
+  color: #dc2626;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   TRANSACTION SEARCH & TABLE
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .search-wrapper {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .search-wrapper:focus-within {
+  background: #ffffff;
+  border-color: rgba(91, 94, 246, 0.28);
+  box-shadow: 0 0 0 3px rgba(91, 94, 246, 0.07);
+}
+
+[data-theme="light"] .txn-count-badge {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .filter-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .filter-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+[data-theme="light"] .transaction-table thead th {
+  color: var(--t3);
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .transaction-table tbody tr {
+  border-bottom-color: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .transaction-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.025);
+}
+
+[data-theme="light"] .transaction-table tbody td {
+  color: var(--t2);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   FULL TRANSACTION PAGE (#txnFullPage)
+   Currently has a hardcoded dark background — fix it.
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] #txnFullPage {
+  background: var(--bg);
+}
+
+[data-theme="light"] .txn-page-header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom-color: rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .txn-page-close {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .txn-page-close:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+[data-theme="light"] .txn-month-label {
+  border-bottom-color: rgba(15, 23, 42, 0.07);
+  color: var(--t3);
+}
+
+[data-theme="light"] .txn-full-row:hover {
+  background: rgba(15, 23, 42, 0.025);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   MODALS — Core surfaces (Add Income, Add Expense, etc.)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .modal {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+[data-theme="light"] .modal-content {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+}
+
+[data-theme="light"] .modal-content::before {
+  background: none;
+}
+
+[data-theme="light"] .modal-header {
+  border-bottom-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .close-btn {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .close-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+/* Form inputs inside modals */
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select {
+  background: #f8f9fb;
+  border-color: rgba(15, 23, 42, 0.12);
+  color: var(--t1);
+}
+
+[data-theme="light"] .form-input:focus,
+[data-theme="light"] .form-select:focus {
+  background: #ffffff;
+  border-color: rgba(91, 94, 246, 0.3);
+  box-shadow: 0 0 0 3px rgba(91, 94, 246, 0.07);
+}
+
+[data-theme="light"] select.form-input option,
+[data-theme="light"] .form-select option {
+  background: #ffffff;
+  color: var(--t1);
+}
+
+/* Card selector widget in modals (Axis / Switch row) */
+[data-theme="light"] .card-selector,
+[data-theme="light"] .modal-card-row,
+[data-theme="light"] [class*="card-select"],
+[data-theme="light"] [class*="switch-card"] {
+  background: #f3f4f6;
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t2);
+}
+
+/* Secondary button in modals */
+[data-theme="light"] .btn-secondary {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: var(--t2);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--t1);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SETTINGS MODAL (blsm — BlueLedger Settings Modal)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .blsm {
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+[data-theme="light"] .blsm-content {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+  scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
+}
+
+[data-theme="light"] .blcurr-list,
+[data-theme="light"] .blfaq-list {
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .blcurr-item,
+[data-theme="light"] .blfaq-item {
+  border-top-color: rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .blcurr-item:hover,
+[data-theme="light"] .blfaq-q:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+[data-theme="light"] .blcurr-item--active {
+  background: rgba(91, 94, 246, 0.05);
+}
+
+[data-theme="light"] .bltheme-item {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .bltheme-item:hover {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: rgba(91, 94, 246, 0.18);
+}
+
+[data-theme="light"] .bltheme-item--active {
+  background: rgba(91, 94, 246, 0.06);
+  border-color: rgba(91, 94, 246, 0.3);
+  box-shadow: 0 0 0 1px rgba(91, 94, 246, 0.12) inset;
+}
+
+[data-theme="light"] .bltheme-icon {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--t2);
+}
+
+[data-theme="light"] .bltheme-item--active .bltheme-icon {
+  background: rgba(91, 94, 246, 0.1);
+  color: var(--accent);
+}
+
+[data-theme="light"] .bltheme-label {
+  color: var(--t2);
+}
+
+[data-theme="light"] .bltheme-item--active .bltheme-label {
+  color: var(--accent-deep);
+}
+
+[data-theme="light"] .blexport-btn {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .blexport-btn:hover {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.14);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .blfaq-a {
+  border-top-color: rgba(15, 23, 42, 0.06);
+  color: var(--t3);
+}
+
+[data-theme="light"] .blabout-row {
+  border-bottom-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .blcurr-sym {
+  background: rgba(91, 94, 246, 0.08);
+  color: var(--accent-deep);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SETTINGS PAGE (full-screen overlay)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .settings-page,
+[data-theme="light"] #settingsPage {
+  background: var(--bg);
+}
+
+[data-theme="light"] .settings-page-header,
+[data-theme="light"] #settingsPage .page-header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .settings-section-card,
+[data-theme="light"] .settings-group-card,
+[data-theme="light"] .settings-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .settings-row,
+[data-theme="light"] .settings-item {
+  border-bottom-color: rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .settings-row:hover,
+[data-theme="light"] .settings-item:hover {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+[data-theme="light"] .settings-section-label,
+[data-theme="light"] .settings-label-group {
+  color: var(--t3);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   MONTHLY REPORT MODAL
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .report-modal-content,
+[data-theme="light"] [class*="monthly-report"] .modal-content,
+[data-theme="light"] #monthlyReportModal .modal-content {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+}
+
+[data-theme="light"] .report-stat-cell,
+[data-theme="light"] [class*="report-stat"] {
+  background: #f8f9fb;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+/* Donut chart modal overlay */
+[data-theme="light"] .donut-modal,
+[data-theme="light"] [class*="donut-overlay"] {
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   ASK BLUELEDGER PANEL
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .ask-bl-overlay {
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+[data-theme="light"] .ask-bl-panel {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-left-color: rgba(91, 94, 246, 0.14);
+  box-shadow:
+    -4px 0 32px rgba(15, 23, 42, 0.1),
+    0 -4px 20px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .ask-bl-header {
+  background: rgba(248, 249, 251, 0.9);
+  border-bottom-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .ask-bl-close {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t3);
+}
+
+[data-theme="light"] .ask-bl-chip {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.09);
+  color: var(--t2);
+}
+
+[data-theme="light"] .ask-bl-chip:hover {
+  background: rgba(91, 94, 246, 0.07);
+  border-color: rgba(91, 94, 246, 0.2);
+  color: var(--accent-deep);
+}
+
+[data-theme="light"] .ask-bl-input-row {
+  background: rgba(248, 249, 251, 0.95);
+  border-top-color: rgba(15, 23, 42, 0.07);
+}
+
+[data-theme="light"] .ask-bl-input {
+  background: #f3f4f6;
+  border-color: rgba(15, 23, 42, 0.1);
+  color: var(--t1);
+}
+
+[data-theme="light"] .ask-bl-input:focus {
+  background: #ffffff;
+  border-color: rgba(91, 94, 246, 0.28);
+  box-shadow: 0 0 0 3px rgba(91, 94, 246, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   BN NAVIGATION SHEET (bottom mobile sheet)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .bn-sheet {
+  background: #ffffff;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .bn-sheet-btn {
+  color: var(--t2);
+}
+
+[data-theme="light"] .bn-sheet-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--t1);
+}
+
+[data-theme="light"] .bn-settings-panel {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+}
+
+[data-theme="light"] .bn-settings-row:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--t1);
+}
+
+[data-theme="light"] .bn-settings-danger {
+  color: #dc2626;
+}
+
+[data-theme="light"] .bn-settings-danger:hover {
+  color: #b91c1c;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   PROGRESS BAR (card spending)
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .progress-bar {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CHART — Grid lines, tooltips (Recharts / Chart.js canvas)
+   These target injected styles or wrapper classes.
+   ──────────────────────────────────────────────────────────────── */
+
+/* Chart tooltip box */
+[data-theme="light"] .chart-tooltip,
+[data-theme="light"] .recharts-tooltip-wrapper .recharts-default-tooltip,
+[data-theme="light"] [class*="chartjs-tooltip"] {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: var(--t1) !important;
+  border-radius: 10px !important;
+}
+
+/* Recharts axis text */
+[data-theme="light"] .recharts-cartesian-axis-tick text,
+[data-theme="light"] .recharts-text {
+  fill: var(--t3) !important;
+}
+
+/* Recharts grid lines */
+[data-theme="light"] .recharts-cartesian-grid line {
+  stroke: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SCROLLBARS — Light-themed thin scrollbars
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .db-body {
+  scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
+}
+
+[data-theme="light"] .db-body::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+}
+
+[data-theme="light"] .txn-page-body {
+  scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
+}
+
+[data-theme="light"] .ask-bl-messages {
+  scrollbar-color: rgba(15, 23, 42, 0.12) transparent;
+}
+
+[data-theme="light"] .blsm-content {
+  scrollbar-color: rgba(15, 23, 42, 0.12) transparent;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   LOCK SCREEN — Keep card light, darken the backdrop slightly
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .lock-screen-overlay,
+[data-theme="light"] #lockScreen {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+[data-theme="light"] .lock-card,
+[data-theme="light"] .lock-content {
+  background: #f8f9fb;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   FILTER BUTTONS active state
+   ──────────────────────────────────────────────────────────────── */
+
+[data-theme="light"] .filter-btn.active,
+[data-theme="light"] .filter-btn--active {
+  background: rgba(91, 94, 246, 0.08);
+  border-color: rgba(91, 94, 246, 0.22);
+  color: var(--accent-deep);
+}
+
+/* Tab-style filters in Transaction page header */
+[data-theme="light"] .txn-filter-tab {
+  color: var(--t3);
+  border-color: rgba(15, 23, 42, 0.09);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="light"] .txn-filter-tab.active,
+[data-theme="light"] .txn-filter-tab--active {
+  background: rgba(91, 94, 246, 0.08);
+  border-color: rgba(91, 94, 246, 0.22);
+  color: var(--accent-deep);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   GENERIC: Any element that still hardcodes dark backgrounds
+   Catch-all for components that embed inline or JS-injected styles.
+   ──────────────────────────────────────────────────────────────── */
+
+/* Injected dropdown / picker panels */
+[data-theme="light"] .dropdown-panel,
+[data-theme="light"] [class*="dropdown-content"],
+[data-theme="light"] [class*="picker-panel"] {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+  color: var(--t1);
+}
+
+/* Month picker nav */
+[data-theme="light"] .month-picker-modal,
+[data-theme="light"] [class*="month-picker"] {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Generic overlay backgrounds */
+[data-theme="light"]
+  [class*="-overlay"]:not(.blsm):not(.modal):not(.ask-bl-overlay):not(
+    .lock-screen-overlay
+  ) {
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   RESPONSIVE — Keep consistent on mobile too
+   ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  [data-theme="light"] .blsm-content {
+    background: #ffffff;
+  }
+
+  [data-theme="light"] .ask-bl-panel {
+    border-top: 1px solid rgba(15, 23, 42, 0.09);
+    border-left: none;
+    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.09);
+  }
+
+  [data-theme="light"] .bn-sheet {
+    border-top: 1px solid rgba(15, 23, 42, 0.07);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   END OF LIGHT MODE REFINEMENT
+   ═══════════════════════════════════════════════════════════════ */
