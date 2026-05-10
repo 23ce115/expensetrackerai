@@ -5178,7 +5178,8 @@ function applyPickedMonth() {
   txnExpanded = false;
   closeModal("monthPickerModal");
   const name = MONTH_SHORT[pickedMonth.month] + " " + pickedMonth.year;
-  document.getElementById("periodLabel").textContent = name;
+  const periodLabel = document.getElementById("periodLabel");
+  if (periodLabel) periodLabel.textContent = name;
   // Update active state on period menu
   document
     .querySelectorAll(".period-menu-item")
