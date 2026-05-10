@@ -9799,6 +9799,30 @@ mark.txn-page-hl {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* Monthly report modal — text fixes */
+[data-theme="light"] .report-stat-cell .pv-label,
+[data-theme="light"] [class*="report"] .form-label,
+[data-theme="light"] #monthlyReportModal .dsc-label,
+[data-theme="light"] #monthlyReportModal [class*="label"],
+[data-theme="light"] #monthlyReportModal [class*="-label"] {
+  color: #334155 !important;
+}
+
+[data-theme="light"] #monthlyReportModal [class*="value"],
+[data-theme="light"] #monthlyReportModal [class*="-val"],
+[data-theme="light"] #monthlyReportModal p,
+[data-theme="light"] #monthlyReportModal span {
+  color: #0f172a !important;
+}
+
+/* Expense breakdown legend text */
+[data-theme="light"] .expense-breakdown-label,
+[data-theme="light"] [class*="breakdown"] span,
+[data-theme="light"] [class*="legend"] span,
+[data-theme="light"] .dcc-legend span {
+  color: #334155 !important;
+}
+
 /* ────────────────────────────────────────────────────────────────
    ASK BLUELEDGER PANEL
    ──────────────────────────────────────────────────────────────── */
@@ -10051,6 +10075,12 @@ mark.txn-page-hl {
   }
 }
 
+[data-theme="light"] .donut-chart canvas,
+[data-theme="light"] #donutChart,
+[data-theme="light"] [id*="donut"],
+[data-theme="light"] [id*="Donut"] {
+  border: none !important;
+}
 /* ═══════════════════════════════════════════════════════════════
    END OF LIGHT MODE REFINEMENT
-   ═══════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════*/
