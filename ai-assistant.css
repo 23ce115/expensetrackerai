@@ -900,3 +900,18 @@
 [data-theme="light"] .aia-chat-msg--assistant .aia-chat-bubble {
   background: var(--bg3, #f1f5f9);
 }
+
+/* ── Deep Analysis Source Note ─────────────────────────────── */
+.aia-deep-source-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--t2, #94a3b8);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
