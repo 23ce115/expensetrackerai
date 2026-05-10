@@ -10248,6 +10248,42 @@ mark.txn-page-hl {
   text-shadow: none !important;
 }
 
+/* Fix transaction page search area dark background in light mode */
+[data-theme="light"] .txn-page-search-area,
+[data-theme="light"] [class*="txn-page-search"],
+[data-theme="light"] #txnFullPage [class*="search-area"],
+[data-theme="light"] #txnFullPage [class*="search-bar"],
+[data-theme="light"] #txnFullPage [class*="filter"] {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Fix invisible transaction description text in light mode */
+[data-theme="light"] .txn-full-desc {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .txn-full-cat {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .txn-full-date {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .txn-full-account {
+  color: #94a3b8 !important;
+}
+
+/* Top spending / biggest expense values in report modal */
+[data-theme="light"] .summary-stat p,
+[data-theme="light"] .summary-stat span,
+[data-theme="light"] .summary-stat div:not(.summary-label) {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
 /* ─────────────────────────────────────────────────────────────
    MY CARD PANEL: Premium hover micro-interactions
    ───────────────────────────────────────────────────────────── */
@@ -10562,8 +10598,6 @@ mark.txn-page-hl {
   color: #f97316 !important;
   font-weight: 700 !important;
 }
-
-
 
 /* ═══════════════════════════════════════════════════════════════
    END OF POLISH PACK
