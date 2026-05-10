@@ -10084,3 +10084,487 @@ mark.txn-page-hl {
 /* ═══════════════════════════════════════════════════════════════
    END OF LIGHT MODE REFINEMENT
    ════════════════════════════════════*/
+
+/* ─────────────────────────────────────────────────────────────
+   TRANSACTION PAGE: Premium dark-mode background
+   ───────────────────────────────────────────────────────────── */
+
+/* Replace the flat #08090f with a layered deep-navy surface */
+#txnFullPage {
+  background:
+    radial-gradient(
+      ellipse 80% 40% at 15% 0%,
+      rgba(79, 70, 229, 0.07) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 35% at 90% 100%,
+      rgba(99, 102, 241, 0.05) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg, #090b17 0%, #0b0d1e 40%, #080a15 100%);
+}
+
+/* Header — semi-frosted so it reads as a separate layer */
+.txn-page-header {
+  background: rgba(10, 11, 22, 0.82) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  box-shadow: 0 1px 0 rgba(129, 140, 248, 0.06) !important;
+}
+
+/* Month section label — slightly elevated strip */
+.txn-month-label {
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  color: rgba(129, 140, 248, 0.55) !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding-bottom: 0.55rem !important;
+  margin-bottom: 0.2rem !important;
+}
+
+/* Individual transaction rows — subtle elevated cards */
+.txn-full-row {
+  border-radius: 12px !important;
+  padding: 0.7rem 0.85rem !important;
+  transition:
+    background 0.16s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease !important;
+  position: relative;
+}
+
+.txn-full-row:hover {
+  background: rgba(255, 255, 255, 0.038) !important;
+  transform: translateX(2px) !important;
+  box-shadow: inset 3px 0 0 rgba(129, 140, 248, 0.25) !important;
+}
+
+/* Description text — stronger presence */
+.txn-full-desc {
+  font-weight: 600 !important;
+  color: rgba(240, 244, 255, 0.9) !important;
+}
+
+/* Category text — softer muted */
+.txn-full-cat {
+  color: rgba(136, 146, 176, 0.7) !important;
+}
+
+/* Date column — de-emphasised */
+.txn-full-date {
+  color: rgba(100, 116, 139, 0.75) !important;
+}
+
+/* Account column */
+.txn-full-account {
+  color: rgba(100, 116, 139, 0.65) !important;
+}
+
+/* Positive/negative amounts — same colour but now more vivid */
+.txn-full-amt.pos {
+  color: #34d399 !important;
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.22);
+}
+
+.txn-full-amt.neg {
+  color: #f97316 !important;
+  text-shadow: 0 0 12px rgba(249, 115, 22, 0.18);
+}
+
+/* Page body scrollbar — accent tinted */
+.txn-page-body {
+  scrollbar-color: rgba(129, 140, 248, 0.2) transparent !important;
+}
+
+.txn-page-body::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.2) !important;
+}
+
+/* Search wrapper inside transaction page */
+[id="txnFullPage"] .search-wrapper,
+[id="txnFullPage"] .txn-meta .search-wrapper {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(129, 140, 248, 0.14) !important;
+}
+
+[id="txnFullPage"] .search-wrapper:focus-within {
+  background: rgba(129, 140, 248, 0.06) !important;
+  border-color: rgba(129, 140, 248, 0.32) !important;
+}
+
+/* Filter chips inside transaction page */
+[id="txnFullPage"] .filter-btn,
+[id="txnFullPage"] .txn-filter-tab {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(136, 146, 176, 0.85) !important;
+}
+
+/* Close button */
+.txn-page-close {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  color: rgba(100, 116, 139, 0.85) !important;
+  transition:
+    background 0.17s,
+    color 0.17s !important;
+}
+
+.txn-page-close:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(240, 244, 255, 0.95) !important;
+}
+
+/* Light mode — keep the existing #f3f4f6 but improve rows */
+[data-theme="light"] #txnFullPage {
+  background: var(--bg, #f3f4f6) !important;
+}
+
+[data-theme="light"] .txn-page-header {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.07) !important;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .txn-month-label {
+  color: rgba(91, 94, 246, 0.55) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.07) !important;
+}
+
+[data-theme="light"] .txn-full-row:hover {
+  background: rgba(15, 23, 42, 0.025) !important;
+  box-shadow: inset 3px 0 0 rgba(91, 94, 246, 0.18) !important;
+}
+
+[data-theme="light"] .txn-full-amt.pos {
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .txn-full-amt.neg {
+  text-shadow: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MY CARD PANEL: Premium hover micro-interactions
+   ───────────────────────────────────────────────────────────── */
+
+/* Panel — smooth transition, subtle lift on hover */
+.db-card-panel {
+  transition:
+    transform 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.26s ease !important;
+}
+
+.db-card-panel:hover {
+  transform: translateY(-4px) !important;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(129, 140, 248, 0.12) inset !important;
+}
+
+/* Light mode panel hover */
+[data-theme="light"] .db-card-panel:hover {
+  transform: translateY(-4px) !important;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(91, 94, 246, 0.12) inset !important;
+}
+
+/* Flip card — hover lift & glow (already has :hover but let's sharpen it) */
+.cs-flip-card {
+  transition:
+    transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.24s ease !important;
+}
+
+.cs-flip-card:hover {
+  transform: translateY(-6px) scale(1.012) !important;
+  box-shadow:
+    0 32px 72px rgba(0, 0, 0, 0.62),
+    0 0 80px var(--card-accent-glow, rgba(129, 140, 248, 0.22)) !important;
+}
+
+/* Navigation arrows — more visible and tactile */
+.cs-flip-arrow {
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.18s !important;
+}
+
+.cs-flip-arrow:hover {
+  background: rgba(129, 140, 248, 0.14) !important;
+  border-color: rgba(129, 140, 248, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  transform: scale(1.1) !important;
+}
+
+.cs-flip-arrow:active {
+  transform: scale(0.92) !important;
+}
+
+/* Light-mode arrows — dark tinted so they're visible on white panel bg */
+[data-theme="light"] .cs-flip-arrow {
+  background: rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-theme="light"] .cs-flip-arrow:hover {
+  background: rgba(0, 0, 0, 0.24) !important;
+  color: #ffffff !important;
+  transform: scale(1.1) !important;
+}
+
+/* Dots — smoother active pill expansion */
+.cs-dot {
+  transition:
+    background 0.22s ease,
+    width 0.22s ease,
+    transform 0.22s ease !important;
+}
+
+.cs-dot:hover:not(.is-active) {
+  background: rgba(255, 255, 255, 0.42) !important;
+  transform: scale(1.25) !important;
+}
+
+/* Add Card button — more tactile */
+.card-action-add {
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s !important;
+}
+
+.card-action-add:hover {
+  background: rgba(99, 102, 241, 0.16) !important;
+  border-color: rgba(99, 102, 241, 0.38) !important;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.16) !important;
+  color: #a5b4fc !important;
+  transform: translateY(-2px) !important;
+}
+
+.card-action-add:active {
+  transform: scale(0.97) translateY(0) !important;
+}
+
+/* Remove button */
+.card-action-remove {
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s !important;
+}
+
+.card-action-remove:hover {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-color: rgba(239, 68, 68, 0.32) !important;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.1) !important;
+  color: #fca5a5 !important;
+  transform: translateY(-2px) !important;
+}
+
+.card-action-remove:active {
+  transform: scale(0.97) translateY(0) !important;
+}
+
+/* Light mode button overrides — keep readable contrast */
+[data-theme="light"] .card-action-add:hover {
+  background: rgba(99, 102, 241, 0.12) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .card-action-remove:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08) !important;
+  color: #b91c1c !important;
+}
+
+/* Card action row separator — slightly more visible in dark */
+.card-action-row {
+  border-top-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+[data-theme="light"] .card-action-row {
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MONTHLY REPORT MODAL: Light-mode readability
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Summary stat cells (Total Income, Total Expenses, etc.) ── */
+
+[data-theme="light"] .summary-stat,
+[data-theme="light"] .inline-report-stat {
+  background: #f8f9fb !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .summary-label,
+[data-theme="light"] .inline-report-label {
+  color: #475569 !important; /* visible slate, not washed-out */
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .summary-value,
+[data-theme="light"] .inline-report-value {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+/* ── "Top Spending Category" & "Biggest Single Expense" ── */
+
+/* These come from the modal's summary-grid or equivalent cells */
+[data-theme="light"] .modal-content .summary-stat .summary-label,
+[data-theme="light"] #monthlyReportModal .summary-label,
+[data-theme="light"] [class*="report"] .summary-label,
+[data-theme="light"] [class*="report"] .pv-label,
+[data-theme="light"] [class*="report"] .dsc-label {
+  color: #475569 !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Values inside those cells — investment name, expense name */
+[data-theme="light"] #monthlyReportModal .summary-value,
+[data-theme="light"] [class*="report"] .summary-value,
+[data-theme="light"] [class*="report"] .pv-value {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+}
+
+/* ── "EXPENSE BREAKDOWN" heading ── */
+[data-theme="light"] #monthlyReportModal [class*="breakdown"],
+[data-theme="light"] [class*="report"] [class*="breakdown-title"],
+[data-theme="light"] [class*="report"] [class*="section-title"],
+[data-theme="light"] [class*="report"] .sf-section-title {
+  color: #334155 !important;
+  font-weight: 800 !important;
+}
+
+/* ── Legend items (Investment · Transport · Food …) ── */
+[data-theme="light"] .dcc-legend span,
+[data-theme="light"] [class*="legend"] span,
+[data-theme="light"] #monthlyReportModal .dcc-legend,
+[data-theme="light"] [class*="report"] [class*="legend"] {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* ── Category breakdown rows ── */
+[data-theme="light"] .cat-name,
+[data-theme="light"] .irc-name {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .cat-pct {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .cat-amt {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .cat-row {
+  border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* ── Report modal header / close button ── */
+[data-theme="light"] #monthlyReportModal .modal-header {
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ── Month nav buttons (< May 2026 >) ── */
+[data-theme="light"] .summary-month-btn,
+[data-theme="light"] .mp-nav-btn {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .summary-month-btn:hover,
+[data-theme="light"] .mp-nav-btn:hover {
+  background: rgba(15, 23, 42, 0.09) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .summary-month-title,
+[data-theme="light"] .mp-year {
+  color: #0f172a !important;
+}
+
+/* ── Month picker buttons ── */
+[data-theme="light"] .mp-month-btn {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .mp-month-btn:hover {
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mp-month-btn.mp-selected {
+  background: rgba(91, 94, 246, 0.08) !important;
+  border-color: rgba(91, 94, 246, 0.24) !important;
+  color: #4338ca !important;
+}
+
+/* ── Donut chart — remove segment borders ── */
+/* borderWidth must be set to 0 in JS chart config (see note below).
+   These CSS rules handle the wrapper/border fallbacks. */
+[data-theme="light"] canvas {
+  border: none !important;
+  outline: none !important;
+}
+
+/* ── Color bar (category strip) ── */
+[data-theme="light"] .color-bar {
+  opacity: 0.85 !important;
+}
+
+/* ── Full report view-all button ── */
+[data-theme="light"] .inline-report-full-btn {
+  background: rgba(91, 94, 246, 0.06) !important;
+  border-color: rgba(91, 94, 246, 0.18) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .inline-report-full-btn:hover {
+  background: rgba(91, 94, 246, 0.12) !important;
+  border-color: rgba(91, 94, 246, 0.32) !important;
+  box-shadow: 0 4px 12px rgba(91, 94, 246, 0.1) !important;
+}
+
+/* ── Inline report stat cards ── */
+[data-theme="light"] .inline-report-stat {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .inline-report-stat:hover {
+  background: #f8f9fb !important;
+}
+
+[data-theme="light"] .irc-amount {
+  color: #f97316 !important;
+  font-weight: 700 !important;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   END OF POLISH PACK
+   ═══════════════════════════════════════════════════════════════ */
