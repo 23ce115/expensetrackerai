@@ -6116,6 +6116,7 @@ function refreshAll() {
     window.refreshInlineReport();
   if (typeof window.syncDashboardGrid === "function")
     window.syncDashboardGrid();
+  // AI Copilot — refresh analysis view when open
   if (typeof window.aiaRefresh === "function") window.aiaRefresh();
 }
 window.refreshAll = refreshAll; // FIX: export immediately for cross-module access
