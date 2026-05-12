@@ -542,10 +542,10 @@
                   <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-brain" style="color:#a78bfa;margin-right:.4rem"></i>Insights</h3>
                     <div style="display:flex;align-items:center;gap:.5rem">
-                      <button class="ai-insights-btn" id="aiInsightsBtn" onclick="runAiInsights()"><i class="fas fa-wand-magic-sparkles"></i> AI</button>
-                      <button class="ai-insights-btn" onclick="openAIAssistant()" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(129,140,248,0.08));border-color:rgba(129,140,248,0.25);color:#818cf8;margin-left:.4rem">
+                      <button class="ai-insights-btn" onclick="openAIAssistant()" style="background:linear-gradient(135deg,rgba(99,102,241,0.14),rgba(129,140,248,0.06));border-color:rgba(129,140,248,0.22);color:#818cf8"><i class="fas fa-brain"></i> AI Copilot</button>
+                      <!-- <button class="ai-insights-btn" onclick="openAIAssistant()" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(129,140,248,0.08));border-color:rgba(129,140,248,0.25);color:#818cf8;margin-left:.4rem">
                         <i class="fas fa-brain"></i> Full AI
-                      </button>
+                      </button> -->
                       <span class="insights-badge" id="insightsBadge">This month</span>
                     </div>
                   </div>
@@ -770,9 +770,8 @@
       <button class="bn-tab" id="bnCat" onclick="bnSwitch('cat')">
         <i class="fas fa-tags"></i><span>Categories</span>
       </button>
-      <button class="bn-tab bn-tab-aia" id="bnAI" onclick="openAIAssistant()" title="AI Assistant">
-        <i class="fas fa-brain"></i>
-          <span>AI Assistant</span>
+      <button class="bn-tab bn-tab-aia" id="bnAI" onclick="openAIAssistant()">
+        <i class="fas fa-brain"></i><span>AI</span>
       </button>
       <button class="bn-tab" id="bnSettings" onclick="bnSwitch('settings')">
         <i class="fas fa-cog"></i><span>Settings</span>
@@ -2231,8 +2230,8 @@
       </div>
     </div>
 
-    <!-- Ask BlueLedger FAB -->
-    <button class="ask-bl-fab" id="askBlFab" onclick="openAskBl()" title="Ask BlueLedger AI">
+    <!-- Ask AI FAB — replaced by AI Copilot -->
+    <button class="ask-bl-fab" id="askBlFab" onclick="openAskBl()" title="Ask BlueLedger AI" style="display:none">
       <i class="fas fa-comment-dots"></i>
       <span class="ask-bl-fab-label">Ask AI</span>
     </button>
