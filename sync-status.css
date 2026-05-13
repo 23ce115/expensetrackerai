@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════════
+   sync-status.css  — Sync indicator styles for BlueLedger AI
+   Add to style.css or import separately
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Sync status pill ─────────────────────────────────────── */
+.bl-sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition:
+    opacity 0.4s ease,
+    background 0.3s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  cursor: default;
+  user-select: none;
+}
+
+/* States */
+.bl-sync-ok {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+.bl-sync-idle {
+  opacity: 0.55;
+}
+.bl-sync-syncing {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #818cf8;
+  animation: bl-pulse 1.2s ease-in-out infinite;
+}
+.bl-sync-offline {
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.25);
+  color: #fb923c;
+}
+.bl-sync-error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+@keyframes bl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── Offline banner (shown when navigator.onLine = false) ─── */
+.bl-offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #f97316;
+  color: #fff;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  letter-spacing: 0.02em;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+.bl-offline-banner.visible {
+  transform: translateY(0);
+}
