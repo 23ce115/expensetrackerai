@@ -41,6 +41,12 @@
 
   function _getClient() {
     if (_client) return _client;
+    /* Reuse the existing Supabase client created by script.js if available.
+       This prevents the "Multiple GoTrueClient instances" warning. */
+    if (window.supabaseClient) {
+      _client = window.supabaseClient;
+      return _client;
+    }
     if (!window.supabase?.createClient) {
       console.warn("[BL_DB] Supabase SDK not loaded yet.");
       return null;
