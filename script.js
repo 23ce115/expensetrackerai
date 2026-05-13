@@ -6321,7 +6321,7 @@ function addExpense() {
   }
   // FIX 1: Flush any pending card state BEFORE mutating transactions.
   syncActiveToCards();
-  transactions.unshift({
+  const _expenseTxn = {
     id: Date.now(),
     date,
     category: cat,
@@ -6329,10 +6329,9 @@ function addExpense() {
     description: desc,
     notes,
     type: "expense",
-  });
-
+  };
   transactions.unshift(_expenseTxn);
-  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(_expenseTxn);
+  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(_expenseTxn); // ★ cloud sync
   // Immediately push the new transaction into the cards array so that
   // getAnalyticsTransactions() in refreshAll() sees it right away.
   syncActiveToCards();
