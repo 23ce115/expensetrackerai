@@ -28,6 +28,7 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="ai-assistant.css">
+    <link rel="stylesheet" href="sync-status.css">
     
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
@@ -458,6 +459,14 @@
                 <div class="settings-menu-item settings-menu-item--danger" onclick="closeSettingsMenu();openResetModal()"><i class="fas fa-user-slash"></i> Sign Out &amp; Delete Data</div>
               </div>
             </div> -->
+
+            <!-- ★ CHANGE: Sync status pill — place inside navbar -->
+            <span id="blSyncStatus" class="bl-sync-indicator bl-sync-ok">🟢 Synced</span>
+
+            <!-- ★ CHANGE: Offline banner — place just inside <body> -->
+            <div class="bl-offline-banner" id="blOfflineBanner">
+              📡 You're offline — changes will sync when reconnected
+            </div>
 
             <div class="topbar-avatar" id="topbarAvatar">BL</div>
           </div>
@@ -2251,10 +2260,11 @@
     })();
     </script>
 
+    <script src="blueledger-db.js"></script>
+
     <!-- Chart.js CDN is already loaded in <head> — do NOT load it again -->
     <script src="utils.js"></script>
     <script src="ai.js"></script>
-    <script src="ai-assistant.js"></script>
     <script src="voice.js"></script>
     <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
     <script src="card-stack-logic.js"></script>
@@ -2262,8 +2272,30 @@
     <!-- CORE APP -->
     <script src="script.js"></script>
 
+    <!-- 4. ★ CHANGE: Add NEW core sync patch AFTER script.js -->
+    <script src="script-db-patch.js"></script>
+
+    <script src="ai-assistant.js"></script>
+
+    <!-- ★ CHANGE: Add NEW AI persistence patch AFTER ai-assistant.js -->
+    <script src="ai-assistant-db-patch.js"></script>
+
     <!-- INIT -->
     <script src="main.js"></script>
+
+
+    <script>
+  (function() {
+    const banner = document.getElementById('blOfflineBanner');
+    function updateOnline() {
+      if (banner) banner.classList.toggle('visible', !navigator.onLine);
+      if (window.BL_DB) window.BL_DB.setSyncStatus(navigator.onLine ? 'ok' : 'offline');
+    }
+    window.addEventListener('online',  updateOnline);
+    window.addEventListener('offline', updateOnline);
+    updateOnline();
+  })();
+  </script>
 
     <!-- Premium UI bridge -->
     <script>
