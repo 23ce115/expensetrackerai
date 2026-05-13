@@ -639,7 +639,7 @@ function openAIAssistant() {
   document.getElementById("aiaPage").style.display = "flex";
   document.body.style.overflow = "hidden";
   _aiaOpen = true;
-  _switchMode("analysis"); // always open to analysis
+  aiaSetMode("analysis"); // always open to analysis
   _renderSidebar();
   _renderAnalysis();
 }
