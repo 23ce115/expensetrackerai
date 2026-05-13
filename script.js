@@ -3630,12 +3630,45 @@ async function _afterUnlock(password, userId) {
   }
   populateCategorySelects();
   updateAddAccountUI();
+
+  if (
+    window.BL_DB &&
+    window.cards?.[0] &&
+    !localStorage.getItem("bl_cloud_migrated")
+  ) {
+    try {
+      const ok = await BL_DB.migrateFromLocalStorage(
+        window.cards[0].userData,
+        window.transactions || [],
+        window.categoryBudgets || {},
+      );
+      if (ok) localStorage.setItem("bl_cloud_migrated", "1");
+    } catch (e) {
+      console.warn("Migration skipped:", e);
+    }
+  }
   // Init Chart.js canvases (safe to call multiple times — they self-check)
   if (typeof initOverviewChart === "function") initOverviewChart();
   if (typeof initCategoryChart === "function") initCategoryChart();
   refreshAll();
   populateSyncModal();
   initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
+
+  if (
+    window.BL_DB &&
+    window.cards?.[0] &&
+    !localStorage.getItem("bl_cloud_migrated")
+  ) {
+    try {
+      const card = window.cards[0].userData;
+      const txns = window.transactions || [];
+      const budgets = window.categoryBudgets || {};
+      const ok = await BL_DB.migrateFromLocalStorage(card, txns, budgets);
+      if (ok) localStorage.setItem("bl_cloud_migrated", "1");
+    } catch (e) {
+      console.warn("Migration skipped:", e);
+    }
+  }
 }
 
 /* ── Card Setup (after signup / fresh login) ── */
@@ -6193,6 +6226,9 @@ function handleCtxDelete() {
 }
 function confirmDelete() {
   if (!deleteTargetId) return;
+  const _toDelete = transactions.find((t) => t.id === deleteTargetId);
+  if (window.BL_CLOUD && _toDelete?._cloudId)
+    BL_CLOUD.onTransactionDeleted(_toDelete._cloudId); // ★ cloud sync
   transactions = transactions.filter((t) => t.id !== deleteTargetId);
   deleteTargetId = null;
   closeModal("deleteModal");
@@ -6241,6 +6277,10 @@ function addIncome() {
     notes,
     type: "income",
   });
+  transactions.unshift(txn);
+  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(txn); // ★ cloud sync
+  saveToStorage();
+
   // Immediately push the new transaction into the cards array so that
   // getAnalyticsTransactions() in refreshAll() sees it right away.
   syncActiveToCards();
@@ -6290,6 +6330,9 @@ function addExpense() {
     notes,
     type: "expense",
   });
+
+  transactions.unshift(_expenseTxn);
+  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(_expenseTxn);
   // Immediately push the new transaction into the cards array so that
   // getAnalyticsTransactions() in refreshAll() sees it right away.
   syncActiveToCards();
@@ -6506,6 +6549,7 @@ function saveBudgets() {
     else delete categoryBudgets[cat];
   });
   saveToStorage();
+  if (window.BL_CLOUD) BL_CLOUD.onBudgetSaved(); // ★ cloud sync
   closeModal("budgetModal");
   refreshAll();
   notify("Budgets saved", "success");
