@@ -6611,10 +6611,6 @@ function renderMonthlySummary() {
   )[0];
   document.getElementById("summaryInc").textContent = fmt(inc);
   document.getElementById("summaryExp").textContent = fmt(exp);
-  document.getElementById("summaryNet").textContent =
-    (net >= 0 ? "+" : "-") + fmt(Math.abs(net));
-  document.getElementById("summaryNet").className =
-    "summary-value " + (net >= 0 ? "positive" : "negative");
   const surplusEl = document.getElementById("summaryRate");
   if (net >= 0) {
     surplusEl.textContent = "+" + fmt(net) + " Surplus";
