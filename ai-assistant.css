@@ -1,11 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
-   ai-assistant.css  —  BlueLedger AI Financial Workspace  v4
-   Financial workspace sidebar (reports+pins) · Single-column layout
+   ai-assistant.css  —  BlueLedger AI Financial Workspace
+   Merged: sidebar redesign + UI improvements (tabs, ring, insights,
+   deep analysis, CTA bar). Single source of truth — no patch files needed.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Variables ─────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   VARIABLES
+   ══════════════════════════════════════════════════════════════ */
 .aia-page {
-  --sb-w: 240px;
+  --sb-w: 256px;
   --sb-col-w: 52px;
   --bg: #070810;
   --bg2: #0c0d1c;
@@ -33,7 +36,9 @@
   --t3: #a0a8c8;
 }
 
-/* ── Page overlay ──────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   PAGE & SHELL
+   ══════════════════════════════════════════════════════════════ */
 .aia-page {
   position: fixed;
   inset: 0;
@@ -43,8 +48,6 @@
   font-family: "DM Sans", "Inter", system-ui, sans-serif;
   overflow: hidden;
 }
-
-/* ── Shell ─────────────────────────────────────────────────── */
 .aia-shell {
   display: flex;
   width: 100%;
@@ -52,9 +55,9 @@
   overflow: hidden;
 }
 
-/* ════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    SIDEBAR
-   ════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 .aia-sidebar {
   width: var(--sb-w);
   flex-shrink: 0;
@@ -71,10 +74,12 @@
   width: var(--sb-col-w) !important;
 }
 
-/* In collapsed mode hide all text/lists */
+/* Collapsed state */
 .aia-shell--col .aia-sb-text,
 .aia-shell--col .aia-sb-section,
-.aia-shell--col .aia-sb-list {
+.aia-shell--col .aia-sb-list,
+.aia-shell--col .aia-sb-search,
+.aia-shell--col .aia-sb-dropdown {
   display: none !important;
 }
 .aia-shell--col .aia-sb-brand {
@@ -93,46 +98,46 @@
   margin: 0.3rem auto;
   border-radius: var(--r);
 }
-.aia-shell--col .aia-sb-bottom-btn {
+.aia-shell--col .aia-sb-settings-btn {
   justify-content: center;
 }
 
-/* Brand */
+/* ── Brand bar ── */
 .aia-sb-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.8rem 0.8rem 0.5rem;
+  gap: 0.6rem;
+  padding: 1rem 0.9rem 0.75rem;
   flex-shrink: 0;
 }
 .aia-sb-brand-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--acc-d), var(--acc));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #fff;
   box-shadow: 0 2px 10px rgba(99, 102, 241, 0.28);
 }
 .aia-sb-brand-label {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--t1);
   letter-spacing: -0.02em;
 }
 .aia-sb-collapse-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--t3);
   background: none;
   border: none;
@@ -147,22 +152,57 @@
   color: var(--t2);
 }
 
-/* New Analysis button */
-.aia-sb-new-btn {
+/* ── Search ── */
+.aia-sb-search {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  margin: 0.25rem 0.65rem 0.4rem;
-  padding: 0.5rem 0.75rem;
+  margin: 0 0.75rem 0.6rem;
+  padding: 0.45rem 0.7rem;
+  background: var(--bg3);
+  border: 1px solid var(--brd);
+  border-radius: 9px;
+  flex-shrink: 0;
+  transition: border-color 0.14s;
+}
+.aia-sb-search:focus-within {
+  border-color: rgba(129, 140, 248, 0.35);
+}
+.aia-sb-search i {
+  font-size: 0.8rem;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.aia-sb-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.78rem;
+  color: var(--t1);
+  font-family: inherit;
+  min-width: 0;
+}
+.aia-sb-search-input::placeholder {
+  color: var(--t3);
+}
+
+/* ── New Analysis button ── */
+.aia-sb-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0.75rem 0.75rem;
+  padding: 0.55rem 0.85rem;
   background: linear-gradient(
     135deg,
     rgba(99, 102, 241, 0.13),
     rgba(129, 140, 248, 0.07)
   );
   border: 1px solid rgba(129, 140, 248, 0.2);
-  border-radius: var(--r);
+  border-radius: 10px;
   color: var(--acc);
-  font-size: 0.79rem;
+  font-size: 0.81rem;
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
@@ -181,124 +221,126 @@
   transform: translateY(-1px);
 }
 
-/* Section labels */
+/* ── Section labels ── */
 .aia-sb-section {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.64rem;
+  gap: 0.4rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--t3);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0.55rem 0.8rem 0.2rem;
+  padding: 0.6rem 1rem 0.3rem;
   flex-shrink: 0;
 }
 
-/* Lists */
+/* ── Lists ── */
 .aia-sb-list {
   overflow-y: auto;
   flex-shrink: 1;
   min-height: 0;
-  padding: 0 0.4rem;
+  padding: 0 0.5rem;
   scrollbar-width: none;
-  max-height: 200px;
+  max-height: 220px;
 }
 .aia-sb-list::-webkit-scrollbar {
   display: none;
 }
-
 .aia-sb-empty {
-  font-size: 0.71rem;
+  font-size: 0.74rem;
   color: var(--t3);
-  padding: 0.3rem 0.45rem;
+  padding: 0.4rem 0.55rem;
   font-style: italic;
   line-height: 1.5;
 }
 
-/* Report items */
+/* ── Report rows ── */
 .aia-sb-report {
-  padding: 0.45rem 0.5rem;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: background 0.12s;
-  margin-bottom: 0.15rem;
-}
-.aia-sb-report:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-.aia-sb-report-top {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.65rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 10px;
+  margin-bottom: 0.2rem;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.aia-sb-report:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aia-sb-score-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  border: 2px solid;
+  letter-spacing: -0.02em;
+}
+.aia-sb-report-body {
+  flex: 1;
+  min-width: 0;
 }
 .aia-sb-report-title {
-  flex: 1;
-  font-size: 0.74rem;
-  color: var(--t1);
+  font-size: 0.77rem;
   font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+.aia-sb-report-subtitle {
+  font-size: 0.67rem;
+  color: var(--t3);
+  margin-top: 0.12rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.aia-sb-report-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.2rem;
-  flex-wrap: wrap;
-}
-.aia-sb-report-score {
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-.aia-sb-report-ts {
-  font-size: 0.64rem;
-  color: var(--t3);
-}
+/* Old meta elements — hidden; replaced by dot + subtitle */
+.aia-sb-report-top,
+.aia-sb-report-meta,
+.aia-sb-report-score,
+.aia-sb-report-ts,
 .aia-sb-badge {
-  font-size: 0.6rem;
-  font-weight: 700;
-  padding: 0.08rem 0.35rem;
-  border-radius: 20px;
-  border: 1px solid transparent;
-  letter-spacing: 0.03em;
+  display: none !important;
 }
 
-/* Pin items */
-.aia-sb-pin {
+/* Sparkline */
+.aia-sb-spark {
   display: flex;
-  align-items: flex-start;
-  gap: 0.35rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: var(--r-sm);
-  margin-bottom: 0.1rem;
-}
-.aia-sb-pin:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-.aia-sb-pin-icon {
-  font-size: 0.62rem;
-  color: var(--acc);
-  margin-top: 0.18rem;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
   flex-shrink: 0;
 }
-.aia-sb-pin-text {
-  flex: 1;
-  font-size: 0.72rem;
-  color: var(--t2);
-  line-height: 1.45;
+.aia-sb-spark-bar {
+  width: 4px;
+  border-radius: 2px 2px 0 0;
+  background: rgba(255, 255, 255, 0.12);
+  min-height: 4px;
+  transition: height 0.4s ease;
+}
+.aia-sb-spark-bar--top {
+  background: rgba(129, 140, 248, 0.5);
 }
 
 /* Delete buttons */
 .aia-sb-del {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   color: var(--t3);
   background: none;
   border: none;
@@ -319,21 +361,49 @@
   color: #ef4444;
 }
 
-/* Sidebar bottom */
+/* ── Pin rows ── */
+.aia-sb-pin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  margin-bottom: 0.15rem;
+  cursor: default;
+  transition: background 0.12s;
+}
+.aia-sb-pin:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.aia-sb-pin-icon {
+  font-size: 0.72rem;
+  color: var(--acc);
+  flex-shrink: 0;
+}
+.aia-sb-pin-text {
+  font-size: 0.74rem;
+  color: var(--t2);
+  line-height: 1.45;
+  flex: 1;
+}
+
+/* ── Bottom bar — Settings only ── */
 .aia-sb-bottom {
   margin-top: auto;
   border-top: 1px solid var(--brd);
-  padding: 0.45rem 0.4rem;
+  padding: 0.6rem 0.5rem;
   flex-shrink: 0;
+  position: relative;
 }
-.aia-sb-bottom-btn {
+.aia-sb-settings-btn {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.4rem 0.45rem;
-  border-radius: var(--r-sm);
-  font-size: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 500;
   color: var(--t2);
   background: none;
   border: none;
@@ -341,15 +411,144 @@
   transition:
     background 0.12s,
     color 0.12s;
+  font-family: inherit;
 }
-.aia-sb-bottom-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+.aia-sb-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
   color: var(--t1);
 }
+.aia-sb-settings-btn i {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
 
-/* ════════════════════════════════════════════════════════════
-   MAIN
-   ════════════════════════════════════════════════════════════ */
+/* ── Settings dropdown ── */
+.aia-sb-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0.5rem;
+  right: 0.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--brd2);
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  z-index: 10;
+  animation: ddFadeIn 0.14s ease-out;
+}
+.aia-sb-dropdown.open {
+  display: flex;
+}
+@keyframes ddFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.aia-sb-dd-header {
+  padding: 0.6rem 0.85rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  border-bottom: 1px solid var(--brd);
+}
+.aia-sb-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--brd);
+  transition: background 0.11s;
+}
+.aia-sb-dd-item:last-child {
+  border-bottom: none;
+}
+.aia-sb-dd-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.aia-sb-dd-item--danger:hover {
+  background: rgba(239, 68, 68, 0.05);
+}
+.aia-sb-dd-item--danger .aia-sb-dd-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.aia-sb-dd-item--danger .aia-sb-dd-label {
+  color: #ef4444;
+}
+.aia-sb-dd-item--more {
+  background: rgba(255, 255, 255, 0.02);
+}
+.aia-sb-dd-item--more:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.aia-sb-dd-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--t2);
+}
+.aia-sb-dd-icon--purple {
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--acc);
+}
+.aia-sb-dd-icon--teal {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.aia-sb-dd-icon--amber {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+.aia-sb-dd-body {
+  flex: 1;
+  min-width: 0;
+}
+.aia-sb-dd-label {
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.3;
+}
+.aia-sb-dd-sub {
+  font-size: 0.67rem;
+  color: var(--t3);
+  margin-top: 0.08rem;
+}
+.aia-sb-dd-item--more .aia-sb-dd-label {
+  color: var(--t2);
+  font-weight: 500;
+}
+.aia-sb-dd-chevron {
+  font-size: 0.7rem;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.aia-sb-dd-item--danger.confirm .aia-sb-dd-label::after {
+  content: " — tap again to confirm";
+  font-weight: 400;
+  font-size: 0.67rem;
+  color: #ef4444;
+  opacity: 0.75;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN AREA
+   ══════════════════════════════════════════════════════════════ */
 .aia-main {
   flex: 1;
   display: flex;
@@ -358,17 +557,19 @@
   min-width: 0;
 }
 
-/* Topbar */
+/* ══════════════════════════════════════════════════════════════
+   TOPBAR & TABS  (#2)
+   ══════════════════════════════════════════════════════════════ */
 .aia-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.1rem;
-  height: 50px;
+  padding: 0 1.25rem;
+  height: 54px;
   border-bottom: 1px solid var(--brd);
   background: var(--bg2);
   flex-shrink: 0;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 .aia-topbar-l {
   display: flex;
@@ -379,7 +580,7 @@
 .aia-topbar-r {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex-shrink: 0;
 }
 .aia-topbar-title {
@@ -393,13 +594,13 @@
   text-overflow: ellipsis;
 }
 .aia-icon-btn {
-  width: 31px;
-  height: 31px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--t2);
   background: none;
   border: none;
@@ -412,32 +613,49 @@
   background: rgba(255, 255, 255, 0.07);
   color: var(--t1);
 }
+
+/* Tab buttons — underline active state */
 .aia-tab-btn {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.32rem 0.65rem;
+  gap: 0.35rem;
+  padding: 0.38rem 0.8rem;
   border-radius: 8px;
-  font-size: 0.76rem;
+  font-size: 0.77rem;
   font-weight: 500;
-  color: var(--t2);
+  color: var(--t3);
   background: none;
   border: none;
   cursor: pointer;
   transition:
-    background 0.12s,
-    color 0.12s;
+    color 0.15s,
+    background 0.15s;
+}
+.aia-tab-btn i {
+  font-size: 0.85rem;
 }
 .aia-tab-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
   color: var(--t1);
+  background: rgba(255, 255, 255, 0.05);
 }
 .aia-tab-btn.active {
-  background: rgba(129, 140, 248, 0.12);
   color: var(--acc);
+  background: transparent;
+  font-weight: 600;
+}
+.aia-tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0.5rem;
+  right: 0.5rem;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--acc);
 }
 
-/* ── Views ─────────────────────────────────────────────────── */
+/* ── Views ── */
 .aia-view {
   display: flex;
   flex-direction: column;
@@ -446,13 +664,13 @@
   min-height: 0;
 }
 
-/* ════════════════════════════════════════════════════════════
-   ANALYSIS VIEW — single scrolling column
-   ════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   ANALYSIS SCROLL & CARDS
+   ══════════════════════════════════════════════════════════════ */
 .aia-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 1.1rem 1.25rem;
+  padding: 1.25rem 1.4rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(129, 140, 248, 0.18) transparent;
 }
@@ -464,28 +682,23 @@
   border-radius: 4px;
 }
 
-/* Column container */
 .aia-col {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1rem;
   max-width: 900px;
   margin: 0 auto;
 }
-
-/* 2-column row for score+prediction */
 .aia-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
+  gap: 1rem;
 }
-
-/* Cards */
 .aia-card {
   background: var(--bg3);
   border: 1px solid var(--brd);
   border-radius: var(--r);
-  padding: 0.9rem 1.1rem;
+  padding: 1.1rem 1.15rem;
   transition: border-color 0.18s;
 }
 .aia-card:hover {
@@ -499,47 +712,76 @@
   );
   border-color: rgba(99, 102, 241, 0.16);
 }
-
 .aia-card-hdr {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.7rem;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
 }
 .aia-card-icon {
-  width: 27px;
-  height: 27px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   flex-shrink: 0;
 }
 .aia-card-title {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--t1);
   flex: 1;
   letter-spacing: -0.01em;
 }
 .aia-card-desc {
-  font-size: 0.76rem;
+  font-size: 0.77rem;
   color: var(--t2);
-  line-height: 1.55;
-  margin-bottom: 0.7rem;
+  line-height: 1.6;
+  margin-bottom: 0.85rem;
 }
 
-/* ── Health Score ──────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   SCORE RING  (#3) — animated entrance + grade glow
+   ══════════════════════════════════════════════════════════════ */
 .aia-score-body {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 1rem;
 }
 .aia-ring-wrap {
   position: relative;
   flex-shrink: 0;
 }
+
+/* Glow layer */
+.aia-ring-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.4s;
+  background: radial-gradient(
+    circle,
+    var(--ring-glow, rgba(16, 185, 129, 0.15)) 0%,
+    transparent 70%
+  );
+}
+.aia-ring-wrap.glowing::after {
+  opacity: 1;
+}
+
+/* Arc animation */
+.aia-ring-arc {
+  transition: stroke-dashoffset 0s;
+}
+.aia-ring-arc.animated {
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .aia-ring-center {
   position: absolute;
   top: 50%;
@@ -547,30 +789,32 @@
   transform: translate(-50%, -50%);
   text-align: center;
   line-height: 1;
+  pointer-events: none;
 }
 .aia-ring-num {
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 .aia-ring-den {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   color: var(--t3);
-  margin-top: 0.08rem;
+  margin-top: 0.1rem;
 }
 .aia-score-info {
   flex: 1;
   min-width: 0;
 }
 .aia-score-grade {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 .aia-score-sub {
-  font-size: 0.67rem;
+  font-size: 0.68rem;
   color: var(--t3);
-  margin: 0.08rem 0 0.35rem;
+  margin: 0.1rem 0 0.45rem;
 }
 .aia-factors {
   display: flex;
@@ -580,13 +824,14 @@
 .aia-factor {
   display: flex;
   align-items: flex-start;
-  gap: 0.3rem;
-  font-size: 0.67rem;
+  gap: 0.35rem;
+  font-size: 0.69rem;
   line-height: 1.4;
+  padding: 0.06rem 0;
 }
 .aia-factor i {
-  font-size: 0.6rem;
-  margin-top: 0.14rem;
+  font-size: 0.7rem;
+  margin-top: 0.1rem;
   flex-shrink: 0;
 }
 .aia-factor--pos {
@@ -599,75 +844,106 @@
   color: var(--t3);
 }
 
-/* ── Prediction ────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   PREDICTION CARD
+   ══════════════════════════════════════════════════════════════ */
 .aia-pred-amt {
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: -0.04em;
-  margin: 0.15rem 0 0.3rem;
+  margin: 0.2rem 0 0.4rem;
 }
 .aia-pred-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  font-size: 0.69rem;
+  gap: 0.6rem;
+  font-size: 0.7rem;
   color: var(--t2);
 }
 .aia-pred-meta span {
   display: flex;
   align-items: center;
-  gap: 0.22rem;
-}
-.aia-pred-warn {
-  margin-top: 0.35rem;
-  font-size: 0.71rem;
-  color: #ef4444;
-  font-weight: 600;
-}
-.aia-pred-savings {
-  margin-top: 0.2rem;
-  font-size: 0.71rem;
-  color: #10b981;
-  font-weight: 600;
+  gap: 0.28rem;
 }
 
-/* ── Behaviour ─────────────────────────────────────────────── */
+/* Styled warn/savings rows — no emojis */
+.aia-pred-warn,
+.aia-pred-savings {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+}
+.aia-pred-warn {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+.aia-pred-savings {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+.aia-pred-warn i,
+.aia-pred-savings i {
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SPENDING BEHAVIOUR
+   ══════════════════════════════════════════════════════════════ */
 .aia-behav-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.8rem;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
 }
 .aia-bstat {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   background: var(--bg4);
   border: 1px solid var(--brd);
-  border-radius: 10px;
-  padding: 0.4rem 0.65rem;
+  border-radius: 11px;
+  padding: 0.5rem 0.75rem;
   flex: 1;
-  min-width: 115px;
+  min-width: 120px;
 }
 .aia-bstat--warn {
   border-color: rgba(245, 158, 11, 0.2);
 }
 .aia-bstat-em {
-  font-size: 0.95rem;
+  display: none;
+} /* replaced by icon div via JS */
+.aia-bstat-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--t2);
 }
 .aia-bstat-val {
-  font-size: 0.77rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-bstat-lbl {
-  font-size: 0.63rem;
+  font-size: 0.64rem;
   color: var(--t3);
   margin-top: 0.04rem;
 }
 
-/* Day-of-week mini chart */
+/* Day-of-week chart */
 .aia-dow-chart {
   display: flex;
   align-items: flex-end;
@@ -697,42 +973,46 @@
   color: var(--t3);
 }
 
-/* ── Smart Insights ────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   SMART INSIGHTS  (#4) — icon-based, per-row pin
+   ══════════════════════════════════════════════════════════════ */
 .aia-pin-btn {
-  margin-left: auto;
-  padding: 0.25rem 0.55rem;
-  border-radius: 7px;
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.68rem;
-  color: var(--t3);
-  background: none;
-  border: none;
+  margin-left: auto;
+  font-size: 0.69rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  color: var(--acc);
+  background: rgba(129, 140, 248, 0.07);
   cursor: pointer;
-  transition:
-    color 0.14s,
-    background 0.14s;
+  transition: background 0.12s;
 }
 .aia-pin-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--acc);
+  background: rgba(129, 140, 248, 0.14);
 }
 
 .aia-ins-list {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 .aia-ins-row {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.5rem 0.7rem;
-  border-radius: 9px;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 11px;
   background: var(--bg4);
   border-left: 3px solid var(--acc);
-  transition: border-color 0.15s;
+  position: relative;
+  transition: background 0.12s;
+}
+.aia-ins-row:hover {
+  filter: brightness(1.04);
 }
 .aia-ins-row--positive {
   border-left-color: #10b981;
@@ -747,71 +1027,155 @@
 .aia-ins-row--info {
   border-left-color: var(--acc);
 }
-.aia-ins-em {
-  font-size: 0.95rem;
+
+/* Icon div (replaces emoji) */
+.aia-ins-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
   flex-shrink: 0;
-  line-height: 1.45;
+  margin-top: 0.06rem;
 }
-.aia-ins-title {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--t1);
-  line-height: 1.3;
+.aia-ins-row--positive .aia-ins-icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
 }
-.aia-ins-body {
-  font-size: 0.7rem;
-  color: var(--t2);
-  line-height: 1.5;
-  margin-top: 0.15rem;
+.aia-ins-row--warn .aia-ins-icon {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+.aia-ins-row--danger .aia-ins-icon {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.aia-ins-row--info .aia-ins-icon {
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--acc);
 }
 
-/* ── Budget Recs ───────────────────────────────────────────── */
+.aia-ins-em {
+  display: none;
+} /* hidden — replaced by .aia-ins-icon */
+
+.aia-ins-content {
+  flex: 1;
+  min-width: 0;
+}
+.aia-ins-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.35;
+}
+.aia-ins-body {
+  font-size: 0.71rem;
+  color: var(--t2);
+  line-height: 1.55;
+  margin-top: 0.18rem;
+}
+
+/* Per-row pin button */
+.aia-ins-pin-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition:
+    opacity 0.12s,
+    background 0.12s,
+    color 0.12s;
+  flex-shrink: 0;
+  margin-top: 0.04rem;
+}
+.aia-ins-row:hover .aia-ins-pin-btn {
+  opacity: 1;
+}
+.aia-ins-pin-btn:hover {
+  background: rgba(129, 140, 248, 0.14);
+  color: var(--acc);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BUDGET RECOMMENDATIONS
+   ══════════════════════════════════════════════════════════════ */
 .aia-recs {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 .aia-rec {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.65rem;
   align-items: flex-start;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg4);
+  border-radius: 10px;
+  border: 1px solid var(--brd);
 }
 .aia-rec-icon {
-  font-size: 0.95rem;
+  display: none;
+} /* replaced by .aia-rec-ico */
+.aia-rec-ico {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
   flex-shrink: 0;
-  line-height: 1.5;
 }
 .aia-rec-title {
-  font-size: 0.76rem;
+  font-size: 0.77rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-rec-body {
-  font-size: 0.69rem;
+  font-size: 0.7rem;
   color: var(--t2);
-  line-height: 1.5;
+  line-height: 1.55;
   margin-top: 0.1rem;
 }
 
-/* ── Deep Analysis ─────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   DEEP ANALYSIS  (#5) — shimmer skeleton, section dividers
+   ══════════════════════════════════════════════════════════════ */
+#acDeep {
+  border: 1px solid rgba(129, 140, 248, 0.12);
+}
+
 .aia-deep-btn {
   width: 100%;
-  padding: 0.62rem 1rem;
-  border-radius: var(--r);
+  padding: 0.7rem 1rem;
+  border-radius: 11px;
   background: linear-gradient(135deg, #6366f1, #818cf8);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.81rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   border: none;
   cursor: pointer;
   transition:
     opacity 0.18s,
     transform 0.12s;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.28);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.22);
 }
 .aia-deep-btn:hover {
   opacity: 0.9;
@@ -823,21 +1187,65 @@
   transform: none;
 }
 
-.aia-deep-loading {
+/* Shimmer skeleton */
+.aia-deep-skeleton {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.76rem;
-  color: var(--t2);
+  flex-direction: column;
+  gap: 0.6rem;
   padding: 0.5rem 0;
+  animation: skeletonFade 0.3s ease;
 }
+@keyframes skeletonFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.aia-skel-row {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--bg4) 25%,
+    rgba(129, 140, 248, 0.08) 50%,
+    var(--bg4) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Deep result card */
 .aia-deep-card {
-  margin-top: 0.8rem;
+  margin-top: 0.9rem;
+  padding: 1rem 1.1rem;
   background: var(--bg4);
   border: 1px solid rgba(129, 140, 248, 0.16);
-  border-radius: var(--r);
-  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  animation: cardIn 0.3s ease;
 }
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .aia-deep-src {
   display: inline-flex;
   align-items: center;
@@ -854,39 +1262,48 @@
   color: #fbbf24;
   border-color: rgba(251, 191, 36, 0.2);
 }
+
 .aia-deep-headline {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--acc);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
 }
 .aia-deep-assess {
-  font-size: 0.76rem;
+  font-size: 0.77rem;
   color: var(--t1);
-  line-height: 1.6;
-  margin-bottom: 0.65rem;
-}
-.aia-deep-sec {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--t2);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin: 0.65rem 0 0.35rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
+  line-height: 1.65;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--brd);
 }
 
-/* Key insights — deep */
+/* Section dividers */
+.aia-deep-sec {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin: 0.9rem 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--brd);
+}
+.aia-deep-sec i {
+  font-size: 0.8rem;
+}
+
+/* Key insights */
 .aia-di-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.4rem;
 }
 .aia-di {
-  padding: 0.45rem 0.7rem;
-  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
   border-left: 3px solid var(--acc);
   background: rgba(129, 140, 248, 0.05);
 }
@@ -903,69 +1320,70 @@
   background: rgba(16, 185, 129, 0.05);
 }
 .aia-di-title {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-di-body {
-  font-size: 0.69rem;
+  font-size: 0.7rem;
   color: var(--t2);
-  margin-top: 0.15rem;
-  line-height: 1.5;
+  margin-top: 0.18rem;
+  line-height: 1.55;
 }
 
-/* Predictions */
+/* Predictions — 2-col grid */
 .aia-dp-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
 }
 .aia-dp {
-  padding: 0.5rem 0.7rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
   background: rgba(129, 140, 248, 0.05);
-  border-radius: 8px;
   border: 1px solid rgba(129, 140, 248, 0.1);
 }
 .aia-dp-lbl {
-  font-size: 0.63rem;
+  font-size: 0.62rem;
   color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   font-weight: 600;
 }
 .aia-dp-val {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--acc);
-  margin: 0.06rem 0;
+  margin: 0.1rem 0 0.05rem;
 }
 .aia-dp-rsn {
-  font-size: 0.66rem;
+  font-size: 0.67rem;
   color: var(--t2);
+  line-height: 1.5;
 }
 
 /* Action plan */
 .aia-da-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.4rem;
 }
 .aia-da {
   display: flex;
-  gap: 0.45rem;
+  gap: 0.55rem;
   align-items: flex-start;
-  padding: 0.4rem 0.55rem;
-  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
   background: rgba(52, 211, 153, 0.04);
 }
 .aia-da-num {
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
-  background: rgba(52, 211, 153, 0.15);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(52, 211, 153, 0.12);
   color: #34d399;
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -973,30 +1391,34 @@
   margin-top: 0.06rem;
 }
 .aia-da-step {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-da-impact {
   font-size: 0.68rem;
-  color: #34d399;
-  margin-top: 0.1rem;
-  line-height: 1.45;
+  color: var(--t2);
+  margin-top: 0.12rem;
+  line-height: 1.5;
 }
 
+/* Deep action buttons */
 .aia-deep-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.7rem;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--brd);
 }
 .aia-deep-dismiss,
 .aia-deep-pin {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.32rem 0.6rem;
-  border-radius: 7px;
-  font-size: 0.7rem;
+  gap: 0.35rem;
+  padding: 0.42rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.12s;
   border: none;
@@ -1004,31 +1426,48 @@
 .aia-deep-dismiss {
   background: rgba(255, 255, 255, 0.05);
   color: var(--t2);
+  border: 1px solid var(--brd);
 }
 .aia-deep-dismiss:hover {
-  background: rgba(255, 255, 255, 0.09);
-  color: var(--t1);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 .aia-deep-pin {
   background: rgba(129, 140, 248, 0.1);
   color: var(--acc);
+  border: 1px solid rgba(129, 140, 248, 0.2);
 }
 .aia-deep-pin:hover {
   background: rgba(129, 140, 248, 0.18);
 }
 
-/* CTA */
+/* ══════════════════════════════════════════════════════════════
+   CTA BAR  (#6) — elevated, hint text
+   ══════════════════════════════════════════════════════════════ */
 .aia-cta-bar {
-  padding: 0.75rem 1.25rem;
+  padding: 0.9rem 1.4rem;
   border-top: 1px solid var(--brd);
+  background: var(--bg2);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   flex-shrink: 0;
+}
+.aia-cta-hint {
+  font-size: 0.72rem;
+  color: var(--t3);
+  flex: 1;
+  line-height: 1.4;
 }
 .aia-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.58rem 1.1rem;
-  border-radius: var(--r);
+  padding: 0.62rem 1.25rem;
+  border-radius: 11px;
   background: linear-gradient(
     135deg,
     rgba(99, 102, 241, 0.13),
@@ -1039,6 +1478,8 @@
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition:
     background 0.14s,
     transform 0.1s;
@@ -1052,9 +1493,9 @@
   transform: translateY(-1px);
 }
 
-/* ════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
    CHAT VIEW
-   ════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 .aia-chat-msgs {
   flex: 1;
   overflow-y: auto;
@@ -1073,7 +1514,6 @@
   border-radius: 4px;
 }
 
-/* Welcome */
 .aia-welcome {
   display: flex;
   flex-direction: column;
@@ -1134,7 +1574,6 @@
   transform: translateY(-1px);
 }
 
-/* Messages */
 .aia-msg-ai,
 .aia-msg-user {
   animation: msgIn 0.17s ease-out;
@@ -1249,7 +1688,6 @@
   color: var(--t1);
 }
 
-/* Typing */
 .aia-typing {
   display: inline-flex;
   gap: 3px;
@@ -1373,7 +1811,9 @@
   transform: none;
 }
 
-/* ── App sidebar trigger buttons ───────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   APP SIDEBAR TRIGGER BUTTONS
+   ══════════════════════════════════════════════════════════════ */
 .sb-btn-aia {
   background: linear-gradient(
     135deg,
@@ -1394,14 +1834,47 @@
   color: #818cf8 !important;
 }
 
-/* ════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .aia-sb-report:hover,
+[data-theme="light"] .aia-sb-pin:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .aia-sb-dd-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .aia-sb-settings-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-theme="light"] .aia-sb-spark-bar {
+  background: rgba(0, 0, 0, 0.1);
+}
+[data-theme="light"] .aia-cta-bar {
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .aia-ins-row:hover {
+  filter: brightness(0.97);
+}
+[data-theme="light"] .aia-pred-warn {
+  background: rgba(239, 68, 68, 0.05);
+}
+[data-theme="light"] .aia-pred-savings {
+  background: rgba(16, 185, 129, 0.05);
+}
+
+/* ══════════════════════════════════════════════════════════════
    RESPONSIVE
-   ════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════ */
 @media (max-width: 700px) {
   .aia-row-2 {
     grid-template-columns: 1fr;
   }
+  .aia-dp-grid {
+    grid-template-columns: 1fr;
+  }
 }
+
 @media (max-width: 640px) {
   .aia-sidebar {
     position: absolute;
@@ -1419,11 +1892,15 @@
     transform: translateX(-100%);
     border-right: none;
   }
+  .aia-sb-dropdown {
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+
   .aia-scroll {
     padding: 0.75rem;
-  }
-  .aia-cta-bar {
-    padding: 0.6rem 0.75rem;
   }
   .aia-chat-msgs {
     padding: 0.75rem;
@@ -1432,8 +1909,33 @@
     padding: 0.55rem 0.75rem;
   }
   .aia-topbar {
+    height: 50px;
     padding: 0 0.75rem;
   }
+
+  /* Tab labels hidden on mobile — icons only */
+  .aia-tab-btn span {
+    display: none;
+  }
+  .aia-tab-btn {
+    padding: 0.38rem 0.55rem;
+  }
+
+  /* CTA bar stacks */
+  .aia-cta-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  .aia-cta-hint {
+    font-size: 0.7rem;
+    text-align: center;
+  }
+  .aia-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .aia-msg-ai-body,
   .aia-msg-user-body {
     max-width: 88%;
