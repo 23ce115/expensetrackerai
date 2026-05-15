@@ -242,7 +242,6 @@
   min-height: 0;
   padding: 0 0.5rem;
   scrollbar-width: none;
-  max-height: 220px;
 }
 .aia-sb-list::-webkit-scrollbar {
   display: none;
@@ -544,6 +543,18 @@
   font-size: 0.67rem;
   color: #ef4444;
   opacity: 0.75;
+}
+
+.aia-sb-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+.aia-sb-scroll-area::-webkit-scrollbar {
+  display: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
