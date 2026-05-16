@@ -165,7 +165,7 @@
         .eq("id", id)
         .eq("user_id", uid)
         .select()
-        .single(),
+        .maybeSingle(),
     );
   }
 
@@ -268,7 +268,7 @@
           { onConflict: "user_id,card_id,month_year" },
         )
         .select()
-        .single(),
+        .maybeSingle(),
     );
   }
 
@@ -338,7 +338,7 @@
         .from("ai_conversations")
         .insert({ user_id: uid, title })
         .select()
-        .single(),
+        .maybeSingle(),
     );
   }
 
@@ -352,7 +352,7 @@
         .eq("id", id)
         .eq("user_id", uid)
         .select()
-        .single(),
+        .maybeSingle(),
     );
   }
 
