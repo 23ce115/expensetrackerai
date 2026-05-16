@@ -92,8 +92,6 @@
 
       if (typeof refreshAll === "function") refreshAll();
       if (typeof renderCardSwitcher === "function") renderCardSwitcher();
-      if (typeof notify === "function")
-        notify("Cloud data loaded ☁️", "success");
     } catch (err) {
       console.error("[SCRIPT-patch] loadCloudData error:", err.message);
     }
@@ -101,18 +99,19 @@
 
   /* Map Supabase transaction row → legacy local transaction shape */
   function _cloudTxnToLocal(t) {
+    const isExpense = t.transaction_type === "expense";
     return {
       id: t.id,
       type: t.transaction_type,
-      amount: t.amount,
+      amount: isExpense ? -Math.abs(t.amount) : Math.abs(t.amount), // ← correct sign
       category: t.category,
       desc: t.note,
+      description: t.note, // ← script.js uses both .desc and .description
       paymentMethod: t.payment_method,
       date: t.txn_date,
       _cloudId: t.id,
     };
   }
-
   /* ══════════════════════════════════════════════════════════
      PUSH CARD TO CLOUD  (called after addCard / updateCard)
      ══════════════════════════════════════════════════════════ */
@@ -317,7 +316,8 @@
     if (!cardId) return;
 
     await db.subscribeToTransactions(cardId, async (payload) => {
-      /* Another device made a change — reload from cloud */
+      // Skip INSERT events — we just added it locally, no need to reload
+      if (payload.eventType === "INSERT") return;
       console.info(
         "[SCRIPT-patch] Realtime change detected. Reloading...",
         payload.eventType,
