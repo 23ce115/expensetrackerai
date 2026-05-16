@@ -319,9 +319,10 @@
       // Skip INSERT events — we just added it locally, no need to reload
       if (payload.eventType === "INSERT") return;
       console.info(
-        "[SCRIPT-patch] Realtime change detected. Reloading...",
+        "[SCRIPT-patch] Realtime change (external):",
         payload.eventType,
       );
+      await loadCloudData();
       await loadCloudData();
     });
   }
