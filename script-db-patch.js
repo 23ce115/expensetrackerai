@@ -141,13 +141,24 @@
       const existingId = _cardUuidMap.get(cardIdx) || u._cloudId;
       let row;
       if (existingId) {
-        row = await db.updateCard(existingId, payload);
+        try {
+          row = await db.updateCard(existingId, payload);
+        } catch (updateErr) {
+          // 406 = no row found (stale UUID) — fall through to insert
+          console.warn(
+            "[SCRIPT-patch] updateCard failed, inserting instead:",
+            updateErr.message,
+          );
+          _cardUuidMap.delete(cardIdx);
+          if (window.cards?.[cardIdx])
+            delete window.cards[cardIdx].userData._cloudId;
+          row = await db.addCard(payload);
+        }
       } else {
         row = await db.addCard(payload);
       }
       if (row?.id) {
         _cardUuidMap.set(cardIdx, row.id);
-        /* Persist the cloud id back into userData so we can find it next time */
         if (window.cards?.[cardIdx]) {
           window.cards[cardIdx].userData._cloudId = row.id;
         }
