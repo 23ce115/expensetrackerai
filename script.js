@@ -6268,7 +6268,7 @@ function addIncome() {
   // FIX 1: Flush any pending card state BEFORE mutating transactions,
   // preventing stale card data from overwriting the new entry on re-sync.
   syncActiveToCards();
-  transactions.unshift({
+  const txn = {
     id: Date.now(),
     date,
     category: cat,
@@ -6276,9 +6276,9 @@ function addIncome() {
     description: desc,
     notes,
     type: "income",
-  });
+  };
   transactions.unshift(txn);
-  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(txn); // ★ cloud sync
+  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(txn);
   saveToStorage();
 
   // Immediately push the new transaction into the cards array so that
@@ -6321,17 +6321,17 @@ function addExpense() {
   }
   // FIX 1: Flush any pending card state BEFORE mutating transactions.
   syncActiveToCards();
-  const _expenseTxn = {
+  const txn = {
     id: Date.now(),
     date,
     category: cat,
-    amount: -amt,
+    amount: amt,
     description: desc,
     notes,
-    type: "expense",
+    type: "income",
   };
-  transactions.unshift(_expenseTxn);
-  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(_expenseTxn); // ★ cloud sync
+  transactions.unshift(txn);
+  if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(txn); // ★ cloud sync
   // Immediately push the new transaction into the cards array so that
   // getAnalyticsTransactions() in refreshAll() sees it right away.
   syncActiveToCards();
