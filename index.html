@@ -1142,200 +1142,181 @@
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• INCOME MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="incomeModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Add Income</h2>
-          <button class="close-btn" onclick="closeModal('incomeModal')">
-            &times;
-          </button>
+  <div class="modal-content add-txn-modal">
+    <div class="modal-header" style="padding:.9rem 1.25rem">
+      <h2 class="modal-title" style="display:flex;align-items:center;gap:.5rem">
+        <span style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,0.15);
+          display:flex;align-items:center;justify-content:center">
+          <i class="fas fa-arrow-down" style="color:#10b981;font-size:.75rem"></i>
+        </span>
+        Add Income
+      </h2>
+      <button class="close-btn" onclick="closeModal('incomeModal')">&times;</button>
+    </div>
+    <div class="modal-body add-txn-body">
+
+      <!-- Account row -->
+      <div class="add-txn-account-row">
+        <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.78rem;flex-shrink:0"></i>
+        <span id="incomeAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
+        <button type="button" onclick="openAddTargetPicker('income','modal')" class="add-txn-switch-btn">Switch</button>
+      </div>
+
+      <!-- Amount + Date -->
+      <div class="form-row" style="gap:.6rem;margin-bottom:.6rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" class="form-input" id="incomeAmount" placeholder="0" min="1" />
         </div>
-        <div class="modal-body">
-          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;padding:.4rem .6rem;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:10px;">
-            <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
-            <span id="incomeAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
-            <button type="button" onclick="openAddTargetPicker('income', 'modal')" style="font-size:.7rem;padding:.22rem .55rem;border-radius:6px;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.2);color:#94a3b8;cursor:pointer;white-space:nowrap;">Switch</button>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Amount (₹)</label>
-              <input
-                type="number"
-                class="form-input"
-                id="incomeAmount"
-                placeholder="Enter amount"
-                min="1"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-input" id="incomeDate" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Description (optional)</label>
-            <div style="display:flex;gap:.5rem;align-items:center">
-              <input
-                type="text"
-                class="form-input"
-                id="incomeDesc"
-                placeholder="e.g. Monthly salary, freelance invoice"
-                oninput="aiAutoCategory('income', this.value)"
-                style="flex:1"
-              />
-              <button class="btn-voice-lg" id="incomeVoiceBtn" onclick="startVoiceLog('income')" title="Log by voice" data-state="idle">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-            <div id="incomeVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
-            <div class="form-hint">AI can suggest a category from what you type. It will only apply if you confirm.</div>
-            <div id="incomeAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Category</label>
-            <select class="form-select" id="incomeCategory" onchange="aiCategorySelectionChanged('income')">
-              <option value="">Select category</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Notes (optional)</label>
-            <textarea
-              class="form-input"
-              id="incomeNotes"
-              placeholder="e.g. Splitting with Raj, bonus from Q3…"
-              rows="2"
-              style="resize: vertical; min-height: 52px"
-            ></textarea>
-          </div>
-          <div class="recurring-toggle">
-            <input
-              type="checkbox"
-              id="incomeRecurring"
-              onchange="toggleRecurringUI('income')"
-            />
-            <label for="incomeRecurring">Make this recurring</label>
-          </div>
-          <div
-            class="form-group frequency-select"
-            id="incomeFrequencyRow"
-            style="display: none"
-          >
-            <label class="form-label">Frequency</label>
-            <select class="form-select" id="incomeFrequency">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeModal('incomeModal')">
-            Cancel
-          </button>
-          <button class="btn btn-primary" onclick="addIncome()">
-            Add Income
-          </button>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="incomeDate" />
         </div>
       </div>
+
+      <!-- Description + voice -->
+      <div class="form-group" style="margin-bottom:.5rem">
+        <label class="form-label">Description <span style="color:#475569;font-weight:400">(optional)</span></label>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input type="text" class="form-input" id="incomeDesc"
+            placeholder="e.g. Monthly salary, freelance invoice"
+            oninput="aiAutoCategory('income', this.value)" style="flex:1" />
+          <button class="btn-voice-lg" id="incomeVoiceBtn" onclick="startVoiceLog('income')"
+            title="Log by voice" data-state="idle">
+            <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+        <div id="incomeVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
+        <!-- AI Badge — redesigned -->
+        <div id="incomeAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group" style="margin-bottom:.6rem">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="incomeCategory" onchange="aiCategorySelectionChanged('income')">
+          <option value="">Select category</option>
+        </select>
+      </div>
+
+      <!-- Notes — single line to save space -->
+      <div class="form-group" style="margin-bottom:.6rem">
+        <label class="form-label">Notes <span style="color:#475569;font-weight:400">(optional)</span></label>
+        <input type="text" class="form-input" id="incomeNotes"
+          placeholder="e.g. Bonus from Q3, splitting with Raj…" />
+      </div>
+
+      <!-- Recurring -->
+      <div class="recurring-toggle" style="margin-bottom:0">
+        <input type="checkbox" id="incomeRecurring" onchange="toggleRecurringUI('income')" />
+        <label for="incomeRecurring">Make this recurring</label>
+      </div>
+      <div class="form-group frequency-select" id="incomeFrequencyRow" style="display:none;margin-top:.5rem;margin-bottom:0">
+        <label class="form-label">Frequency</label>
+        <select class="form-select" id="incomeFrequency">
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+
     </div>
+    <div class="modal-footer" style="padding:.75rem 1.25rem 1rem">
+      <button class="btn btn-secondary" onclick="closeModal('incomeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addIncome()">
+        <i class="fas fa-plus" style="font-size:.8rem"></i> Add Income
+      </button>
+    </div>
+  </div>
+</div>
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXPENSE MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="expenseModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Add Expense</h2>
-          <button class="close-btn" onclick="closeModal('expenseModal')">
-            &times;
-          </button>
+  <div class="modal-content add-txn-modal">
+    <div class="modal-header" style="padding:.9rem 1.25rem">
+      <h2 class="modal-title" style="display:flex;align-items:center;gap:.5rem">
+        <span style="width:28px;height:28px;border-radius:8px;background:rgba(249,115,22,0.15);
+          display:flex;align-items:center;justify-content:center">
+          <i class="fas fa-arrow-up" style="color:#f97316;font-size:.75rem"></i>
+        </span>
+        Add Expense
+      </h2>
+      <button class="close-btn" onclick="closeModal('expenseModal')">&times;</button>
+    </div>
+    <div class="modal-body add-txn-body">
+
+      <!-- Account row -->
+      <div class="add-txn-account-row">
+        <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.78rem;flex-shrink:0"></i>
+        <span id="expenseAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
+        <button type="button" onclick="openAddTargetPicker('expense','modal')" class="add-txn-switch-btn">Switch</button>
+      </div>
+
+      <!-- Amount + Date -->
+      <div class="form-row" style="gap:.6rem;margin-bottom:.6rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" class="form-input" id="expenseAmount" placeholder="0" min="1" />
         </div>
-        <div class="modal-body">
-          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;padding:.4rem .6rem;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:10px;">
-            <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
-            <span id="expenseAccountName" style="font-size:.82rem;font-weight:700;color:#e2e8f0;flex:1">This account</span>
-            <button type="button" onclick="openAddTargetPicker('expense', 'modal')" style="font-size:.7rem;padding:.22rem .55rem;border-radius:6px;background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.2);color:#94a3b8;cursor:pointer;white-space:nowrap;">Switch</button>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Amount (₹)</label>
-              <input
-                type="number"
-                class="form-input"
-                id="expenseAmount"
-                placeholder="Enter amount"
-                min="1"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-input" id="expenseDate" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Description (optional)</label>
-            <div style="display:flex;gap:.5rem;align-items:center">
-              <input
-                type="text"
-                class="form-input"
-                id="expenseDesc"
-                placeholder="e.g. Starbucks coffee, apple, Uber ride"
-                oninput="aiAutoCategory('expense', this.value)"
-                style="flex:1"
-              />
-              <button class="btn-voice-lg" id="expenseVoiceBtn" onclick="startVoiceLog('expense')" title="Log by voice" data-state="idle">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-            <div id="expenseVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
-            <div class="form-hint">AI can suggest a category from what you type. It will only apply if you confirm.</div>
-            <div id="expenseAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Category</label>
-            <select class="form-select" id="expenseCategory" onchange="aiCategorySelectionChanged('expense')">
-              <option value="">Select category</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Notes (optional)</label>
-            <textarea
-              class="form-input"
-              id="expenseNotes"
-              placeholder="e.g. Splitting with Raj, receipt #2847…"
-              rows="2"
-              style="resize: vertical; min-height: 52px"
-            ></textarea>
-          </div>
-          <div class="recurring-toggle">
-            <input
-              type="checkbox"
-              id="expenseRecurring"
-              onchange="toggleRecurringUI('expense')"
-            />
-            <label for="expenseRecurring">Make this recurring</label>
-          </div>
-          <div
-            class="form-group frequency-select"
-            id="expenseFrequencyRow"
-            style="display: none"
-          >
-            <label class="form-label">Frequency</label>
-            <select class="form-select" id="expenseFrequency">
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            onclick="closeModal('expenseModal')"
-          >
-            Cancel
-          </button>
-          <button class="btn btn-primary" onclick="addExpense()">
-            Add Expense
-          </button>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="expenseDate" />
         </div>
       </div>
+
+      <!-- Description + voice -->
+      <div class="form-group" style="margin-bottom:.5rem">
+        <label class="form-label">Description <span style="color:#475569;font-weight:400">(optional)</span></label>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input type="text" class="form-input" id="expenseDesc"
+            placeholder="e.g. Starbucks, Uber ride, Netflix"
+            oninput="aiAutoCategory('expense', this.value)" style="flex:1" />
+          <button class="btn-voice-lg" id="expenseVoiceBtn" onclick="startVoiceLog('expense')"
+            title="Log by voice" data-state="idle">
+            <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+        <div id="expenseVoiceStatus" class="voice-status" data-state="idle" aria-live="polite" style="display:none"></div>
+        <!-- AI Badge -->
+        <div id="expenseAiBadge" class="ai-cat-badge" style="display:none" aria-live="polite"></div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group" style="margin-bottom:.6rem">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="expenseCategory" onchange="aiCategorySelectionChanged('expense')">
+          <option value="">Select category</option>
+        </select>
+      </div>
+
+      <!-- Notes — single line -->
+      <div class="form-group" style="margin-bottom:.6rem">
+        <label class="form-label">Notes <span style="color:#475569;font-weight:400">(optional)</span></label>
+        <input type="text" class="form-input" id="expenseNotes"
+          placeholder="e.g. Receipt #2847, splitting with Raj…" />
+      </div>
+
+      <!-- Recurring -->
+      <div class="recurring-toggle" style="margin-bottom:0">
+        <input type="checkbox" id="expenseRecurring" onchange="toggleRecurringUI('expense')" />
+        <label for="expenseRecurring">Make this recurring</label>
+      </div>
+      <div class="form-group frequency-select" id="expenseFrequencyRow" style="display:none;margin-top:.5rem;margin-bottom:0">
+        <label class="form-label">Frequency</label>
+        <select class="form-select" id="expenseFrequency">
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+
     </div>
+    <div class="modal-footer" style="padding:.75rem 1.25rem 1rem">
+      <button class="btn btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addExpense()" style="background:linear-gradient(135deg,#f97316,#ea580c)">
+        <i class="fas fa-plus" style="font-size:.8rem"></i> Add Expense
+      </button>
+    </div>
+  </div>
+</div>
 
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EDIT MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="editModal" class="modal">
