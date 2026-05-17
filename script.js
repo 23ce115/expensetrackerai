@@ -3260,10 +3260,6 @@ async function doSignUp() {
     if (error) throw error;
 
     if (data.user && !data.session) {
-      // FIX 4: Supabase silently returns a non-null user with an EMPTY
-      // identities array when the email is already registered and email
-      // confirmation is enabled. This is their documented "stealth dupe"
-      // behaviour — detect it and show a clear error immediately.
       if (
         Array.isArray(data.user.identities) &&
         data.user.identities.length === 0
@@ -3279,33 +3275,16 @@ async function doSignUp() {
         return;
       }
 
-      // Store pending credentials so we can sign in after confirmation
       localStorage.setItem(
         "bl_pending_signup",
         JSON.stringify({ email, name }),
       );
-      // Email confirmation required
-      document.getElementById("authScreen").innerHTML = `
-        <div class="auth-card">
-          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
-          <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
-          <div style="text-align:center;padding:2rem 1.5rem">
-            <i class="fas fa-envelope-open-text" style="font-size:2.5rem;color:#3b82f6;margin-bottom:1rem;display:block"></i>
-            <p style="font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:.6rem">Check your email</p>
-            <p style="color:#94a3b8;font-size:.88rem;line-height:1.6">
-              We sent a confirmation link to <strong style="color:#e2e8f0">${email}</strong>.<br>
-              Open it on <strong style="color:#e2e8f0">this device</strong>, then come back and log in.
-            </p>
-            <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.75rem">
-              <button class="btn btn-primary" style="justify-content:center" onclick="switchToLoginAfterConfirm('${email}')">
-                <i class="fas fa-sign-in-alt"></i> Go to Login
-              </button>
-              <button class="btn btn-secondary" onclick="switchToLoginAfterConfirm('${email}')">
-                I've confirmed — let me log in
-              </button>
-            </div>
-          </div>
-        </div>`;
+
+      // ── Close the signup popup cleanly first ──
+      closeAuthPopup("signup");
+
+      // ── Show the dedicated verification screen ──
+      showVerifyEmailScreen(email);
       return;
     }
 
@@ -3342,9 +3321,87 @@ async function doSignUp() {
   }
 }
 
+function showVerifyEmailScreen(email) {
+  const screen = document.getElementById("verifyEmailScreen");
+  if (!screen) return;
+  document.getElementById("verifyEmailAddr").textContent = email;
+  document.getElementById("verifyResendMsg").textContent = "";
+  screen._email = email;
+  screen.style.display = "flex";
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      screen.style.opacity = "1";
+    });
+  });
+}
+
+function hideVerifyEmailScreen() {
+  const screen = document.getElementById("verifyEmailScreen");
+  if (!screen) return;
+  screen.style.opacity = "0";
+  setTimeout(() => {
+    screen.style.display = "none";
+  }, 350);
+}
+
+function showLoginFromVerify() {
+  hideVerifyEmailScreen();
+  const email = document.getElementById("verifyEmailScreen")._email || "";
+  setTimeout(() => {
+    openAuthPopup("login");
+    if (email) document.getElementById("loginEmail").value = email;
+  }, 200);
+}
+
+function showSignupFromVerify() {
+  hideVerifyEmailScreen();
+  setTimeout(() => {
+    openAuthPopup("signup");
+  }, 200);
+}
+
+async function resendVerifyEmail() {
+  const screen = document.getElementById("verifyEmailScreen");
+  const email = screen?._email || "";
+  const btn = document.getElementById("verifyResendBtn");
+  const msg = document.getElementById("verifyResendMsg");
+  if (!email) return;
+
+  btn.disabled = true;
+  btn.innerHTML =
+    '<i class="fas fa-spinner fa-spin" style="margin-right:.4rem"></i>Sending…';
+  msg.textContent = "";
+
+  try {
+    const client = getBLClient();
+    const { error } = await client.auth.resend({ type: "signup", email });
+    if (error) throw error;
+    msg.textContent = "✓ Email sent! Check your inbox.";
+    msg.style.color = "#10b981";
+    // Cooldown: disable button for 60s
+    let secs = 60;
+    const interval = setInterval(() => {
+      secs--;
+      btn.innerHTML = `<i class="fas fa-redo" style="margin-right:.4rem"></i>Resend (${secs}s)`;
+      if (secs <= 0) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.innerHTML =
+          '<i class="fas fa-redo" style="margin-right:.4rem"></i>Resend email';
+      }
+    }, 1000);
+  } catch (e) {
+    msg.textContent = e.message || "Failed to resend. Try again.";
+    msg.style.color = "#f87171";
+    btn.disabled = false;
+    btn.innerHTML =
+      '<i class="fas fa-redo" style="margin-right:.4rem"></i>Resend email';
+  }
+}
+
 async function switchToLoginAfterConfirm(email) {
-  // Rebuild the auth screen and switch to login tab with email pre-filled
-  location.reload();
+  showLoginFromVerify();
 }
 
 // Pre-fill handled inside initApp
