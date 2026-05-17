@@ -10606,3 +10606,145 @@ mark.txn-page-hl {
 /* ═══════════════════════════════════════════════════════════════
    END OF POLISH PACK
    ═══════════════════════════════════════════════════════════════ */
+
+/* ── Add Transaction Modal — compact, no-scroll ────────────── */
+.add-txn-modal {
+  max-height: fit-content !important; /* never taller than content */
+  overflow-y: visible !important; /* no scroll on the card */
+}
+
+.add-txn-body {
+  padding: 0.75rem 1.25rem 0.5rem;
+}
+
+.add-txn-account-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(96, 165, 250, 0.06);
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  border-radius: 9px;
+}
+
+.add-txn-switch-btn {
+  font-size: 0.68rem;
+  padding: 0.18rem 0.48rem;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.add-txn-switch-btn:hover {
+  background: rgba(148, 163, 184, 0.18);
+}
+
+/* ── AI Suggestion Badge — redesigned ─────────────────────── */
+.ai-cat-badge {
+  margin-top: 0.4rem;
+  padding: 0.3rem 0.55rem 0.3rem 0.45rem;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  font-size: 0.73rem;
+  color: #c4b5fd;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  animation: ai-badge-in 0.2s ease;
+}
+
+@keyframes ai-badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-cat-badge .ai-badge-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: rgba(139, 92, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.65rem;
+}
+
+.ai-cat-badge .ai-badge-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-cat-badge .ai-badge-text strong {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.ai-cat-badge .ai-badge-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.ai-cat-badge .ai-badge-status.pending {
+  color: #f59e0b;
+}
+
+.ai-cat-badge .ai-badge-status.applied {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.ai-cat-apply {
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  background: rgba(139, 92, 246, 0.25);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c4b5fd;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.ai-cat-apply:hover {
+  background: rgba(139, 92, 246, 0.38);
+}
+
+.ai-cat-dismiss {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.65rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+.ai-cat-dismiss:hover {
+  color: #94a3b8;
+}
+
+/* remove old form-hint (no longer needed) */
+.form-hint {
+  display: none !important;
+}
