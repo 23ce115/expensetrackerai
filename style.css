@@ -6,6 +6,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bl-verify-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(99, 102, 241, 0.45);
+  }
+}
+
 /* ── Reset ──────────────────────────────────────────────────── */
 *,
 *::before,
