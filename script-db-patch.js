@@ -2,29 +2,15 @@
    script-db-patch.js  — Supabase sync layer for BlueLedger core
    ───────────────────────────────────────────────────────────────
    Load AFTER script.js AND blueledger-db.js.
-
-   What this does:
-   ───────────────
-   1. After every card add/update → mirrors to Supabase `cards`
-   2. After every transaction add/delete → mirrors to Supabase `transactions`
-   3. After every budget save → mirrors to Supabase `budgets`
-   4. On login → loads cloud data into in-memory arrays
-   5. Exports `BL_CLOUD.*` helpers for the rest of the app
-
-   What this does NOT do:
-   ──────────────────────
-   • Does NOT remove the encrypted localStorage vault — it remains
-     as the auth-gate (PIN screen) and offline fallback.
-   • Does NOT change any UI or DOM logic.
-   • Does NOT touch passwords — Supabase Auth owns that entirely.
    ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
 (function () {
-  /* ── Card UUID map: localCardIdx → Supabase card row id ──── */
-  /* We keep this so we can associate transactions with cloud card ids */
-  const _cardUuidMap = new Map(); /* cardIdx → supabase uuid */
+  const _cardUuidMap = new Map();
+
+  /* ── guard: prevent loadCloudData re-entering while running ── */
+  let _cloudLoadInProgress = false;
 
   function _db() {
     return window.BL_DB || null;
@@ -32,25 +18,27 @@
 
   /* ══════════════════════════════════════════════════════════
      LOAD CLOUD DATA INTO MEMORY
-     Called after successful login / auth state change.
      ══════════════════════════════════════════════════════════ */
 
   async function loadCloudData() {
     const db = _db();
     if (!db) return;
+    if (_cloudLoadInProgress) return; /* ← prevent re-entrant calls */
+    _cloudLoadInProgress = true;
 
     const uid = await db.getCurrentUserId();
-    if (!uid) return;
+    if (!uid) {
+      _cloudLoadInProgress = false;
+      return;
+    }
 
     try {
-      /* 1. Load cards from cloud */
       const cloudCards = await db.getCards();
       if (!Array.isArray(cloudCards) || cloudCards.length === 0) {
-        /* No cloud data yet — nothing to restore */
+        _cloudLoadInProgress = false;
         return;
       }
 
-      /* 2. For each cloud card, load its transactions */
       const builtCards = [];
       for (let i = 0; i < cloudCards.length; i++) {
         const cc = cloudCards[i];
@@ -60,7 +48,6 @@
         const now = new Date().toISOString().slice(0, 7);
         const budget = await db.getBudget(cc.id, now);
 
-        /* Re-hydrate into the legacy in-memory card shape */
         builtCards.push({
           userData: {
             name: cc.nickname || "",
@@ -78,13 +65,14 @@
         });
       }
 
-      if (builtCards.length === 0) return;
+      if (builtCards.length === 0) {
+        _cloudLoadInProgress = false;
+        return;
+      }
 
-      /* 3. Overwrite in-memory state — this is the cross-device sync moment */
       if (typeof applyVaultPayload === "function") {
         applyVaultPayload({ cards: builtCards, activeCardIdx: 0 });
       } else {
-        /* Fallback: set globals directly */
         window.cards = builtCards;
         window.activeCardIdx = 0;
         if (typeof loadActiveCard === "function") loadActiveCard();
@@ -94,26 +82,33 @@
       if (typeof renderCardSwitcher === "function") renderCardSwitcher();
     } catch (err) {
       console.error("[SCRIPT-patch] loadCloudData error:", err.message);
+    } finally {
+      _cloudLoadInProgress = false;
     }
   }
 
-  /* Map Supabase transaction row → legacy local transaction shape */
+  /* ── Map Supabase row → local transaction shape ───────────── */
   function _cloudTxnToLocal(t) {
     const isExpense = t.transaction_type === "expense";
     return {
       id: t.id,
-      type: t.transaction_type,
-      amount: isExpense ? -Math.abs(t.amount) : Math.abs(t.amount), // ← correct sign
+      type: t.transaction_type /* "income" | "expense" */,
+      amount: isExpense
+        ? -Math.abs(t.amount)
+        : Math.abs(t.amount) /* correct sign */,
       category: t.category,
       desc: t.note,
-      description: t.note, // ← script.js uses both .desc and .description
+      description: t.note /* script.js uses both field names */,
       paymentMethod: t.payment_method,
       date: t.txn_date,
       _cloudId: t.id,
     };
   }
+
   /* ══════════════════════════════════════════════════════════
-     PUSH CARD TO CLOUD  (called after addCard / updateCard)
+     PUSH CARD TO CLOUD
+     Only called explicitly (addCard / card settings save).
+     NOT called on every saveToStorage.
      ══════════════════════════════════════════════════════════ */
 
   async function pushCard(cardIdx) {
@@ -143,9 +138,9 @@
         try {
           row = await db.updateCard(existingId, payload);
         } catch (updateErr) {
-          // 406 = no row found (stale UUID) — fall through to insert
+          /* 406 = stale UUID, row deleted — insert fresh */
           console.warn(
-            "[SCRIPT-patch] updateCard failed, inserting instead:",
+            "[SCRIPT-patch] updateCard 406, reinserting:",
             updateErr.message,
           );
           _cardUuidMap.delete(cardIdx);
@@ -171,11 +166,6 @@
      PUSH TRANSACTION TO CLOUD
      ══════════════════════════════════════════════════════════ */
 
-  /**
-   * Call this after a new transaction is pushed into the local `transactions` array.
-   * @param {Object} localTxn  — the local transaction object
-   * @param {number} cardIdx   — current activeCardIdx
-   */
   async function pushTransaction(localTxn, cardIdx) {
     const db = _db();
     if (!db) return;
@@ -183,34 +173,29 @@
     let cardId =
       _cardUuidMap.get(cardIdx) || window.cards?.[cardIdx]?.userData?._cloudId;
 
-    /* If card not yet in cloud, push it first */
     if (!cardId) {
       await pushCard(cardIdx);
       cardId = _cardUuidMap.get(cardIdx);
     }
-    if (!cardId) return; /* Still no cloud card — skip */
+    if (!cardId) return;
 
     try {
       const row = await db.addTransaction({
         card_id: cardId,
         amount: Math.abs(localTxn.amount || 0),
-        transaction_type: localTxn.type === "income" ? "income" : "expense",
+        transaction_type:
+          localTxn.type === "income" ? "income" : "expense" /* ← explicit */,
         category: localTxn.category || "Other",
-        note: localTxn.desc || localTxn.note || "",
+        note: localTxn.desc || localTxn.description || localTxn.note || "",
         payment_method: localTxn.paymentMethod || "",
         txn_date: localTxn.date || new Date().toISOString().slice(0, 10),
       });
-      /* Attach cloud id to the local object for future reference */
       if (row?.id && localTxn) localTxn._cloudId = row.id;
     } catch (err) {
       console.error("[SCRIPT-patch] pushTransaction error:", err.message);
     }
   }
 
-  /**
-   * Call this when a transaction is deleted locally.
-   * @param {string} cloudId  — txn._cloudId (Supabase UUID)
-   */
   async function deleteTransaction(cloudId) {
     const db = _db();
     if (!db || !cloudId) return;
@@ -249,53 +234,36 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PATCH saveToStorage  (the core save function in script.js)
+     PATCH saveToStorage
+     ── IMPORTANT: Do NOT call pushCard here. ──
+     pushCard → Supabase card update → realtime fires →
+     loadCloudData → overwrites freshly-added local transaction
+     with stale cloud data. saveToStorage is called on every
+     transaction add; card metadata rarely changes.
+     Call BL_CLOUD.pushCard() explicitly only when card details
+     are actually edited (addCard, settings save).
      ══════════════════════════════════════════════════════════ */
 
   const _origSaveToStorage = window.saveToStorage;
   window.saveToStorage = function (options = {}) {
-    /* Always call the original (keeps encrypted vault + cloud sync intact) */
     if (typeof _origSaveToStorage === "function") _origSaveToStorage(options);
-
-    /* Mirror to Supabase asynchronously (fire-and-forget) */
-    const idx =
-      typeof window.activeCardIdx === "number" ? window.activeCardIdx : 0;
-    pushCard(idx).catch(() => {});
+    /* No pushCard here — intentional. See comment above. */
   };
 
   /* ══════════════════════════════════════════════════════════
-     PATCH addTransaction / deleteTransaction in script.js
+     PUBLIC HOOKS  (called from script.js)
      ══════════════════════════════════════════════════════════ */
 
-  /* We intercept the global addIncome / addExpense flow by wrapping
-     the final notify call site.  Because script.js constructs the txn
-     object inline, the cleanest approach is to wrap the global
-     `saveToStorage` (done above) AND expose a hook the app calls. */
-
-  /**
-   * Call this from script.js right after pushing a new txn into `transactions[]`.
-   * Example (in script.js addIncome / addExpense):
-   *   transactions.unshift(txn);
-   *   BL_CLOUD.onTransactionAdded(txn);   ← add this line
-   */
   function onTransactionAdded(txn) {
     const idx =
       typeof window.activeCardIdx === "number" ? window.activeCardIdx : 0;
     pushTransaction(txn, idx).catch(() => {});
   }
 
-  /**
-   * Call this from script.js right before splicing a txn out of `transactions[]`.
-   *   BL_CLOUD.onTransactionDeleted(txn._cloudId);   ← add this line
-   */
   function onTransactionDeleted(cloudId) {
     deleteTransaction(cloudId).catch(() => {});
   }
 
-  /**
-   * Call this after saving budgets (saveBudgets / budget modal close).
-   *   BL_CLOUD.onBudgetSaved();   ← add this line
-   */
   function onBudgetSaved() {
     const idx =
       typeof window.activeCardIdx === "number" ? window.activeCardIdx : 0;
@@ -304,8 +272,9 @@
 
   /* ══════════════════════════════════════════════════════════
      REAL-TIME SUBSCRIPTION
-     Subscribe after cloud data is loaded so we receive updates
-     from other devices instantly.
+     Only reload on DELETE / UPDATE from other devices.
+     INSERT events are our own writes — skip them to avoid
+     overwriting fresh local state with stale cloud data.
      ══════════════════════════════════════════════════════════ */
 
   async function _subscribeRealtime(cardIdx) {
@@ -316,19 +285,17 @@
     if (!cardId) return;
 
     await db.subscribeToTransactions(cardId, async (payload) => {
-      // Skip INSERT events — we just added it locally, no need to reload
-      if (payload.eventType === "INSERT") return;
+      if (payload.eventType === "INSERT") return; /* skip own writes */
       console.info(
         "[SCRIPT-patch] Realtime change (external):",
         payload.eventType,
       );
       await loadCloudData();
-      await loadCloudData();
     });
   }
 
   /* ══════════════════════════════════════════════════════════
-     AUTO-INIT  (fires after Supabase auth is confirmed)
+     AUTO-INIT
      ══════════════════════════════════════════════════════════ */
 
   async function _init() {
@@ -344,7 +311,6 @@
       await _subscribeRealtime(0);
     }
 
-    /* Watch for future sign-ins */
     const client = db.getClient();
     if (client) {
       client.auth.onAuthStateChange(async (event) => {
