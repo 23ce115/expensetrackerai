@@ -8681,14 +8681,42 @@ loadGlassOpacity();
       hash.includes("type=recovery");
 
     if (isAuthRedirect) {
-      await new Promise((r) => setTimeout(r, 800));
-      const { data: fresh } = await client.auth.getSession();
+      // Show a loading state immediately so user doesn't see black screen
+      document.getElementById("authScreen").style.display = "flex";
+      document.getElementById("authScreen").innerHTML = `
+        <div class="auth-card" style="text-align:center;padding:2.5rem 2rem">
+          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" /></div>
+          <div class="auth-brand" style="margin:.75rem 0">Blue<span style="color:#3b82f6">Ledger</span></div>
+          <div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(99,102,241,0.3);
+            border-top-color:#818cf8;animation:spin 0.8s linear infinite;margin:1.5rem auto"></div>
+          <p style="color:#94a3b8;font-size:.88rem;margin-top:1rem">Verifying your email…</p>
+        </div>`;
+
+      // Wait for Supabase to finish the PKCE/token exchange (detectSessionInUrl handles it)
+      await new Promise((r) => setTimeout(r, 1500));
+
+      // Try getSession first; fall back to onAuthStateChange event
+      let fresh = (await client.auth.getSession()).data;
+
+      // If still no session, wait a bit more (slow connection)
+      if (!fresh?.session) {
+        await new Promise((r) => setTimeout(r, 1500));
+        fresh = (await client.auth.getSession()).data;
+      }
+
+      // Only clear hash AFTER session is confirmed
       history.replaceState(null, "", window.location.pathname);
 
       if (fresh?.session) {
         const userEmail = fresh.session.user?.email || "";
+        const userName =
+          fresh.session.user?.user_metadata?.name ||
+          fresh.session.user?.user_metadata?.full_name ||
+          "";
         const provider = fresh.session.user?.app_metadata?.provider;
         const isRecovery = hash.includes("type=recovery");
+
+        window._blUserMeta = fresh.session.user?.user_metadata || {};
 
         // Google OAuth redirect
         if (provider === "google" && !isRecovery) {
@@ -8697,7 +8725,6 @@ loadGlassOpacity();
         }
 
         if (isRecovery) {
-          // Password reset — show reset password UI
           document.getElementById("authScreen").style.display = "flex";
           document.getElementById("authScreen").innerHTML = `
             <div class="auth-card">
@@ -8725,45 +8752,53 @@ loadGlassOpacity();
           return;
         }
 
-        // Email confirmed
+        // ── Email verified successfully ──
         const pending = JSON.parse(
           localStorage.getItem("bl_pending_signup") || "null",
         );
-
         if (pending?.email) {
-          // We have their credentials — go straight to card setup
           localStorage.removeItem("bl_pending_signup");
           _pendingCardSetup = {
-            name: pending.name || fresh.session.user?.user_metadata?.name || "",
+            name: pending.name || userName,
             email: pending.email,
             password: "",
             userId: fresh.session.user.id,
           };
-          hideAuthScreen();
+          document.getElementById("authScreen").style.display = "none";
           _openCardSetupModal();
           return;
         }
 
-        // No pending credentials — show login prompt
+        // Show verified screen with next steps
         document.getElementById("authScreen").style.display = "flex";
         document.getElementById("authScreen").innerHTML = `
-          <div class="auth-card">
-            <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
-            <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
-            <div style="text-align:center;padding:2rem 1.5rem">
+          <div class="auth-card" style="text-align:center">
+            <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" /></div>
+            <div class="auth-brand" style="margin:.75rem 0 .25rem">Blue<span style="color:#3b82f6">Ledger</span></div>
+            <div style="padding:1.5rem 1rem 2rem">
               <div style="width:72px;height:72px;border-radius:50%;
-                background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(52,211,153,0.1));
-                border:2px solid rgba(16,185,129,0.3);
+                background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(52,211,153,0.08));
+                border:2px solid rgba(16,185,129,0.35);
                 display:flex;align-items:center;justify-content:center;
                 margin:0 auto 1.25rem;font-size:2rem;
-                box-shadow:0 0 40px rgba(16,185,129,0.2)">✅</div>
-              <p style="font-size:1.1rem;font-weight:700;color:#10b981;margin-bottom:.6rem">
+                box-shadow:0 0 40px rgba(16,185,129,0.25)">✅</div>
+              <p style="font-size:1.2rem;font-weight:700;color:#10b981;margin-bottom:.5rem">
                 Email Verified!
               </p>
               <p style="color:#94a3b8;font-size:.88rem;line-height:1.7;margin-bottom:1.5rem">
-                Your BlueLedger account is confirmed.<br>Log in to get started.
+                ${userName ? `Welcome, <strong style="color:#e2e8f0">${userName}</strong>! Your` : "Your"} BlueLedger account is confirmed.<br>
+                Log in with your password to access your dashboard.
               </p>
-              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem"
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+                border-radius:12px;padding:.9rem 1rem;margin-bottom:1.25rem;text-align:left">
+                <div style="font-size:.72rem;color:#64748b;font-weight:600;letter-spacing:.06em;margin-bottom:.6rem">NEXT STEPS</div>
+                <div style="font-size:.82rem;color:#cbd5e1;display:flex;flex-direction:column;gap:.5rem">
+                  <div>✓ &nbsp;Email confirmed</div>
+                  <div style="color:#818cf8">→ &nbsp;Log in with your password</div>
+                  <div style="opacity:.5">○ &nbsp;Set up your first card</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:.85rem;border-radius:12px"
                 onclick="_goToLoginAfterConfirm('${userEmail}')">
                 <i class="fas fa-sign-in-alt"></i> Log In Now
               </button>
@@ -8771,8 +8806,25 @@ loadGlassOpacity();
           </div>`;
         return;
       }
-    }
 
+      // Session still not found after waiting — show fallback
+      document.getElementById("authScreen").style.display = "flex";
+      document.getElementById("authScreen").innerHTML = `
+        <div class="auth-card" style="text-align:center;padding:2rem 1.5rem">
+          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
+          <div class="auth-brand" style="margin:.75rem 0">Blue<span style="color:#3b82f6">Ledger</span></div>
+          <div style="font-size:2rem;margin:1.25rem 0">📧</div>
+          <p style="font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:.5rem">Check your email</p>
+          <p style="color:#94a3b8;font-size:.85rem;line-height:1.6;margin-bottom:1.5rem">
+            If you clicked a verification link, your email may already be confirmed.<br>
+            Please log in to continue.
+          </p>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="_goToLoginAfterConfirm('')">
+            <i class="fas fa-sign-in-alt"></i> Go to Login
+          </button>
+        </div>`;
+      return;
+    }
     const { data: sessionData } = await client.auth.getSession();
     const hasSession = !!sessionData?.session;
 
