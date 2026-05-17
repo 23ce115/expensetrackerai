@@ -921,10 +921,9 @@ function _showAiBadge(type, match, desc, isFinal) {
   const selectEl = document.getElementById(`${type}Category`);
   if (!badgeEl || !selectEl) return;
 
-  // Don't overwrite a user-dismissed badge for the same description
   if (_aiCatDismissed[type] && badgeEl.dataset.lastDesc === desc) return;
 
-  // Auto-apply only if no category is selected yet
+  // Auto-apply if no category selected yet
   if (!selectEl.value || selectEl.value === "") {
     selectEl.value = match;
   }
@@ -933,16 +932,22 @@ function _showAiBadge(type, match, desc, isFinal) {
   badgeEl.dataset.appliedMatch = isApplied ? match : "";
   badgeEl.dataset.lastDesc = desc;
 
-  const confidenceIcon = isFinal
-    ? `<i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>`
-    : `<i class="fas fa-bolt" style="color:#f59e0b;flex-shrink:0" title="Quick guess — AI confirming…"></i>`;
+  const statusHtml = isFinal
+    ? isApplied
+      ? `<span class="ai-badge-status applied"><i class="fas fa-check"></i> Applied</span>`
+      : `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>`
+    : `<span class="ai-badge-status pending"><i class="fas fa-circle-notch fa-spin"></i> Checking</span>`;
 
   badgeEl.style.display = "flex";
   badgeEl.innerHTML = `
-    ${confidenceIcon}
-    <span>AI suggests: <strong style="color:#e2e8f0">${match}</strong>${isFinal ? "" : " <span style='color:#64748b;font-size:.72rem'>(confirming…)</span>"}</span>
-    ${!isApplied ? `<button class="ai-cat-apply" onclick="aiApplyCategory('${type}','${match}')">Apply</button>` : `<span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>`}
-    <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+    <span class="ai-badge-icon">✦</span>
+    <span class="ai-badge-text">
+      <strong>${match}</strong> suggested
+    </span>
+    ${statusHtml}
+    <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss">
+      <i class="fas fa-times"></i>
+    </button>
   `;
 }
 
@@ -953,10 +958,12 @@ function aiApplyCategory(type, category) {
   if (badgeEl) {
     badgeEl.dataset.appliedMatch = category;
     badgeEl.innerHTML = `
-      <i class="fas fa-wand-magic-sparkles" style="color:#a78bfa;flex-shrink:0"></i>
-      <span>AI suggests: <strong style="color:#e2e8f0">${category}</strong></span>
-      <span class="ai-cat-applied"><i class="fas fa-check"></i> Applied</span>
-      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss"><i class="fas fa-times"></i></button>
+      <span class="ai-badge-icon">✦</span>
+      <span class="ai-badge-text"><strong>${category}</strong> suggested</span>
+      <span class="ai-badge-status applied"><i class="fas fa-check"></i> Applied</span>
+      <button class="ai-cat-dismiss" onclick="aiDismissBadge('${type}')" title="Dismiss">
+        <i class="fas fa-times"></i>
+      </button>
     `;
   }
 }
