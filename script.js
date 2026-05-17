@@ -8680,71 +8680,79 @@ loadGlassOpacity();
       hash.includes("type=signup") ||
       hash.includes("type=recovery");
 
-    if (isAuthRedirect) {
-      // Show a loading state immediately so user doesn't see black screen
+   if (isAuthRedirect) {
+      // Show spinner immediately — never show black screen
       document.getElementById("authScreen").style.display = "flex";
       document.getElementById("authScreen").innerHTML = `
         <div class="auth-card" style="text-align:center;padding:2.5rem 2rem">
-          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" /></div>
+          <div class="auth-logo">
+            <img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" />
+          </div>
           <div class="auth-brand" style="margin:.75rem 0">Blue<span style="color:#3b82f6">Ledger</span></div>
-          <div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(99,102,241,0.3);
-            border-top-color:#818cf8;animation:spin 0.8s linear infinite;margin:1.5rem auto"></div>
-          <p style="color:#94a3b8;font-size:.88rem;margin-top:1rem">Verifying your email…</p>
+          <div style="width:44px;height:44px;border-radius:50%;
+            border:3px solid rgba(99,102,241,0.2);border-top-color:#818cf8;
+            animation:spin 0.8s linear infinite;margin:1.75rem auto .75rem"></div>
+          <p style="color:#64748b;font-size:.85rem">Verifying your account…</p>
         </div>`;
 
-      // Wait for Supabase to finish the PKCE/token exchange (detectSessionInUrl handles it)
-      await new Promise((r) => setTimeout(r, 1500));
+      // Supabase v2 processes the hash token via onAuthStateChange, NOT getSession().
+      // We must wait for the SIGNED_IN event which fires after token exchange completes.
+      const session = await new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(null), 8000); // 8s max wait
+        const { data: { subscription } } = client.auth.onAuthStateChange((event, sess) => {
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            clearTimeout(timeout);
+            subscription.unsubscribe();
+            resolve(sess);
+          }
+        });
+        // Also try getSession in case it's already exchanged
+        client.auth.getSession().then(({ data }) => {
+          if (data?.session) {
+            clearTimeout(timeout);
+            subscription.unsubscribe();
+            resolve(data.session);
+          }
+        });
+      });
 
-      // Try getSession first; fall back to onAuthStateChange event
-      let fresh = (await client.auth.getSession()).data;
-
-      // If still no session, wait a bit more (slow connection)
-      if (!fresh?.session) {
-        await new Promise((r) => setTimeout(r, 1500));
-        fresh = (await client.auth.getSession()).data;
-      }
-
-      // Only clear hash AFTER session is confirmed
+      // Clear hash only after token is processed
       history.replaceState(null, "", window.location.pathname);
 
-      if (fresh?.session) {
-        const userEmail = fresh.session.user?.email || "";
-        const userName =
-          fresh.session.user?.user_metadata?.name ||
-          fresh.session.user?.user_metadata?.full_name ||
-          "";
-        const provider = fresh.session.user?.app_metadata?.provider;
+      if (session) {
+        const userEmail = session.user?.email || "";
+        const userName = session.user?.user_metadata?.name ||
+                         session.user?.user_metadata?.full_name || "";
+        const provider = session.user?.app_metadata?.provider;
         const isRecovery = hash.includes("type=recovery");
 
-        window._blUserMeta = fresh.session.user?.user_metadata || {};
+        window._blUserMeta = session.user?.user_metadata || {};
 
-        // Google OAuth redirect
         if (provider === "google" && !isRecovery) {
-          await _unlockGoogleUser(fresh.session);
+          await _unlockGoogleUser(session);
           return;
         }
 
         if (isRecovery) {
-          document.getElementById("authScreen").style.display = "flex";
           document.getElementById("authScreen").innerHTML = `
             <div class="auth-card">
-              <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
-              <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
-              <div style="padding:1.5rem">
+              <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px" /></div>
+              <div class="auth-brand" style="margin:.5rem 0">Blue<span style="color:#3b82f6">Ledger</span></div>
+              <div style="padding:1.25rem">
                 <p style="font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:1rem;text-align:center">
                   <i class="fas fa-key" style="color:#f59e0b;margin-right:.4rem"></i>Set New Password
                 </p>
                 <div class="form-group">
-                  <label class="form-label">New Password <span style="color:#64748b;font-weight:400">(min 8 characters)</span></label>
+                  <label class="form-label">New Password <span style="color:#64748b;font-weight:400">(min 8 chars)</span></label>
                   <input type="password" class="form-input" id="resetNewPassword" placeholder="New password" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Confirm New Password</label>
+                  <label class="form-label">Confirm Password</label>
                   <input type="password" class="form-input" id="resetNewPassword2" placeholder="Repeat password"
                     onkeydown="if(event.key==='Enter') doPasswordReset()" />
                 </div>
                 <div class="auth-error" id="resetError"></div>
-                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doPasswordReset()">
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.75rem" onclick="doPasswordReset()">
                   <i class="fas fa-check"></i> Set New Password
                 </button>
               </div>
@@ -8752,53 +8760,47 @@ loadGlassOpacity();
           return;
         }
 
-        // ── Email verified successfully ──
-        const pending = JSON.parse(
-          localStorage.getItem("bl_pending_signup") || "null",
-        );
+        // ── Email verified ──
+        const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
         if (pending?.email) {
           localStorage.removeItem("bl_pending_signup");
           _pendingCardSetup = {
             name: pending.name || userName,
             email: pending.email,
             password: "",
-            userId: fresh.session.user.id,
+            userId: session.user.id,
           };
           document.getElementById("authScreen").style.display = "none";
           _openCardSetupModal();
           return;
         }
 
-        // Show verified screen with next steps
-        document.getElementById("authScreen").style.display = "flex";
         document.getElementById("authScreen").innerHTML = `
           <div class="auth-card" style="text-align:center">
             <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px;box-shadow:0 8px 32px rgba(59,130,246,0.35)" /></div>
             <div class="auth-brand" style="margin:.75rem 0 .25rem">Blue<span style="color:#3b82f6">Ledger</span></div>
-            <div style="padding:1.5rem 1rem 2rem">
-              <div style="width:72px;height:72px;border-radius:50%;
+            <div style="padding:1.25rem 1rem 2rem">
+              <div style="width:70px;height:70px;border-radius:50%;
                 background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(52,211,153,0.08));
-                border:2px solid rgba(16,185,129,0.35);
+                border:2px solid rgba(16,185,129,0.35);font-size:1.9rem;
                 display:flex;align-items:center;justify-content:center;
-                margin:0 auto 1.25rem;font-size:2rem;
-                box-shadow:0 0 40px rgba(16,185,129,0.25)">✅</div>
-              <p style="font-size:1.2rem;font-weight:700;color:#10b981;margin-bottom:.5rem">
-                Email Verified!
-              </p>
-              <p style="color:#94a3b8;font-size:.88rem;line-height:1.7;margin-bottom:1.5rem">
-                ${userName ? `Welcome, <strong style="color:#e2e8f0">${userName}</strong>! Your` : "Your"} BlueLedger account is confirmed.<br>
-                Log in with your password to access your dashboard.
+                margin:0 auto 1.1rem;box-shadow:0 0 36px rgba(16,185,129,0.22)">✅</div>
+              <p style="font-size:1.15rem;font-weight:700;color:#10b981;margin-bottom:.4rem">Email Verified!</p>
+              <p style="color:#94a3b8;font-size:.86rem;line-height:1.7;margin-bottom:1.25rem">
+                ${userName ? `Welcome, <strong style="color:#e2e8f0">${userName}</strong>!<br>` : ""}
+                Your account is confirmed. Log in to continue.
               </p>
               <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-                border-radius:12px;padding:.9rem 1rem;margin-bottom:1.25rem;text-align:left">
-                <div style="font-size:.72rem;color:#64748b;font-weight:600;letter-spacing:.06em;margin-bottom:.6rem">NEXT STEPS</div>
-                <div style="font-size:.82rem;color:#cbd5e1;display:flex;flex-direction:column;gap:.5rem">
-                  <div>✓ &nbsp;Email confirmed</div>
+                border-radius:11px;padding:.85rem 1rem;margin-bottom:1.1rem;text-align:left">
+                <div style="font-size:.7rem;color:#475569;font-weight:600;letter-spacing:.07em;margin-bottom:.55rem">NEXT STEPS</div>
+                <div style="font-size:.82rem;color:#cbd5e1;display:flex;flex-direction:column;gap:.45rem">
+                  <div style="color:#10b981">✓ &nbsp;Email verified</div>
                   <div style="color:#818cf8">→ &nbsp;Log in with your password</div>
-                  <div style="opacity:.5">○ &nbsp;Set up your first card</div>
+                  <div style="opacity:.45">○ &nbsp;Set up your first card</div>
+                  <div style="opacity:.45">○ &nbsp;Start tracking finances</div>
                 </div>
               </div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:.85rem;border-radius:12px"
+              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:.95rem;padding:.8rem;border-radius:12px"
                 onclick="_goToLoginAfterConfirm('${userEmail}')">
                 <i class="fas fa-sign-in-alt"></i> Log In Now
               </button>
@@ -8807,19 +8809,18 @@ loadGlassOpacity();
         return;
       }
 
-      // Session still not found after waiting — show fallback
-      document.getElementById("authScreen").style.display = "flex";
+      // Timed out — session not established
       document.getElementById("authScreen").innerHTML = `
         <div class="auth-card" style="text-align:center;padding:2rem 1.5rem">
-          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
+          <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" style="width:64px;height:64px;border-radius:18px" /></div>
           <div class="auth-brand" style="margin:.75rem 0">Blue<span style="color:#3b82f6">Ledger</span></div>
-          <div style="font-size:2rem;margin:1.25rem 0">📧</div>
-          <p style="font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:.5rem">Check your email</p>
-          <p style="color:#94a3b8;font-size:.85rem;line-height:1.6;margin-bottom:1.5rem">
-            If you clicked a verification link, your email may already be confirmed.<br>
-            Please log in to continue.
+          <div style="font-size:2rem;margin:1.25rem 0">⚠️</div>
+          <p style="font-size:.95rem;font-weight:600;color:#e2e8f0;margin-bottom:.5rem">Link may have expired</p>
+          <p style="color:#94a3b8;font-size:.83rem;line-height:1.65;margin-bottom:1.5rem">
+            The verification link may have expired or already been used.<br>
+            Try logging in or request a new link.
           </p>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="_goToLoginAfterConfirm('')">
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="_goToLoginAfterConfirm('')">
             <i class="fas fa-sign-in-alt"></i> Go to Login
           </button>
         </div>`;
