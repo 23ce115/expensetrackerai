@@ -5018,6 +5018,15 @@ function updateMyCardWidget() {
         var n = cards[0].userData && cards[0].userData.name;
         if (n && n.trim()) return n.trim().split(/\s+/)[0];
       }
+      // Fallback: read from Supabase session metadata (before card setup)
+      try {
+        var client = getBLClient();
+        var session = client?.auth?.getSession?.();
+        // getSession() is async — check window cache instead
+        var meta = window._blUserMeta;
+        if (meta?.name) return meta.name.trim().split(/\s+/)[0];
+        if (meta?.full_name) return meta.full_name.trim().split(/\s+/)[0];
+      } catch (e) {}
     } catch (e) {}
     return "";
   }
@@ -6382,10 +6391,10 @@ function addExpense() {
     id: Date.now(),
     date,
     category: cat,
-    amount: amt,
+    amount: -Math.abs(amt),
     description: desc,
     notes,
-    type: "income",
+    type: "expense",
   };
   transactions.unshift(txn);
   if (window.BL_CLOUD) BL_CLOUD.onTransactionAdded(txn); // ★ cloud sync
@@ -6399,7 +6408,7 @@ function addExpense() {
     recurringTemplates.push({
       id: Date.now() + 1,
       type: "expense",
-      amount: amt,
+      amount: -Math.abs(amt),
       category: cat,
       description: desc,
       frequency,
@@ -8710,16 +8719,42 @@ loadGlassOpacity();
         }
 
         // Email confirmed
+        const pending = JSON.parse(
+          localStorage.getItem("bl_pending_signup") || "null",
+        );
+
+        if (pending?.email) {
+          // We have their credentials — go straight to card setup
+          localStorage.removeItem("bl_pending_signup");
+          _pendingCardSetup = {
+            name: pending.name || fresh.session.user?.user_metadata?.name || "",
+            email: pending.email,
+            password: "",
+            userId: fresh.session.user.id,
+          };
+          hideAuthScreen();
+          _openCardSetupModal();
+          return;
+        }
+
+        // No pending credentials — show login prompt
         document.getElementById("authScreen").style.display = "flex";
         document.getElementById("authScreen").innerHTML = `
           <div class="auth-card">
             <div class="auth-logo"><img src="icon-192.png" alt="BlueLedger" /></div>
             <div class="auth-brand">Blue<span style="color:#3b82f6">Ledger</span></div>
             <div style="text-align:center;padding:2rem 1.5rem">
-              <div style="font-size:3rem;margin-bottom:1rem">✅</div>
-              <p style="font-size:1.1rem;font-weight:700;color:#10b981;margin-bottom:.6rem">Email Confirmed!</p>
+              <div style="width:72px;height:72px;border-radius:50%;
+                background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(52,211,153,0.1));
+                border:2px solid rgba(16,185,129,0.3);
+                display:flex;align-items:center;justify-content:center;
+                margin:0 auto 1.25rem;font-size:2rem;
+                box-shadow:0 0 40px rgba(16,185,129,0.2)">✅</div>
+              <p style="font-size:1.1rem;font-weight:700;color:#10b981;margin-bottom:.6rem">
+                Email Verified!
+              </p>
               <p style="color:#94a3b8;font-size:.88rem;line-height:1.7;margin-bottom:1.5rem">
-                You're all set. Log in with your password to get started.
+                Your BlueLedger account is confirmed.<br>Log in to get started.
               </p>
               <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem"
                 onclick="_goToLoginAfterConfirm('${userEmail}')">
