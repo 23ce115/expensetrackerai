@@ -10764,3 +10764,1320 @@ mark.txn-page-hl {
 .form-hint {
   display: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   blueledger-refined.css
+   BlueLedger Premium UI Refinement — v2.0
+   ───────────────────────────────────────────────────────────────
+   LOAD AFTER style.css  (and sync-status.css if present).
+   This file is a surgical override layer — it does NOT replace
+   the original CSS. It refines tokens, strips glow overload,
+   introduces breathing space, and upgrades mobile patterns.
+
+   Design Direction:
+   "Calm Financial Intelligence"
+   Inspired by: Apple Wallet · Revolut · Stripe · Linear · Notion
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 0 — IMPORT REFINED TYPEFACE
+   Replace Inter/DM Sans combo with Geist for that Vercel/Linear
+   premium feel, paired with Geist Mono for numbers.
+   ───────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap");
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 1 — REFINED DESIGN TOKENS
+   Quieter palette · Reduced glow vars · Better spacing scale
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* --- Typography --- */
+  --font-body: "Geist", "DM Sans", system-ui, sans-serif;
+  --font-display: "Geist", "Syne", sans-serif;
+  --font-mono: "Geist Mono", "Courier New", monospace;
+
+  /* --- Text hierarchy --- */
+  --text-primary: rgba(240, 244, 255, 1); /* white */
+  --text-secondary: rgba(240, 244, 255, 0.62); /* softer */
+  --text-tertiary: rgba(240, 244, 255, 0.38); /* metadata */
+  --text-muted: rgba(240, 244, 255, 0.22); /* very quiet */
+
+  /* --- Background layers (slightly warmer, less pure black) --- */
+  --bg: #070810;
+  --bg2: #0a0b18;
+  --bg3: #0f1020;
+  --bg-card: rgba(12, 13, 24, 0.82);
+  --bg-surface: rgba(15, 16, 28, 0.78);
+
+  /* --- Borders (subtler) --- */
+  --border: rgba(255, 255, 255, 0.055);
+  --border-md: rgba(255, 255, 255, 0.09);
+  --border-accent: rgba(99, 102, 241, 0.18);
+
+  /* --- Refined accent — indigo only as primary --- */
+  --accent: #818cf8;
+  --accent-deep: #5b55f2;
+  --accent-dim: rgba(99, 102, 241, 0.1);
+  --accent-dim-hover: rgba(99, 102, 241, 0.16);
+
+  /* --- Income — emerald, calmer intensity --- */
+  --inc: #34d399;
+  --inc-dim: rgba(52, 211, 153, 0.09);
+  --inc-border: rgba(52, 211, 153, 0.2);
+
+  /* --- Expense / Alert — orange, single alert color --- */
+  --exp: #f97316;
+  --exp-dim: rgba(249, 115, 22, 0.09);
+  --exp-border: rgba(249, 115, 22, 0.2);
+
+  /* --- Error red --- */
+  --err: #ef4444;
+  --err-dim: rgba(239, 68, 68, 0.09);
+
+  /* --- Shadows (matte depth, no colored glow) --- */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.22);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 10px 36px rgba(0, 0, 0, 0.48);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.55);
+
+  /* --- Glow — reserved only for CTA / AI active / warning --- */
+  --glow-cta: 0 4px 20px rgba(91, 85, 242, 0.3);
+  --glow-ai: 0 0 28px rgba(129, 140, 248, 0.2);
+  --glow-warn: 0 0 20px rgba(249, 115, 22, 0.22);
+
+  /* --- Spacing scale (more generous) --- */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 18px;
+  --space-lg: 28px;
+  --space-xl: 40px;
+  --space-2xl: 56px;
+
+  /* --- Border radius (slightly more rounded, Apple-like) --- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --r-pill: 999px;
+
+  /* --- Transitions --- */
+  --ease-out: cubic-bezier(0.25, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 2 — GLOBAL BASE
+   ───────────────────────────────────────────────────────────── */
+
+/* Apply refined font globally */
+body,
+input,
+select,
+textarea,
+button {
+  font-family: var(--font-body) !important;
+}
+
+/* Calm ambient background — much softer radial glows */
+body::before {
+  background:
+    radial-gradient(
+      ellipse 80% 50% at -5% -5%,
+      rgba(79, 70, 229, 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 105% 0%,
+      rgba(139, 92, 246, 0.06) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 50% at 50% 105%,
+      rgba(16, 185, 129, 0.04) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #070810 0%, #090a18 100%) !important;
+}
+
+/* Remove cursor glow effect on mobile — too heavy */
+@media (max-width: 768px) {
+  body::after {
+    display: none !important;
+  }
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 3 — TYPOGRAPHY HIERARCHY
+   ───────────────────────────────────────────────────────────── */
+
+/* Display headings */
+.db-title,
+.modal-title,
+.bn-sheet-title,
+.card-title,
+.db-panel-title,
+.dcc-title,
+.txn-page-title,
+.auth-brand {
+  font-family: var(--font-display) !important;
+  letter-spacing: -0.025em !important;
+  color: var(--text-primary) !important;
+}
+
+/* Section labels — quieter */
+.dsc-label,
+.form-label,
+.pv-label,
+.spending-label,
+.csm-nick,
+.bn-settings-section {
+  color: var(--text-tertiary) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 600 !important;
+}
+
+/* Metadata text */
+.rp-txn-cat,
+.db-panel-sub,
+.card-number,
+.spending-used-val,
+.form-hint,
+.txn-list-footer,
+.auth-tagline,
+.lock-subtitle {
+  color: var(--text-tertiary) !important;
+  opacity: 1 !important;
+}
+
+/* Secondary body text */
+.rp-txn-desc,
+.transaction-table tbody td,
+.settings-menu-item,
+.bn-settings-row,
+.bn-sheet-label {
+  color: var(--text-secondary) !important;
+}
+
+/* Number displays — use mono where appropriate */
+.db-stat-card .amount,
+.total-expenses,
+.rp-txn-amt,
+.spending-limit-val,
+.card-number {
+  font-family: var(--font-mono) !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 4 — STRIP GLOW OVERLOAD
+   Remove box-shadow glows from everything except:
+     – .btn-primary (CTA)
+     – .bl-sync-syncing / .bl-sync-error (status)
+     – .aia-active-state (AI active)
+   ───────────────────────────────────────────────────────────── */
+
+/* Kill colored glows on cards and panels */
+.db-stat-card,
+.db-chart-card,
+.db-panel,
+.card,
+.db-card-panel,
+.cs-main,
+.lock-card,
+.auth-card,
+.auth-popup,
+.settings-menu,
+.bn-settings-panel,
+.insights-card {
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Kill hover glow escalation */
+.db-stat-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+}
+.db-panel:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+.card:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+.cs-main:hover {
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Kill sidebar logo glow */
+.sidebar-logo {
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Kill avatar glow */
+.topbar-avatar {
+  box-shadow: none !important;
+  border-color: var(--border-accent) !important;
+}
+
+/* Kill active sidebar indicator glow */
+.sb-btn.active::before {
+  box-shadow: none !important;
+}
+
+/* Kill bottom nav active icon glow */
+.bn-tab.bn-tab--active i {
+  filter: none !important;
+}
+
+/* Kill progress bar inner glow */
+.progress-fill {
+  box-shadow: none !important;
+}
+
+/* Kill pin dot glow */
+.pin-dot.filled {
+  box-shadow: none !important;
+}
+
+/* Kill card stack glow */
+.db-card-panel {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--border-md) !important;
+}
+.cs-main {
+  border-color: rgba(99, 102, 241, 0.18) !important;
+}
+.cs-back-1 {
+  border-color: rgba(99, 102, 241, 0.08) !important;
+}
+.cs-back-2 {
+  border-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* Remove ::before pseudo-glow overlays on cards */
+.db-stat-card::before,
+.db-chart-card::before,
+.db-panel::before,
+.card::before,
+.db-card-panel::before,
+.modal-content::before,
+.auth-popup::before,
+.lock-card::before,
+.auth-card::before {
+  opacity: 0 !important;
+}
+
+/* Remove cs-main inner ambient circles */
+.cs-main::before,
+.cs-main::after {
+  opacity: 0 !important;
+}
+
+/* Keep ONLY CTA glow */
+.btn-primary {
+  box-shadow: var(--glow-cta) !important;
+}
+.btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(91, 85, 242, 0.38) !important;
+}
+
+/* Keep bn-add-ring glow (primary CTA) */
+.bn-add-ring {
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.32) !important;
+}
+
+/* Auth screen bg — softer */
+.lock-screen,
+.auth-screen {
+  background:
+    radial-gradient(
+      ellipse 60% 50% at 10% 10%,
+      rgba(99, 102, 241, 0.07) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 90% 15%,
+      rgba(139, 92, 246, 0.06) 0%,
+      transparent 50%
+    ),
+    linear-gradient(160deg, #07080f 0%, #0b0c1a 100%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 5 — COLOR PALETTE REDUCTION
+   Remove neon pink · Calm down high-intensity greens/oranges
+   ───────────────────────────────────────────────────────────── */
+
+/* Stat card icons — muted icon backgrounds */
+.dsc-icon--income {
+  background: var(--inc-dim) !important;
+  color: var(--inc) !important;
+}
+.dsc-icon--expense {
+  background: var(--exp-dim) !important;
+  color: var(--exp) !important;
+}
+.dsc-icon--net {
+  background: var(--accent-dim) !important;
+  color: var(--accent) !important;
+}
+
+/* Topbar income/expense buttons — calmer */
+.tb-income {
+  background: var(--inc-dim) !important;
+  border-color: var(--inc-border) !important;
+  color: var(--inc) !important;
+}
+.tb-income:hover {
+  background: rgba(52, 211, 153, 0.14) !important;
+  box-shadow: none !important;
+}
+.tb-expense {
+  background: var(--exp-dim) !important;
+  border-color: var(--exp-border) !important;
+  color: var(--exp) !important;
+}
+.tb-expense:hover {
+  background: rgba(249, 115, 22, 0.14) !important;
+  box-shadow: none !important;
+}
+
+/* Quick action buttons — no hover glow */
+.qa-income:hover,
+.qa-expense:hover {
+  box-shadow: none !important;
+}
+
+/* Transaction amounts */
+.amount-income {
+  color: var(--inc) !important;
+}
+.amount-expense {
+  color: var(--exp) !important;
+}
+
+/* Sync status pill — refined (overrides sync-status.css) */
+.bl-sync-indicator {
+  font-size: 0.67rem !important;
+  padding: 0.16rem 0.55rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+.bl-sync-ok {
+  background: rgba(16, 185, 129, 0.07) !important;
+  border-color: rgba(16, 185, 129, 0.15) !important;
+  color: rgba(52, 211, 153, 0.75) !important;
+}
+.bl-sync-syncing {
+  background: rgba(99, 102, 241, 0.07) !important;
+  border-color: rgba(99, 102, 241, 0.15) !important;
+  color: rgba(129, 140, 248, 0.75) !important;
+}
+.bl-sync-offline {
+  background: rgba(251, 146, 60, 0.07) !important;
+  border-color: rgba(251, 146, 60, 0.15) !important;
+  color: rgba(251, 146, 60, 0.75) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 6 — BREATHING SPACE & LAYOUT DENSITY
+   ───────────────────────────────────────────────────────────── */
+
+/* Main content area — more generous padding */
+.db-body {
+  padding: 1.75rem 1.75rem 2rem !important;
+}
+
+/* Stats grid — more gap */
+.db-stats {
+  gap: var(--space-md) !important;
+}
+
+/* Stat cards — more internal padding */
+.db-stat-card {
+  padding: 1.4rem 1.5rem 1.25rem !important;
+  border-radius: var(--r-xl) !important;
+  border-color: var(--border) !important;
+}
+
+/* Chart card */
+.db-chart-card {
+  padding: 1.5rem 1.5rem 1.3rem !important;
+  border-radius: var(--r-xl) !important;
+  border-color: var(--border) !important;
+  margin-top: 4px;
+}
+
+/* Panels */
+.db-panel {
+  padding: 1.4rem 1.45rem !important;
+  border-radius: var(--r-xl) !important;
+  border-color: var(--border) !important;
+}
+
+/* Grid gap */
+.db-grid {
+  gap: var(--space-lg) !important;
+}
+
+/* Bottom row gap */
+.db-bottom-row {
+  gap: var(--space-md) !important;
+}
+
+/* Title row — more breathing room */
+.db-title-row {
+  margin-bottom: var(--space-xl) !important;
+}
+
+/* Panel headers */
+.db-panel-hdr {
+  margin-bottom: var(--space-md) !important;
+}
+
+/* Transaction rows — more padding */
+.rp-txn-row {
+  padding: 0.72rem 6px !important;
+}
+
+/* Category list items */
+.expense-categories li {
+  padding: 0.6rem 0.75rem !important;
+  gap: 0.75rem !important;
+}
+
+/* Form groups — more space */
+.form-group {
+  margin-bottom: 1.1rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 7 — VISUAL HIERARCHY: HERO vs QUIET CARDS
+   ───────────────────────────────────────────────────────────── */
+
+/* Primary stat card (first child) — slightly elevated */
+.db-stats .db-stat-card:first-child {
+  background: rgba(13, 14, 26, 0.9) !important;
+}
+
+/* Secondary stat cards — quieter surface */
+.db-stats .db-stat-card:not(:first-child) {
+  background: rgba(10, 11, 20, 0.7) !important;
+  border-color: var(--border) !important;
+}
+.db-stats .db-stat-card:not(:first-child) .amount {
+  color: var(--text-secondary) !important;
+  font-size: 1.3rem !important;
+}
+
+/* Panels — matte quiet surfaces */
+.db-panel,
+.db-chart-card {
+  background: rgba(10, 11, 20, 0.72) !important;
+}
+
+/* Right sidebar card panel */
+.db-card-panel {
+  background: rgba(11, 12, 22, 0.88) !important;
+  border-color: var(--border-md) !important;
+  padding: 1.4rem 1.4rem 1.2rem !important;
+}
+
+/* Insight cards — quieter borders */
+.insights-card {
+  border-color: var(--border) !important;
+  background: rgba(9, 10, 20, 0.75) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 8 — CARD STACK REFINEMENT
+   Lighter, less heavy card feel
+   ───────────────────────────────────────────────────────────── */
+
+.card-stack {
+  height: 158px !important;
+}
+
+.cs-back {
+  height: 138px !important;
+}
+
+.cs-main {
+  padding: 1rem 1.15rem 0.9rem !important;
+  bottom: 16px !important;
+}
+
+/* Card type indicator — keep elegant chip */
+.csm-chip {
+  box-shadow: none !important;
+}
+
+/* Card number — mono, slightly more opacity */
+.card-number {
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.14em !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: 0.78rem !important;
+}
+
+/* Progress bar — cleaner, no inner glow */
+.progress-bar {
+  height: 3px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--accent-deep) 0%,
+    var(--accent) 100%
+  ) !important;
+}
+
+/* Remove large "Add Card" / "Remove" button styles →
+   These are overridden to be compact ghost icon buttons */
+.cs-add-card-btn,
+[onclick*="addCard"],
+[onclick*="removeCard"] {
+  padding: 0.3rem 0.65rem !important;
+  font-size: 0.72rem !important;
+  border-radius: var(--r-sm) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-tertiary) !important;
+  box-shadow: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 9 — SIDEBAR & NAVIGATION
+   ───────────────────────────────────────────────────────────── */
+
+.sidebar {
+  background: rgba(7, 8, 15, 0.96) !important;
+  border-right-color: var(--border) !important;
+}
+
+.sb-btn.active,
+.sb-btn.bn-tab--active {
+  background: rgba(99, 102, 241, 0.1) !important;
+  box-shadow: none !important;
+}
+
+/* Topbar — subtle, not heavy */
+.topbar {
+  background: rgba(7, 8, 15, 0.8) !important;
+  border-bottom-color: var(--border) !important;
+  height: 60px !important;
+}
+
+/* Bottom nav — clean */
+.bottom-nav {
+  background: rgba(7, 8, 14, 0.96) !important;
+  border-top-color: var(--border) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+.bn-tab.bn-tab--active {
+  color: var(--accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 10 — MODALS → BOTTOM SHEETS (Mobile-Native)
+   Applies when viewport ≤ 640px
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Modal overlay — softer backdrop */
+  .modal {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* Convert modal-content into a bottom sheet */
+  .modal-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: var(--r-2xl) var(--r-2xl) 0 0 !important;
+    max-height: 92dvh !important;
+    margin: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    border: none !important;
+    border-top: 1px solid var(--border-md) !important;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.55) !important;
+
+    /* Slide up animation */
+    animation: sheetSlideUp var(--dur-slow) var(--ease-spring) both !important;
+  }
+
+  /* Drag handle injected via ::before */
+  .modal-content::before {
+    content: "" !important;
+    display: block !important;
+    width: 36px !important;
+    height: 4px !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    margin: 0.75rem auto 0 !important;
+    position: relative !important;
+    inset: unset !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+  }
+
+  /* Modal header — more space */
+  .modal-header {
+    padding: 1rem 1.4rem 0.9rem !important;
+  }
+
+  /* Modal body — more generous */
+  .modal-body {
+    padding: 0.5rem 1.4rem 1rem !important;
+  }
+
+  /* Sticky CTA footer */
+  .modal-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: rgba(11, 12, 22, 0.98) !important;
+    padding: 0.8rem 1.4rem calc(0.8rem + env(safe-area-inset-bottom, 0)) !important;
+    border-top: 1px solid var(--border) !important;
+    backdrop-filter: blur(12px) !important;
+    justify-content: stretch !important;
+    gap: 0.6rem !important;
+  }
+
+  /* Full-width buttons in footer */
+  .modal-footer .btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 0.7rem !important;
+    border-radius: var(--r-md) !important;
+  }
+}
+
+@keyframes sheetSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Also refine the existing bottom sheets */
+.bn-sheet {
+  background: rgba(10, 11, 22, 0.97) !important;
+  border-top: 1px solid var(--border-md) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: var(--r-2xl) var(--r-2xl) 0 0 !important;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5) !important;
+  transition: transform var(--dur-slow) var(--ease-spring) !important;
+}
+
+.bn-sheet-handle {
+  width: 36px !important;
+  height: 4px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  margin: 0.8rem auto 1rem !important;
+}
+
+.bn-sheet-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 11 — MOBILE LAYOUT OVERHAUL
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Main area padding — breathable on mobile */
+  .db-body {
+    padding: 1.25rem 1rem 6rem !important;
+  }
+
+  /* Stats — single column on small screens */
+  .db-stats {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Stat cards — compact but breathable */
+  .db-stat-card {
+    padding: 1.1rem 1.1rem 1rem !important;
+  }
+  .db-stat-card .amount {
+    font-size: 1.25rem !important;
+  }
+
+  /* Chart card */
+  .db-chart-card {
+    padding: 1.1rem 1.1rem 1rem !important;
+  }
+
+  /* Panel */
+  .db-panel {
+    padding: 1.1rem 1.1rem !important;
+  }
+
+  /* Bottom row — stack on mobile */
+  .db-bottom-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Title row tighter on mobile */
+  .db-title-row {
+    margin-bottom: var(--space-lg) !important;
+  }
+  .db-title {
+    font-size: 1.2rem !important;
+  }
+
+  /* Hide scrollbar pill */
+  .bl-sync-idle {
+    display: none !important;
+  }
+
+  /* Topbar — compact */
+  .topbar {
+    padding: 0 1rem !important;
+    height: 56px !important;
+  }
+
+  /* Cards — full-width */
+  .db-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-md) !important;
+  }
+
+  /* Hide desktop card panel on mobile (shown separately) */
+  .db-card-panel {
+    display: none !important;
+  }
+
+  /* Transaction rows */
+  .rp-txn-row {
+    padding: 0.65rem 4px !important;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+  .db-body {
+    padding: 1rem 0.8rem 5.5rem !important;
+  }
+  .db-stats {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 12 — BUTTONS REFINED
+   ───────────────────────────────────────────────────────────── */
+
+.btn {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  border-radius: var(--r-md) !important;
+  transition: all var(--dur-base) var(--ease-out) !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  border: 1px solid rgba(165, 180, 252, 0.15) !important;
+  letter-spacing: -0.01em !important;
+}
+.btn-primary:hover {
+  transform: translateY(-1px) !important;
+  background: linear-gradient(135deg, #5750ee 0%, #6e70f5 100%) !important;
+}
+.btn-primary:active {
+  transform: translateY(0) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--border-md) !important;
+  color: var(--text-secondary) !important;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 13 — FORM INPUTS
+   ───────────────────────────────────────────────────────────── */
+
+.form-input,
+.form-select {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border-md) !important;
+  border-radius: var(--r-md) !important;
+  padding: 0.68rem 1rem !important;
+  font-size: 0.84rem !important;
+  color: var(--text-primary) !important;
+  transition:
+    border-color var(--dur-fast),
+    box-shadow var(--dur-fast) !important;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.07) !important;
+  background: rgba(99, 102, 241, 0.04) !important;
+  outline: none !important;
+}
+
+.form-label {
+  font-size: 0.71rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--text-tertiary) !important;
+  margin-bottom: 0.45rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 14 — REPORTS / INSIGHTS DECLUTTER
+   ───────────────────────────────────────────────────────────── */
+
+/* Insights bento cards */
+.insight-bento-card,
+.insight-mini-card {
+  border-color: var(--border) !important;
+  background: rgba(10, 11, 20, 0.7) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Chart containers — remove decorative borders */
+#chartContainer,
+.chart-wrapper,
+[id*="Chart"],
+canvas {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Period controls — quieter */
+.cpc-btn {
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  border-color: var(--border) !important;
+  color: var(--text-tertiary) !important;
+}
+.cpc-btn--active {
+  background: var(--accent-dim) !important;
+  border-color: rgba(99, 102, 241, 0.22) !important;
+  color: var(--accent) !important;
+}
+
+/* Period values — cleaner */
+.pv-value {
+  font-family: var(--font-mono) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 15 — REDUCE "AI" VISUAL NOISE
+   The design no longer screams AI everywhere.
+   AI sections are calm and integrated.
+   ───────────────────────────────────────────────────────────── */
+
+/* AI assistant sidebar — quiet, not glowing */
+.aia-sidebar,
+.ai-panel,
+[class*="ai-"] {
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* AI response bubbles — no glow ring */
+.aia-bubble,
+.ai-bubble,
+[class*="ai-bubble"] {
+  box-shadow: none !important;
+  border-color: var(--border-md) !important;
+}
+
+/* Copilot / Insights section titles — natural integration */
+.aia-title,
+.ai-section-title,
+[class*="insight-title"],
+[class*="copilot-title"] {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 16 — AUTHENTICATION SCREENS
+   Calm and premium, not cyberpunk
+   ───────────────────────────────────────────────────────────── */
+
+.lock-card,
+.auth-card {
+  background: rgba(11, 12, 24, 0.94) !important;
+  border-color: rgba(99, 102, 241, 0.12) !important;
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset !important;
+}
+
+.auth-brand {
+  color: var(--text-primary) !important;
+}
+.auth-brand span {
+  color: var(--accent) !important;
+}
+
+.pin-dot {
+  border-color: rgba(99, 102, 241, 0.15) !important;
+}
+.pin-dot.filled {
+  background: var(--accent-deep) !important;
+  border-color: var(--accent-deep) !important;
+}
+
+.pin-key {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--r-md) !important;
+  transition: all var(--dur-fast) !important;
+}
+.pin-key:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.auth-btn-login {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  box-shadow: var(--glow-cta) !important;
+  border-radius: var(--r-md) !important;
+}
+.auth-btn-login:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 24px rgba(91, 85, 242, 0.38) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 17 — SETTINGS & DROPDOWNS
+   ───────────────────────────────────────────────────────────── */
+
+.settings-menu {
+  background: rgba(11, 12, 24, 0.97) !important;
+  border-color: var(--border-md) !important;
+  border-radius: var(--r-lg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.settings-menu-item {
+  border-radius: var(--r-sm) !important;
+  transition: background var(--dur-fast) !important;
+}
+.settings-menu-item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 18 — SEARCH BAR
+   ───────────────────────────────────────────────────────────── */
+
+.search-wrapper {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border-md) !important;
+  border-radius: var(--r-sm) !important;
+}
+.search-wrapper:focus-within {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.06) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 19 — TRANSACTION TABLE
+   ───────────────────────────────────────────────────────────── */
+
+.transaction-table thead th {
+  color: var(--text-tertiary) !important;
+  border-bottom-color: var(--border) !important;
+  font-size: 0.64rem !important;
+  padding: 0.45rem 0.75rem !important;
+}
+
+.transaction-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.025) !important;
+}
+
+.transaction-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 20 — ANIMATIONS: SUBTLE & SMOOTH
+   ───────────────────────────────────────────────────────────── */
+
+/* Replace snap-in card animations with gentle fades */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animations for stat cards */
+.db-stats .db-stat-card:nth-child(1) {
+  animation-delay: 0ms !important;
+}
+.db-stats .db-stat-card:nth-child(2) {
+  animation-delay: 60ms !important;
+}
+.db-stats .db-stat-card:nth-child(3) {
+  animation-delay: 120ms !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 21 — QUIET UI ZONES
+   Introduce matte neutral sections
+   ───────────────────────────────────────────────────────────── */
+
+/* Section dividers — invisible breathing gaps */
+
+/* Pill / badge refinement */
+.db-pill {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border) !important;
+  color: var(--text-tertiary) !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 500 !important;
+}
+.db-pill.active {
+  background: var(--accent-dim) !important;
+  border-color: rgba(99, 102, 241, 0.22) !important;
+  color: var(--accent) !important;
+}
+
+/* Filter buttons */
+.filter-btn {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border) !important;
+  color: var(--text-tertiary) !important;
+  border-radius: var(--r-xs) !important;
+}
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Transaction count badge */
+.txn-count-badge {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border) !important;
+  color: var(--text-tertiary) !important;
+}
+
+/* Set budgets button */
+.set-budgets-btn {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border) !important;
+  color: var(--text-tertiary) !important;
+  border-radius: var(--r-xs) !important;
+}
+.set-budgets-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* View all links */
+.db-view-all {
+  opacity: 0.7 !important;
+  font-size: 0.71rem !important;
+  font-weight: 500 !important;
+}
+.db-view-all:hover {
+  opacity: 1 !important;
+}
+
+/* Close buttons — unified */
+.close-btn,
+.txn-page-close,
+.auth-popup-close,
+.settings-close-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--r-xs) !important;
+  color: var(--text-tertiary) !important;
+}
+.close-btn:hover,
+.txn-page-close:hover,
+.auth-popup-close:hover,
+.settings-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 22 — ICON CONTAINERS
+   ───────────────────────────────────────────────────────────── */
+
+/* Transaction type icons */
+.rp-txn-icon {
+  border-radius: var(--r-sm) !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* Bottom sheet ring icons */
+.bn-ring-icon {
+  border-radius: 50% !important;
+}
+
+/* Sheet action icons */
+.bn-sheet-icon {
+  border-radius: var(--r-sm) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 23 — RESPONSIVE TOPBAR SEARCH
+   ───────────────────────────────────────────────────────────── */
+
+.topbar-search {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--r-pill) !important;
+}
+.topbar-search:focus-within {
+  border-color: rgba(99, 102, 241, 0.28) !important;
+  background: rgba(99, 102, 241, 0.04) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.06) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 24 — OFFLINE BANNER (sync-status.css override)
+   ───────────────────────────────────────────────────────────── */
+
+.bl-offline-banner {
+  background: var(--exp) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 25 — MICRO-DETAIL POLISH
+   ───────────────────────────────────────────────────────────── */
+
+/* Table wrapper — no side scroll on mobile */
+@media (max-width: 640px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .txn-mobile-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* Recurring toggle */
+.recurring-toggle {
+  color: var(--text-secondary) !important;
+}
+
+/* Month group headers in full TXN page */
+.txn-month-group {
+  margin-bottom: 1.75rem !important;
+}
+
+/* Full TXN page header */
+.txn-page-header {
+  border-bottom-color: var(--border) !important;
+  background: rgba(7, 8, 14, 0.85) !important;
+}
+
+/* Auth popup */
+.auth-popup {
+  background: rgba(11, 12, 24, 0.97) !important;
+  border-color: rgba(99, 102, 241, 0.12) !important;
+  border-radius: var(--r-xl) !important;
+}
+
+/* Biometric button */
+.biometric-btn {
+  background: rgba(59, 130, 246, 0.07) !important;
+  border-color: rgba(59, 130, 246, 0.18) !important;
+  border-radius: var(--r-md) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION 26 — LIGHT THEME PATCH
+   Keep light theme also calm and refined
+   ───────────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg-card: rgba(248, 250, 255, 0.88);
+  --bg-surface: rgba(244, 246, 252, 0.8);
+  --border: rgba(99, 102, 241, 0.08);
+  --border-md: rgba(99, 102, 241, 0.13);
+  --text-primary: #0f172a;
+  --text-secondary: rgba(15, 23, 42, 0.6);
+  --text-tertiary: rgba(15, 23, 42, 0.38);
+}
+
+[data-theme="light"] .db-stat-card,
+[data-theme="light"] .db-chart-card,
+[data-theme="light"] .db-panel,
+[data-theme="light"] .card {
+  background: rgba(248, 249, 255, 0.85) !important;
+  box-shadow:
+    0 2px 8px rgba(99, 102, 241, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   END OF BLUELEDGER-REFINED.CSS
+   "Calm Financial Intelligence"
+   ───────────────────────────────────────────────────────────── */
