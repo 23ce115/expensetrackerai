@@ -56,53 +56,109 @@ img {
 /* ── Tokens ─────────────────────────────────────────────────── */
 
 :root {
-  --border-hi: rgba(129, 140, 248, 0.28);
-  --accent-glow: rgba(129, 140, 248, 0.22);
+  /* ── Backgrounds — cool slate / deep navy */
+  --bg: #0b1120;
+  --bg2: #111827;
+  --bg3: #141d2e;
+  --bg-card: #131b2c;
+  --bg-card-hi: #172035;
+  --bg-surface: #0f1729;
+
+  /* ── Text — soft cool-white hierarchy */
+  --t1: #e8edf5;
+  --t2: rgba(232, 237, 245, 0.6);
+  --t3: rgba(232, 237, 245, 0.36);
+  --t4: rgba(232, 237, 245, 0.18);
+
+  /* ── Borders — cool slate */
+  --border: rgba(148, 163, 184, 0.08);
+  --border-md: rgba(148, 163, 184, 0.13);
+  --border-hi: rgba(148, 163, 184, 0.2);
+
+  /* ── Accent — muted indigo */
+  --accent: #818cf8;
   --accent-deep: #6366f1;
+  --accent-dim: rgba(99, 102, 241, 0.09);
+  --accent-glow: rgba(99, 102, 241, 0.16);
+
+  /* ── Income — muted emerald */
+  --inc: #34d399;
+  --inc-dim: rgba(52, 211, 153, 0.08);
+
+  /* ── Expense — muted orange */
   --exp: #fb923c;
-  --t2: #8892b0;
-  --t3: #3d4466;
-  --t4: #1a1d30;
+  --exp-dim: rgba(251, 146, 60, 0.08);
+
+  /* ── Shadows — pure cool black */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.36);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.44);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.52);
+  --shadow-xl: 0 28px 72px rgba(0, 0, 0, 0.58);
+  --glow-accent: none;
+
+  /* ── Glass */
+  --glass: rgba(13, 19, 36, 0.82);
   --glass-blur: 24px;
+
+  /* ── Radius (unchanged) */
+  --r-sm: 10px;
   --r-md: 16px;
   --r-lg: 20px;
   --r-xl: 26px;
-  --y: 50%;
-  --bg: #070810;
-  --bg2: #0b0c1a;
-  --bg3: #10111f;
-  --border: rgba(255, 255, 255, 0.06);
-  --accent: #818cf8;
-  --accent-dim: rgba(129, 140, 248, 0.1);
-  --inc: #34d399;
-  --inc-dim: rgba(52, 211, 153, 0.1);
-  --exp-dim: rgba(251, 146, 60, 0.1);
-  --t1: #f0f4ff;
-  --glass: rgba(11, 12, 26, 0.72);
-  --r-sm: 10px;
+
+  /* ── Spacing (unchanged) */
   --space-xs: 8px;
   --space-sm: 12px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.42);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.56);
-  --shadow-xl: 0 28px 72px rgba(0, 0, 0, 0.64);
-  --glow-accent: 0 0 32px rgba(129, 140, 248, 0.18);
+
+  --y: 50%;
 }
 
 /* ── Light theme ────────────────────────────────────────────── */
 
 [data-theme="light"] {
-  --bg: #f1f5f9;
-  --bg2: #e8eef6;
-  --border: rgba(99, 102, 241, 0.12);
-  --glass: rgba(241, 245, 249, 0.82);
+  /* ── Backgrounds — pure cool slate whites */
+  --bg: #f8fafc;
+  --bg2: #f1f5f9;
+  --bg3: #e2e8f0;
+  --bg-card: #ffffff;
+  --bg-card-hi: #f8fafc;
+  --bg-surface: #f1f5f9;
+
+  /* ── Text */
   --t1: #0f172a;
-  --t2: #334155;
-  --t3: #64748b;
-  --t4: #cbd5e1;
+  --t2: rgba(15, 23, 42, 0.58);
+  --t3: rgba(15, 23, 42, 0.38);
+  --t4: rgba(15, 23, 42, 0.18);
+
+  /* ── Borders */
+  --border: rgba(15, 23, 42, 0.07);
+  --border-md: rgba(15, 23, 42, 0.11);
+  --border-hi: rgba(15, 23, 42, 0.18);
+
+  /* ── Accent */
+  --accent: #6366f1;
+  --accent-deep: #4f46e5;
+  --accent-dim: rgba(99, 102, 241, 0.07);
+  --accent-glow: rgba(99, 102, 241, 0.12);
+
+  /* ── Income */
+  --inc: #059669;
+  --inc-dim: rgba(5, 150, 105, 0.07);
+
+  /* ── Expense */
+  --exp: #ea580c;
+  --exp-dim: rgba(234, 88, 12, 0.07);
+
+  /* ── Shadows */
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.07);
+  --shadow-md: 0 6px 24px rgba(15, 23, 42, 0.09);
+  --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.11);
+  --shadow-xl: 0 28px 72px rgba(15, 23, 42, 0.13);
+
+  --glass: rgba(248, 250, 252, 0.9);
 }
 
 /* ── Base ───────────────────────────────────────────────────── */
