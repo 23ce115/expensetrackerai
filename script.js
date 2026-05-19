@@ -5025,14 +5025,15 @@ function updateMyCardWidget() {
         var n = cards[0].userData && cards[0].userData.name;
         if (n && n.trim()) return n.trim().split(/\s+/)[0];
       }
-      // Fallback: read from Supabase session metadata (before card setup)
+      var meta = window._blUserMeta;
+      if (meta?.name) return meta.name.trim().split(/\s+/)[0];
+      if (meta?.full_name) return meta.full_name.trim().split(/\s+/)[0];
+      /* Last resort: check profile cache written by profile-fix */
       try {
-        var client = getBLClient();
-        var session = client?.auth?.getSession?.();
-        // getSession() is async — check window cache instead
-        var meta = window._blUserMeta;
-        if (meta?.name) return meta.name.trim().split(/\s+/)[0];
-        if (meta?.full_name) return meta.full_name.trim().split(/\s+/)[0];
+        var cached = JSON.parse(
+          localStorage.getItem("bl_profile_cache_v1") || "null",
+        );
+        if (cached?.firstName) return cached.firstName;
       } catch (e) {}
     } catch (e) {}
     return "";
@@ -5051,7 +5052,7 @@ function updateMyCardWidget() {
     var fullGreet = firstName ? greetWord + ", " + firstName : greetWord;
     var now = new Date();
 
-    // ── Topbar: day name + full date only (no greeting) ──
+    // ── Topbar: day name + full date only ──
     var dayNameEl = document.getElementById("topbarDayName");
     var headerDateEl = document.getElementById("headerDate");
     if (dayNameEl) {
@@ -5067,52 +5068,79 @@ function updateMyCardWidget() {
       });
     }
 
+    // ── Avatar initial ──
+    var av = document.getElementById("topbarAvatar");
+    if (av && firstName) {
+      av.textContent = firstName.charAt(0).toUpperCase();
+    }
+
     // ── Greeting block above stat cards ──
-    var eyebrow = document.getElementById("dbGreetingEyebrow");
     var nameEl = document.getElementById("dbGreetingName");
     var subEl = document.getElementById("dbGreetingSub");
-    var block = document.getElementById("dbGreetingBlock");
-
-    if (eyebrow) eyebrow.textContent = ""; // eyebrow removed from HTML, no-op
-    if (nameEl) nameEl.textContent = fullGreet;
+    /* Only write if we have a real name — never overwrite with empty */
+    if (nameEl && fullGreet) nameEl.textContent = fullGreet;
     if (subEl) subEl.textContent = _pickSubtitle();
 
-    // ── Mobile-only greeting above My Card ──
+    // ── Mobile greeting ──
     var mobileNameEl = document.getElementById("dbMobileGreetingName");
     var mobileSubEl = document.getElementById("dbMobileGreetingSub");
-    var mobileBlock = document.getElementById("dbMobileGreetingBlock");
-
-    if (mobileNameEl) mobileNameEl.textContent = fullGreet;
+    if (mobileNameEl && fullGreet) mobileNameEl.textContent = fullGreet;
     if (mobileSubEl) mobileSubEl.textContent = _pickSubtitle();
 
-    if (mobileBlock && !mobileBlock.dataset.greeted) {
-      mobileBlock.dataset.greeted = "1";
-      mobileBlock.style.opacity = "0";
-      mobileBlock.style.transform = "translateY(6px)";
-      requestAnimationFrame(function () {
-        mobileBlock.style.transition =
-          "opacity 0.55s ease, transform 0.55s ease";
-        mobileBlock.style.opacity = "1";
-        mobileBlock.style.transform = "translateY(0)";
-      });
-    }
-    if (block && !block.dataset.greeted) {
-      block.dataset.greeted = "1";
-      block.style.opacity = "0";
-      block.style.transform = "translateY(6px)";
-      requestAnimationFrame(function () {
-        block.style.transition = "opacity 0.55s ease, transform 0.55s ease";
-        block.style.opacity = "1";
-        block.style.transform = "translateY(0)";
-      });
-    }
+    // ── Animate greeting block once ──
+    ["dbGreetingBlock", "dbMobileGreetingBlock"].forEach(function (id) {
+      var block = document.getElementById(id);
+      if (block && !block.dataset.greeted) {
+        block.dataset.greeted = "1";
+        block.style.opacity = "0";
+        block.style.transform = "translateY(6px)";
+        requestAnimationFrame(function () {
+          block.style.transition = "opacity 0.55s ease, transform 0.55s ease";
+          block.style.opacity = "1";
+          block.style.transform = "translateY(0)";
+        });
+      }
+    });
 
     // hidden compat stub
     var topbar = document.getElementById("topbarGreeting");
     if (topbar) topbar.textContent = fullGreet;
+
+    // ── Persist to cache so next load is instant ──
+    if (firstName) {
+      try {
+        localStorage.setItem(
+          "bl_profile_cache_v1",
+          JSON.stringify({
+            firstName: firstName,
+            initial: firstName.charAt(0).toUpperCase(),
+          }),
+        );
+      } catch (e) {}
+    }
   };
 
+  // ── On DOMContentLoaded: apply cache instantly, then live data ──
   document.addEventListener("DOMContentLoaded", function () {
+    /* Step 1 — apply cache synchronously (zero flicker) */
+    try {
+      var cached = JSON.parse(
+        localStorage.getItem("bl_profile_cache_v1") || "null",
+      );
+      if (cached?.firstName) {
+        var greet = _getGreetingWord() + ", " + cached.firstName;
+        var nameEl = document.getElementById("dbGreetingName");
+        var mobileEl = document.getElementById("dbMobileGreetingName");
+        var av = document.getElementById("topbarAvatar");
+        if (nameEl) nameEl.textContent = greet;
+        if (mobileEl) mobileEl.textContent = greet;
+        if (av)
+          av.textContent =
+            cached.initial || cached.firstName.charAt(0).toUpperCase();
+      }
+    } catch (e) {}
+
+    /* Step 2 — full update (overwrites cache render with live data) */
     window.updateDashboardGreeting();
     setInterval(window.updateDashboardGreeting, 60000);
   });
@@ -8680,7 +8708,7 @@ loadGlassOpacity();
       hash.includes("type=signup") ||
       hash.includes("type=recovery");
 
-   if (isAuthRedirect) {
+    if (isAuthRedirect) {
       // Show spinner immediately — never show black screen
       document.getElementById("authScreen").style.display = "flex";
       document.getElementById("authScreen").innerHTML = `
@@ -8699,7 +8727,9 @@ loadGlassOpacity();
       // We must wait for the SIGNED_IN event which fires after token exchange completes.
       const session = await new Promise((resolve) => {
         const timeout = setTimeout(() => resolve(null), 8000); // 8s max wait
-        const { data: { subscription } } = client.auth.onAuthStateChange((event, sess) => {
+        const {
+          data: { subscription },
+        } = client.auth.onAuthStateChange((event, sess) => {
           if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
             clearTimeout(timeout);
             subscription.unsubscribe();
@@ -8721,8 +8751,10 @@ loadGlassOpacity();
 
       if (session) {
         const userEmail = session.user?.email || "";
-        const userName = session.user?.user_metadata?.name ||
-                         session.user?.user_metadata?.full_name || "";
+        const userName =
+          session.user?.user_metadata?.name ||
+          session.user?.user_metadata?.full_name ||
+          "";
         const provider = session.user?.app_metadata?.provider;
         const isRecovery = hash.includes("type=recovery");
 
@@ -8761,7 +8793,9 @@ loadGlassOpacity();
         }
 
         // ── Email verified ──
-        const pending = JSON.parse(localStorage.getItem("bl_pending_signup") || "null");
+        const pending = JSON.parse(
+          localStorage.getItem("bl_pending_signup") || "null",
+        );
         if (pending?.email) {
           localStorage.removeItem("bl_pending_signup");
           _pendingCardSetup = {
@@ -8977,6 +9011,87 @@ populateCategorySelects();
 // setChartPeriod deferred to main.js _bootApp which runs after all scripts load
 refreshAll();
 syncFabVisibility();
+
+/* ── Profile hydration: apply cached name instantly on every load ── */
+(function _applyProfileCache() {
+  try {
+    var cached = JSON.parse(
+      localStorage.getItem("bl_profile_cache_v1") || "null",
+    );
+    if (!cached?.firstName) return;
+    var h = new Date().getHours();
+    var greetWord =
+      h >= 5 && h < 12
+        ? "Good morning"
+        : h >= 12 && h < 17
+          ? "Good afternoon"
+          : "Good evening";
+    var greet = greetWord + ", " + cached.firstName;
+    var nameEl = document.getElementById("dbGreetingName");
+    var mobileEl = document.getElementById("dbMobileGreetingName");
+    var av = document.getElementById("topbarAvatar");
+    if (nameEl && !nameEl.textContent.includes(cached.firstName))
+      nameEl.textContent = greet;
+    if (mobileEl && !mobileEl.textContent.includes(cached.firstName))
+      mobileEl.textContent = greet;
+    if (av && av.textContent !== cached.initial)
+      av.textContent = cached.initial;
+  } catch (e) {}
+})();
+
+/* ── Profile hydration: apply cached name instantly on every load ── */
+(function _applyProfileCache() {
+  try {
+    var cached = JSON.parse(
+      localStorage.getItem("bl_profile_cache_v1") || "null",
+    );
+    if (!cached?.firstName) return;
+    var h = new Date().getHours();
+    var greetWord =
+      h >= 5 && h < 12
+        ? "Good morning"
+        : h >= 12 && h < 17
+          ? "Good afternoon"
+          : "Good evening";
+    var greet = greetWord + ", " + cached.firstName;
+    var nameEl = document.getElementById("dbGreetingName");
+    var mobileEl = document.getElementById("dbMobileGreetingName");
+    var av = document.getElementById("topbarAvatar");
+    if (nameEl && !nameEl.textContent.includes(cached.firstName))
+      nameEl.textContent = greet;
+    if (mobileEl && !mobileEl.textContent.includes(cached.firstName))
+      mobileEl.textContent = greet;
+    if (av && av.textContent !== cached.initial)
+      av.textContent = cached.initial;
+  } catch (e) {}
+})();
+
+/* ── Profile hydration: apply cached name instantly on every load ── */
+(function _applyProfileCache() {
+  try {
+    var cached = JSON.parse(
+      localStorage.getItem("bl_profile_cache_v1") || "null",
+    );
+    if (!cached?.firstName) return;
+    var h = new Date().getHours();
+    var greetWord =
+      h >= 5 && h < 12
+        ? "Good morning"
+        : h >= 12 && h < 17
+          ? "Good afternoon"
+          : "Good evening";
+    var greet = greetWord + ", " + cached.firstName;
+    var nameEl = document.getElementById("dbGreetingName");
+    var mobileEl = document.getElementById("dbMobileGreetingName");
+    var av = document.getElementById("topbarAvatar");
+    if (nameEl && !nameEl.textContent.includes(cached.firstName))
+      nameEl.textContent = greet;
+    if (mobileEl && !mobileEl.textContent.includes(cached.firstName))
+      mobileEl.textContent = greet;
+    if (av && av.textContent !== cached.initial)
+      av.textContent = cached.initial;
+  } catch (e) {}
+})();
 
 function _clearAiSuggestion(type) {
   const badgeEl = document.getElementById(`${type}AiBadge`);
