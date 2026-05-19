@@ -3715,6 +3715,7 @@ async function _afterUnlock(password, userId) {
   if (typeof initOverviewChart === "function") initOverviewChart();
   if (typeof initCategoryChart === "function") initCategoryChart();
   refreshAll();
+  if (typeof updateDashboardGreeting === "function") updateDashboardGreeting();
   populateSyncModal();
   initSyncAfterUnlock().catch((e) => console.warn("Sync init failed", e));
 
@@ -6252,6 +6253,8 @@ function refreshAll() {
     window.syncDashboardGrid();
   // AI Copilot — refresh analysis view when open
   if (typeof window.aiaRefresh === "function") window.aiaRefresh();
+  // Always sync greeting + avatar with current userData
+  if (typeof updateDashboardGreeting === "function") updateDashboardGreeting();
 }
 window.refreshAll = refreshAll; // FIX: export immediately for cross-module access
 
