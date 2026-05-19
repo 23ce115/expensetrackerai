@@ -668,7 +668,7 @@
                   </div>
                 </div>
 
-              <!-- dashboardTxnCard hidden; JS-compat stubs kept -->
+              <!-- JS-compat stubs (hidden) -->
               <div id="dashboardTxnCard" style="display:none" aria-hidden="true">
                 <span id="txnBadge"></span>
                 <input type="text" id="txnSearch" style="display:none" />
@@ -676,6 +676,20 @@
                 <tbody id="txnBody" style="display:none"></tbody>
                 <div id="txnMobileList" style="display:none"></div>
                 <div id="txnListFooter" style="display:none"></div>
+              </div>
+
+              <!-- ── Recent Transactions (home screen inline) ── -->
+              <div class="db-recent-card" id="dbRecentCard">
+                <div class="db-recent-hdr">
+                  <span class="db-recent-title">Recent</span>
+                  <button class="db-recent-all" onclick="openTxnFullPage()">See all</button>
+                </div>
+                <div id="dbRecentList" class="db-recent-list">
+                  <div class="db-recent-empty">
+                    <i class="fas fa-receipt"></i>
+                    <span>No transactions yet</span>
+                  </div>
+                </div>
               </div>
 
             </div><!-- /db-left -->
@@ -845,7 +859,7 @@
       <div id="cardSwitcherLegacy"></div>
     </div>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• 5-TAB BOTTOM NAV (mobile) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+   <!-- ═══════════════ 5-TAB BOTTOM NAV (mobile) ═══════════════ -->
     <nav class="bottom-nav" id="bottomNav" style="display: none">
       <button
         class="bn-tab bn-tab--active"
@@ -854,15 +868,12 @@
       >
         <i class="fas fa-home"></i><span>Home</span>
       </button>
-      <button class="bn-tab" id="bnAdd" onclick="bnSwitch('add')">
-        <div class="bn-add-ring"><i class="fas fa-plus"></i></div>
-        <span>Add</span>
-      </button>
       <button class="bn-tab" id="bnReport" onclick="bnSwitch('report')">
         <i class="fas fa-chart-pie"></i><span>Report</span>
       </button>
-      <button class="bn-tab" id="bnCat" onclick="bnSwitch('cat')">
-        <i class="fas fa-tags"></i><span>Categories</span>
+      <button class="bn-tab bn-tab--fab" id="bnAdd" onclick="bnSwitch('add')">
+        <div class="bn-add-ring"><i class="fas fa-plus"></i></div>
+        <span>Add</span>
       </button>
       <button class="bn-tab bn-tab-aia" id="bnAI" onclick="openAIAssistant()">
         <i class="fas fa-brain"></i><span>AI</span>
@@ -2404,7 +2415,7 @@
 
         list.innerHTML = txns.map(function(t) {
           var inc  = t.type === 'income';
-          var col  = inc ? '#34d399' : '#f97316';
+          var col  = inc ? '#22c55e' : '#f43f5e';
           var sign = inc ? '+' : '-';
           var icon = inc ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
           var desc = (t.description || t.category || 'Transaction').substring(0, 24);
@@ -2463,6 +2474,38 @@
         }
       });
 
+      /* ── Render recent 5 txns on home screen ───────────────────── */
+      function renderHomeRecent() {
+        var list = document.getElementById('dbRecentList');
+        if (!list) return;
+        var txns = (window.transactions || []).slice().reverse().slice(0, 5);
+        if (!txns.length) {
+          list.innerHTML = '<div class="db-recent-empty"><i class="fas fa-receipt"></i><span>No transactions yet</span></div>';
+          return;
+        }
+        list.innerHTML = txns.map(function(t) {
+          var inc  = t.type === 'income';
+          var col  = inc ? '#22c55e' : '#f43f5e';
+          var bg   = inc ? 'rgba(34,197,94,0.09)' : 'rgba(244,63,94,0.09)';
+          var sign = inc ? '+' : '−';
+          var icon = inc ? 'fa-arrow-down' : 'fa-arrow-up';
+          var desc = (t.description || t.category || 'Transaction').substring(0, 22);
+          var cat  = (t.category || 'Other');
+          var amt  = '₹' + Math.abs(t.amount || 0).toLocaleString('en-IN');
+          var date = t.date ? new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
+          return '<div class="db-recent-row">'
+            + '<div class="db-recent-icon" style="background:' + bg + ';color:' + col + '">'
+            + '<i class="fas ' + icon + '"></i></div>'
+            + '<div class="db-recent-info">'
+            + '<div class="db-recent-desc">' + desc + '</div>'
+            + '<div class="db-recent-meta">' + cat + (date ? ' · ' + date : '') + '</div>'
+            + '</div>'
+            + '<div class="db-recent-amt" style="color:' + col + '">' + sign + amt + '</div>'
+            + '</div>';
+        }).join('');
+      }
+      window._renderHomeRecent = renderHomeRecent;
+
       /* ── Hook into refreshAll so panel updates with data ─────────── */
       var _t = setInterval(function() {
         if (typeof window.refreshAll === 'function' && !window._blBridgeDone) {
@@ -2470,6 +2513,7 @@
           window.refreshAll = function() {
             orig.apply(this, arguments);
             setTimeout(renderRpTxns, 60);
+            setTimeout(renderHomeRecent, 60);
             try {
               var name = (window.userData && window.userData.name) || '';
               if (name) {
