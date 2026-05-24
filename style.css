@@ -11450,7 +11450,7 @@ body::before {
 .db-card-panel {
   border-color: rgba(110, 136, 255, 0.18) !important;
   padding: 1.4rem 1.5rem 1.2rem !important;
-} 
+}
 
 /* Card stack dot indicators */
 .cs-dot {
@@ -11732,6 +11732,12 @@ textarea.form-input:focus {
   backdrop-filter: blur(24px) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   height: 72px !important;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none !important;
+  }
 }
 
 .bn-tab {
