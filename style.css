@@ -10975,3 +10975,2274 @@ mark.txn-page-hl {
 [data-theme="light"] .db-recent-row:hover {
   background: rgba(15, 23, 42, 0.02);
 }
+/* ═══════════════════════════════════════════════════════════════
+   BlueLedger — Premium Fintech Glass System OVERRIDES
+   Matches reference design from screenshots exactly.
+   Load AFTER style.css  OR  prepend as :root override block.
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* ─────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS — replaces the existing :root block
+   ─────────────────────────────────────────────────────────────*/
+:root {
+  /* Core surfaces */
+  --bg: #0b1326;
+  --bg2: #0f1a30;
+  --bg3: #131b2e;
+  --bg-card: rgba(30, 41, 59, 0.5);
+  --bg-card-hi: rgba(34, 42, 61, 0.7);
+  --bg-surface: #060e20;
+
+  /* Text */
+  --t1: #dae2fd;
+  --t2: #c4c5d7;
+  --t3: #8e90a0;
+  --t4: rgba(218, 226, 253, 0.16);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-md: rgba(255, 255, 255, 0.15);
+  --border-hi: rgba(255, 255, 255, 0.25);
+
+  /* Brand accents */
+  --accent: #b9c3ff; /* primary */
+  --accent-deep: #6e88ff; /* primary-container */
+  --accent-dim: rgba(110, 136, 255, 0.1);
+  --accent-glow: rgba(79, 110, 247, 0.18);
+
+  --inc: #4edea3; /* secondary */
+  --inc-dim: rgba(78, 222, 163, 0.1);
+
+  --exp: #ffb4ab; /* error */
+  --exp-dim: rgba(255, 180, 171, 0.1);
+
+  --tertiary: #d2bbff;
+
+  /* Glass surfaces */
+  --glass: rgba(30, 41, 59, 0.5);
+  --glass-blur: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 28px 72px rgba(0, 0, 0, 0.64);
+  --glow-accent: 0 0 48px rgba(110, 136, 255, 0.1);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Sidebar width */
+  --sidebar-w: 280px;
+}
+
+/* Light mode keeps existing approach — no changes needed */
+
+/* ─────────────────────────────────────────────────────────────
+   2. BASE
+   ─────────────────────────────────────────────────────────────*/
+body {
+  font-family: "Inter", system-ui, sans-serif !important;
+  background: var(--bg) !important;
+  color: var(--t1) !important;
+}
+
+body::before {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 15% 10%,
+      rgba(110, 136, 255, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 85% 0%,
+      rgba(78, 222, 163, 0.07) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 55% 55% at 50% 110%,
+      rgba(78, 222, 163, 0.05) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #060e20 0%, #0b1326 100%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. SIDEBAR — expand to 280px with labels (matches reference)
+   ─────────────────────────────────────────────────────────────*/
+.sidebar {
+  width: var(--sidebar-w) !important;
+  min-width: var(--sidebar-w) !important;
+  max-width: var(--sidebar-w) !important;
+  background: rgba(6, 14, 32, 0.92) !important;
+  backdrop-filter: blur(32px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  align-items: flex-start !important;
+  padding: 24px 0 20px !important;
+}
+
+.sidebar-logo {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #3b5bdb 0%, #6e88ff 100%) !important;
+  box-shadow:
+    0 4px 24px rgba(110, 136, 255, 0.4),
+    0 0 0 1px rgba(185, 195, 255, 0.2) inset !important;
+  margin: 0 0 32px 20px !important;
+}
+
+/* Brand name next to logo */
+.sidebar-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 32px;
+}
+
+.sidebar-brand-name {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-brand-sub {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-top: 1px;
+}
+
+/* Nav items — show labels */
+.sidebar-nav {
+  align-items: stretch !important;
+  padding: 0 12px !important;
+  width: 100% !important;
+}
+
+.sb-btn {
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  padding: 0 16px !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--t3) !important;
+  letter-spacing: 0 !important;
+}
+
+.sb-btn::after {
+  content: attr(title);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sb-btn:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--t1) !important;
+  transform: none !important;
+}
+
+.sb-btn.active,
+.sb-btn.bn-tab--active {
+  background: rgba(110, 136, 255, 0.12) !important;
+  color: var(--accent) !important;
+  box-shadow: none !important;
+  border-right: 3px solid var(--accent) !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+.sb-btn.active::before {
+  display: none !important;
+}
+
+.sb-btn.active::after,
+.sb-btn.bn-tab--active::after {
+  color: var(--accent) !important;
+}
+
+/* Remove icon-only tooltip */
+#sb-tooltip {
+  display: none !important;
+}
+
+/* Sidebar bottom */
+.sidebar-bottom {
+  width: 100% !important;
+  padding: 12px 12px 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Premium upgrade card at bottom of sidebar */
+.sidebar-upgrade-card {
+  margin: 16px 12px 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(110, 136, 255, 0.15),
+    rgba(210, 187, 255, 0.08)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-upgrade-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.sidebar-upgrade-sub {
+  font-size: 0.7rem;
+  color: var(--t3);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.sidebar-upgrade-btn {
+  width: 100%;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #00228a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  font-family: "Inter", sans-serif;
+  transition: filter 0.2s;
+}
+
+.sidebar-upgrade-btn:hover {
+  filter: brightness(1.08);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. MAIN AREA — shift right by sidebar width
+   ─────────────────────────────────────────────────────────────*/
+.main-area {
+  /* sidebar is now 280px not 72px */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. TOPBAR
+   ─────────────────────────────────────────────────────────────*/
+.topbar {
+  background: rgba(6, 14, 32, 0.8) !important;
+  backdrop-filter: blur(24px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  height: 68px !important;
+}
+
+.topbar-date-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-date-day {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.topbar-date-full {
+  font-size: 0.72rem;
+  color: var(--t3);
+}
+
+.topbar-avatar {
+  background: linear-gradient(135deg, #3b5bdb, #6e88ff) !important;
+  border: 2px solid rgba(185, 195, 255, 0.3) !important;
+  box-shadow: 0 0 16px rgba(110, 136, 255, 0.2) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. GLASS CARD BASE — the foundational bento card
+   ─────────────────────────────────────────────────────────────*/
+.db-stat-card,
+.db-chart-card,
+.db-panel,
+.db-card-panel,
+.db-recent-card,
+.insights-card,
+.card {
+  background: var(--glass) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-xl) !important;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease !important;
+}
+
+.db-stat-card:hover,
+.db-chart-card:hover,
+.db-panel:hover,
+.db-card-panel:hover,
+.db-recent-card:hover {
+  border-color: var(--border-hi) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. STAT CARDS — match reference (icon + badge + amount + mini bars)
+   ─────────────────────────────────────────────────────────────*/
+.db-stats {
+  gap: 16px !important;
+}
+
+.db-stat-card {
+  padding: 1.4rem 1.5rem 1.2rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.db-stat-card::before {
+  display: none !important; /* remove old gradient */
+}
+
+.dsc-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.dsc-icon--income {
+  background: rgba(78, 222, 163, 0.12) !important;
+  color: var(--inc) !important;
+}
+.dsc-icon--expense {
+  background: rgba(255, 180, 171, 0.12) !important;
+  color: var(--exp) !important;
+}
+.dsc-icon--net {
+  background: rgba(185, 195, 255, 0.12) !important;
+  color: var(--accent) !important;
+}
+
+.dsc-label {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+  margin-bottom: 2px !important;
+}
+
+.db-stat-card .amount {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.15 !important;
+  margin-bottom: 8px !important;
+}
+
+.income-amount {
+  color: var(--inc) !important;
+}
+.expense-amount {
+  color: var(--exp) !important;
+}
+.net-positive {
+  color: var(--t1) !important;
+}
+
+/* Change badge — absolute top-right */
+.db-stat-card .change {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. CHART CARD
+   ─────────────────────────────────────────────────────────────*/
+.db-chart-card {
+  padding: 1.4rem 1.5rem 1.2rem !important;
+}
+
+.db-chart-card::before {
+  display: none !important;
+}
+
+.dcc-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+/* Chart period buttons */
+.cpc-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t3) !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 0.3rem 0.85rem !important;
+}
+
+.cpc-btn--active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #00228a !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. PANEL (All Expenses, My Card panel)
+   ─────────────────────────────────────────────────────────────*/
+.db-panel {
+  padding: 1.4rem 1.5rem !important;
+}
+.db-panel::before {
+  display: none !important;
+}
+
+.db-panel-title,
+.db-card-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-panel-sub {
+  color: var(--t3) !important;
+  font-size: 0.72rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   10. MY CARD PANEL
+   ─────────────────────────────────────────────────────────────*/
+.db-card-panel {
+  border-color: rgba(110, 136, 255, 0.18) !important;
+  padding: 1.4rem 1.5rem 1.2rem !important;
+} 
+
+/* Card stack dot indicators */
+.cs-dot {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+.cs-dot.is-active {
+  background: var(--accent) !important;
+  width: 18px !important;
+  border-radius: 4px !important;
+}
+
+/* Card action row */
+.card-action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.card-action-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--t3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--t1);
+}
+.card-action-add {
+  color: var(--inc) !important;
+  border-color: rgba(78, 222, 163, 0.2) !important;
+}
+.card-action-remove {
+  color: var(--exp) !important;
+  border-color: rgba(255, 180, 171, 0.2) !important;
+}
+
+/* Monthly limit row */
+.card-limit-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.card-limit-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--t3);
+}
+
+.card-limit-val {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. RECENT TRANSACTIONS CARD
+   ─────────────────────────────────────────────────────────────*/
+.db-recent-card {
+  padding: 1.2rem 1.4rem !important;
+}
+
+.db-recent-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-recent-all {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: var(--accent) !important;
+}
+
+.db-recent-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.db-recent-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+}
+
+.db-recent-desc {
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-recent-meta {
+  font-size: 0.68rem !important;
+  color: var(--t3) !important;
+}
+
+.db-recent-amt {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   12. GREETING
+   ─────────────────────────────────────────────────────────────*/
+.db-greeting-name {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--t1) !important;
+  line-height: 1.15 !important;
+}
+
+.db-greeting-sub {
+  font-size: 0.88rem !important;
+  color: var(--t3) !important;
+  margin-top: 4px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   13. INSIGHTS CARD
+   ─────────────────────────────────────────────────────────────*/
+.insights-card {
+  padding: 1.4rem 1.5rem !important;
+}
+.insights-card::before {
+  display: none !important;
+}
+.card-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   14. EXPENSE CATEGORIES
+   ─────────────────────────────────────────────────────────────*/
+.total-expenses {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--t1) !important;
+}
+
+.expense-categories li {
+  border-radius: 10px !important;
+  padding: 0.5rem 0.6rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   15. FORMS & INPUTS
+   ─────────────────────────────────────────────────────────────*/
+.form-input,
+.form-select,
+textarea.form-input {
+  background: rgba(6, 14, 32, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  color: var(--t1) !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.form-input:focus,
+.form-select:focus,
+textarea.form-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(110, 136, 255, 0.12) !important;
+  outline: none !important;
+}
+
+.form-label {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   16. BUTTONS
+   ─────────────────────────────────────────────────────────────*/
+.btn-primary {
+  background: var(--accent) !important;
+  color: #00228a !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(110, 136, 255, 0.25) !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t2) !important;
+  border-radius: 8px !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-danger {
+  background: rgba(255, 180, 171, 0.15) !important;
+  border: 1px solid rgba(255, 180, 171, 0.3) !important;
+  color: var(--exp) !important;
+  border-radius: 8px !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+/* Income button in modals */
+.btn[onclick*="addIncome"] {
+  background: var(--inc) !important;
+  color: #002113 !important;
+  box-shadow: 0 2px 12px rgba(78, 222, 163, 0.25) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   17. MODALS
+   ─────────────────────────────────────────────────────────────*/
+.modal-content {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(32px) !important;
+}
+
+.modal-content::before {
+  display: none !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 1.2rem 1.5rem !important;
+}
+
+.modal-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.modal-body {
+  padding: 1.5rem !important;
+}
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   18. BOTTOM NAV — matches reference (DASH/TRANS/AI/SET)
+   ─────────────────────────────────────────────────────────────*/
+.bottom-nav {
+  background: rgba(6, 14, 32, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 72px !important;
+}
+
+.bn-tab {
+  color: var(--t3) !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 0.62rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  gap: 4px !important;
+}
+
+.bn-tab i {
+  font-size: 1.1rem !important;
+  margin-bottom: 2px !important;
+}
+
+.bn-tab.bn-tab--active {
+  color: var(--accent) !important;
+}
+
+.bn-tab.bn-tab--active i {
+  color: var(--accent) !important;
+}
+
+/* FAB center button */
+.bn-tab--fab .bn-add-ring {
+  background: var(--accent) !important;
+  color: #00228a !important;
+  box-shadow: 0 4px 20px rgba(110, 136, 255, 0.4) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   19. AUTH SCREENS
+   ─────────────────────────────────────────────────────────────*/
+.lock-screen,
+.auth-screen {
+  background: var(--bg) !important;
+}
+
+.lock-card,
+.auth-card {
+  background: rgba(19, 27, 46, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(24px) !important;
+  border-radius: 24px !important;
+}
+
+.auth-brand {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--t1) !important;
+}
+
+.auth-brand span {
+  color: var(--accent) !important;
+}
+
+.auth-action-btn.auth-btn-login {
+  background: var(--accent) !important;
+  color: #00228a !important;
+}
+
+.auth-action-btn.auth-btn-signup {
+  background: rgba(110, 136, 255, 0.12) !important;
+  border: 1px solid rgba(185, 195, 255, 0.25) !important;
+  color: var(--accent) !important;
+}
+
+.auth-popup {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   20. AI ASSISTANT
+   ─────────────────────────────────────────────────────────────*/
+.ask-bl-panel {
+  background: #131b2e !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.ask-bl-header {
+  background: rgba(6, 14, 32, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.ask-bl-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.ask-bl-send {
+  background: var(--accent) !important;
+  color: #00228a !important;
+}
+
+.ask-bl-chip {
+  background: rgba(110, 136, 255, 0.1) !important;
+  border: 1px solid rgba(185, 195, 255, 0.15) !important;
+  color: var(--accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   21. SETTINGS PAGE
+   ─────────────────────────────────────────────────────────────*/
+.settings-page {
+  background: var(--bg) !important;
+}
+
+.sp-header {
+  background: rgba(6, 14, 32, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.sp-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--t1) !important;
+}
+
+.sp-group-body {
+  background: rgba(30, 41, 59, 0.5) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(24px) !important;
+}
+
+.sp-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+.sp-row-title {
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+.sp-row-sub {
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   22. SYNC INDICATOR
+   ─────────────────────────────────────────────────────────────*/
+.bl-sync-indicator {
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  padding: 3px 10px !important;
+  border-radius: 50px !important;
+  border: 1px solid rgba(78, 222, 163, 0.25) !important;
+  background: rgba(78, 222, 163, 0.08) !important;
+  color: var(--inc) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   23. TRANSACTIONS FULL PAGE
+   ─────────────────────────────────────────────────────────────*/
+#txnFullPage {
+  background: var(--bg) !important;
+}
+
+.txn-page-header {
+  background: rgba(6, 14, 32, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.txn-page-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.txn-page-search-input {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t1) !important;
+  border-radius: 10px !important;
+}
+
+.txn-page-search-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(110, 136, 255, 0.12) !important;
+}
+
+.txn-page-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t3) !important;
+  border-radius: 50px !important;
+}
+
+.txn-page-chip--active {
+  background: rgba(110, 136, 255, 0.14) !important;
+  border-color: rgba(185, 195, 255, 0.25) !important;
+  color: var(--accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   24. SHEET / DRAWER
+   ─────────────────────────────────────────────────────────────*/
+.bn-sheet {
+  background: #131b2e !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px 20px 0 0 !important;
+}
+
+.bn-sheet-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.bn-ring-card {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+}
+
+.bn-ring-income {
+  border-color: rgba(78, 222, 163, 0.25) !important;
+}
+.bn-ring-expense {
+  border-color: rgba(255, 180, 171, 0.25) !important;
+}
+
+.bn-ring-label {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.bn-settings-panel {
+  background: #131b2e !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.bn-settings-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: var(--t2) !important;
+}
+
+.bn-settings-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+.bn-settings-danger {
+  color: var(--exp) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   25. MOBILE RESPONSIVE — stat cards & grid below 768px
+   ─────────────────────────────────────────────────────────────*/
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-area {
+    margin-left: 0 !important;
+  }
+
+  .db-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .db-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .db-greeting-name {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   26. NEON GLOW EFFECTS on key cards
+   ─────────────────────────────────────────────────────────────*/
+.db-card-panel::after,
+.db-chart-card::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(110, 136, 255, 0.12) 0%,
+    transparent 70%
+  );
+  top: -40px;
+  right: -40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   27. SCROLLBARS — subtle premium look
+   ─────────────────────────────────────────────────────────────*/
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   28. CONTEXT MENU, TOAST
+   ─────────────────────────────────────────────────────────────*/
+#contextMenu {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ctx-item {
+  color: var(--t2) !important;
+}
+.ctx-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.ctx-item.danger {
+  color: var(--exp) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   29. LOCK SCREEN PIN KEYS
+   ─────────────────────────────────────────────────────────────*/
+.pin-key {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t1) !important;
+  border-radius: 50% !important;
+}
+
+.pin-key:hover {
+  background: rgba(110, 136, 255, 0.15) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   30. ANIMATIONS — subtle fade-in for premium feel
+   ─────────────────────────────────────────────────────────────*/
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.db-stat-card {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.db-stat-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.db-stat-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.db-stat-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.db-chart-card {
+  animation: fadeInUp 0.4s 0.12s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.db-card-panel {
+  animation: fadeInUp 0.4s 0.08s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BlueLedger — Premium Fintech Glass System OVERRIDES
+   Matches reference design from screenshots exactly.
+   Load AFTER style.css  OR  prepend as :root override block.
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* ─────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS — replaces the existing :root block
+   ─────────────────────────────────────────────────────────────*/
+:root {
+  /* Core surfaces */
+  --bg: #0b1326;
+  --bg2: #0f1a30;
+  --bg3: #131b2e;
+  --bg-card: rgba(30, 41, 59, 0.5);
+  --bg-card-hi: rgba(34, 42, 61, 0.7);
+  --bg-surface: #060e20;
+
+  /* Text */
+  --t1: #dae2fd;
+  --t2: #c4c5d7;
+  --t3: #8e90a0;
+  --t4: rgba(218, 226, 253, 0.16);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-md: rgba(255, 255, 255, 0.15);
+  --border-hi: rgba(255, 255, 255, 0.25);
+
+  /* Brand accents */
+  --accent: #b9c3ff; /* primary */
+  --accent-deep: #6e88ff; /* primary-container */
+  --accent-dim: rgba(110, 136, 255, 0.1);
+  --accent-glow: rgba(79, 110, 247, 0.18);
+
+  --inc: #4edea3; /* secondary */
+  --inc-dim: rgba(78, 222, 163, 0.1);
+
+  --exp: #ffb4ab; /* error */
+  --exp-dim: rgba(255, 180, 171, 0.1);
+
+  --tertiary: #d2bbff;
+
+  /* Glass surfaces */
+  --glass: rgba(30, 41, 59, 0.5);
+  --glass-blur: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 28px 72px rgba(0, 0, 0, 0.64);
+  --glow-accent: 0 0 48px rgba(110, 136, 255, 0.1);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Sidebar width */
+  --sidebar-w: 280px;
+}
+
+/* Light mode keeps existing approach — no changes needed */
+
+/* ─────────────────────────────────────────────────────────────
+   2. BASE
+   ─────────────────────────────────────────────────────────────*/
+body {
+  font-family: "Inter", system-ui, sans-serif !important;
+  background: var(--bg) !important;
+  color: var(--t1) !important;
+}
+
+body::before {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 15% 10%,
+      rgba(110, 136, 255, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 85% 0%,
+      rgba(78, 222, 163, 0.07) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 55% 55% at 50% 110%,
+      rgba(78, 222, 163, 0.05) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #060e20 0%, #0b1326 100%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. SIDEBAR — expand to 280px with labels (matches reference)
+   ─────────────────────────────────────────────────────────────*/
+.sidebar {
+  width: var(--sidebar-w) !important;
+  min-width: var(--sidebar-w) !important;
+  max-width: var(--sidebar-w) !important;
+  background: rgba(6, 14, 32, 0.92) !important;
+  backdrop-filter: blur(32px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  align-items: flex-start !important;
+  padding: 24px 0 20px !important;
+}
+
+.sidebar-logo {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #3b5bdb 0%, #6e88ff 100%) !important;
+  box-shadow:
+    0 4px 24px rgba(110, 136, 255, 0.4),
+    0 0 0 1px rgba(185, 195, 255, 0.2) inset !important;
+  margin: 0 0 32px 20px !important;
+}
+
+/* Brand name next to logo */
+.sidebar-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  margin-bottom: 32px;
+}
+
+.sidebar-brand-name {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-brand-sub {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-top: 1px;
+}
+
+/* Nav items — show labels */
+.sidebar-nav {
+  align-items: stretch !important;
+  padding: 0 12px !important;
+  width: 100% !important;
+}
+
+.sb-btn {
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  padding: 0 16px !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--t3) !important;
+  letter-spacing: 0 !important;
+}
+
+.sb-btn::after {
+  content: attr(title);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sb-btn:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--t1) !important;
+  transform: none !important;
+}
+
+.sb-btn.active,
+.sb-btn.bn-tab--active {
+  background: rgba(110, 136, 255, 0.12) !important;
+  color: var(--accent) !important;
+  box-shadow: none !important;
+  border-right: 3px solid var(--accent) !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+.sb-btn.active::before {
+  display: none !important;
+}
+
+.sb-btn.active::after,
+.sb-btn.bn-tab--active::after {
+  color: var(--accent) !important;
+}
+
+/* Remove icon-only tooltip */
+#sb-tooltip {
+  display: none !important;
+}
+
+/* Sidebar bottom */
+.sidebar-bottom {
+  width: 100% !important;
+  padding: 12px 12px 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Premium upgrade card at bottom of sidebar */
+.sidebar-upgrade-card {
+  margin: 16px 12px 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(110, 136, 255, 0.15),
+    rgba(210, 187, 255, 0.08)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-upgrade-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.sidebar-upgrade-sub {
+  font-size: 0.7rem;
+  color: var(--t3);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.sidebar-upgrade-btn {
+  width: 100%;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #00228a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  font-family: "Inter", sans-serif;
+  transition: filter 0.2s;
+}
+
+.sidebar-upgrade-btn:hover {
+  filter: brightness(1.08);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. MAIN AREA — shift right by sidebar width
+   ─────────────────────────────────────────────────────────────*/
+.main-area {
+  /* sidebar is now 280px not 72px */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. TOPBAR
+   ─────────────────────────────────────────────────────────────*/
+.topbar {
+  background: rgba(6, 14, 32, 0.8) !important;
+  backdrop-filter: blur(24px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  height: 68px !important;
+}
+
+.topbar-date-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-date-day {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.topbar-date-full {
+  font-size: 0.72rem;
+  color: var(--t3);
+}
+
+.topbar-avatar {
+  background: linear-gradient(135deg, #3b5bdb, #6e88ff) !important;
+  border: 2px solid rgba(185, 195, 255, 0.3) !important;
+  box-shadow: 0 0 16px rgba(110, 136, 255, 0.2) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. GLASS CARD BASE — the foundational bento card
+   ─────────────────────────────────────────────────────────────*/
+.db-stat-card,
+.db-chart-card,
+.db-panel,
+.db-card-panel,
+.db-recent-card,
+.insights-card,
+.card {
+  background: var(--glass) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-xl) !important;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease !important;
+}
+
+.db-stat-card:hover,
+.db-chart-card:hover,
+.db-panel:hover,
+.db-card-panel:hover,
+.db-recent-card:hover {
+  border-color: var(--border-hi) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. STAT CARDS — match reference (icon + badge + amount + mini bars)
+   ─────────────────────────────────────────────────────────────*/
+.db-stats {
+  gap: 16px !important;
+}
+
+.db-stat-card {
+  padding: 1.4rem 1.5rem 1.2rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.db-stat-card::before {
+  display: none !important; /* remove old gradient */
+}
+
+.dsc-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.dsc-icon--income {
+  background: rgba(78, 222, 163, 0.12) !important;
+  color: var(--inc) !important;
+}
+.dsc-icon--expense {
+  background: rgba(255, 180, 171, 0.12) !important;
+  color: var(--exp) !important;
+}
+.dsc-icon--net {
+  background: rgba(185, 195, 255, 0.12) !important;
+  color: var(--accent) !important;
+}
+
+.dsc-label {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+  margin-bottom: 2px !important;
+}
+
+.db-stat-card .amount {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.15 !important;
+  margin-bottom: 8px !important;
+}
+
+.income-amount {
+  color: var(--inc) !important;
+}
+.expense-amount {
+  color: var(--exp) !important;
+}
+.net-positive {
+  color: var(--t1) !important;
+}
+
+/* Change badge — absolute top-right */
+.db-stat-card .change {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. CHART CARD
+   ─────────────────────────────────────────────────────────────*/
+.db-chart-card {
+  padding: 1.4rem 1.5rem 1.2rem !important;
+}
+
+.db-chart-card::before {
+  display: none !important;
+}
+
+.dcc-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+/* Chart period buttons */
+.cpc-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t3) !important;
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 0.3rem 0.85rem !important;
+}
+
+.cpc-btn--active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #00228a !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. PANEL (All Expenses, My Card panel)
+   ─────────────────────────────────────────────────────────────*/
+.db-panel {
+  padding: 1.4rem 1.5rem !important;
+}
+.db-panel::before {
+  display: none !important;
+}
+
+.db-panel-title,
+.db-card-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-panel-sub {
+  color: var(--t3) !important;
+  font-size: 0.72rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   10. MY CARD PANEL
+   ─────────────────────────────────────────────────────────────*/
+.db-card-panel {
+  border-color: rgba(110, 136, 255, 0.18) !important;
+  padding: 1.4rem 1.5rem 1.2rem !important;
+}
+
+/* Card stack dot indicators */
+.cs-dot {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+.cs-dot.is-active {
+  background: var(--accent) !important;
+  width: 18px !important;
+  border-radius: 4px !important;
+}
+
+/* Card action row */
+.card-action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.card-action-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--t3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--t1);
+}
+.card-action-add {
+  color: var(--inc) !important;
+  border-color: rgba(78, 222, 163, 0.2) !important;
+}
+.card-action-remove {
+  color: var(--exp) !important;
+  border-color: rgba(255, 180, 171, 0.2) !important;
+}
+
+/* Monthly limit row */
+.card-limit-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.card-limit-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--t3);
+}
+
+.card-limit-val {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. RECENT TRANSACTIONS CARD
+   ─────────────────────────────────────────────────────────────*/
+.db-recent-card {
+  padding: 1.2rem 1.4rem !important;
+}
+
+.db-recent-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-recent-all {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: var(--accent) !important;
+}
+
+.db-recent-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.db-recent-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+}
+
+.db-recent-desc {
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.db-recent-meta {
+  font-size: 0.68rem !important;
+  color: var(--t3) !important;
+}
+
+.db-recent-amt {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   12. GREETING
+   ─────────────────────────────────────────────────────────────*/
+.db-greeting-name {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--t1) !important;
+  line-height: 1.15 !important;
+}
+
+.db-greeting-sub {
+  font-size: 0.88rem !important;
+  color: var(--t3) !important;
+  margin-top: 4px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   13. INSIGHTS CARD
+   ─────────────────────────────────────────────────────────────*/
+.insights-card {
+  padding: 1.4rem 1.5rem !important;
+}
+.insights-card::before {
+  display: none !important;
+}
+.card-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   14. EXPENSE CATEGORIES
+   ─────────────────────────────────────────────────────────────*/
+.total-expenses {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--t1) !important;
+}
+
+.expense-categories li {
+  border-radius: 10px !important;
+  padding: 0.5rem 0.6rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   15. FORMS & INPUTS
+   ─────────────────────────────────────────────────────────────*/
+.form-input,
+.form-select,
+textarea.form-input {
+  background: rgba(6, 14, 32, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  color: var(--t1) !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.form-input:focus,
+.form-select:focus,
+textarea.form-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px rgba(110, 136, 255, 0.12) !important;
+  outline: none !important;
+}
+
+.form-label {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   16. BUTTONS
+   ─────────────────────────────────────────────────────────────*/
+.btn-primary {
+  background: var(--accent) !important;
+  color: #00228a !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(110, 136, 255, 0.25) !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t2) !important;
+  border-radius: 8px !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-danger {
+  background: rgba(255, 180, 171, 0.15) !important;
+  border: 1px solid rgba(255, 180, 171, 0.3) !important;
+  color: var(--exp) !important;
+  border-radius: 8px !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+/* Income button in modals */
+.btn[onclick*="addIncome"] {
+  background: var(--inc) !important;
+  color: #002113 !important;
+  box-shadow: 0 2px 12px rgba(78, 222, 163, 0.25) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   17. MODALS
+   ─────────────────────────────────────────────────────────────*/
+.modal-content {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(32px) !important;
+}
+
+.modal-content::before {
+  display: none !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 1.2rem 1.5rem !important;
+}
+
+.modal-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.modal-body {
+  padding: 1.5rem !important;
+}
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   18. BOTTOM NAV — matches reference (DASH/TRANS/AI/SET)
+   ─────────────────────────────────────────────────────────────*/
+.bottom-nav {
+  background: rgba(6, 14, 32, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 72px !important;
+}
+
+.bn-tab {
+  color: var(--t3) !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 0.62rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  gap: 4px !important;
+}
+
+.bn-tab i {
+  font-size: 1.1rem !important;
+  margin-bottom: 2px !important;
+}
+
+.bn-tab.bn-tab--active {
+  color: var(--accent) !important;
+}
+
+.bn-tab.bn-tab--active i {
+  color: var(--accent) !important;
+}
+
+/* FAB center button */
+.bn-tab--fab .bn-add-ring {
+  background: var(--accent) !important;
+  color: #00228a !important;
+  box-shadow: 0 4px 20px rgba(110, 136, 255, 0.4) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   19. AUTH SCREENS
+   ─────────────────────────────────────────────────────────────*/
+.lock-screen,
+.auth-screen {
+  background: var(--bg) !important;
+}
+
+.lock-card,
+.auth-card {
+  background: rgba(19, 27, 46, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(24px) !important;
+  border-radius: 24px !important;
+}
+
+.auth-brand {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--t1) !important;
+}
+
+.auth-brand span {
+  color: var(--accent) !important;
+}
+
+.auth-action-btn.auth-btn-login {
+  background: var(--accent) !important;
+  color: #00228a !important;
+}
+
+.auth-action-btn.auth-btn-signup {
+  background: rgba(110, 136, 255, 0.12) !important;
+  border: 1px solid rgba(185, 195, 255, 0.25) !important;
+  color: var(--accent) !important;
+}
+
+.auth-popup {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   20. AI ASSISTANT
+   ─────────────────────────────────────────────────────────────*/
+.ask-bl-panel {
+  background: #131b2e !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.ask-bl-header {
+  background: rgba(6, 14, 32, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.ask-bl-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.ask-bl-send {
+  background: var(--accent) !important;
+  color: #00228a !important;
+}
+
+.ask-bl-chip {
+  background: rgba(110, 136, 255, 0.1) !important;
+  border: 1px solid rgba(185, 195, 255, 0.15) !important;
+  color: var(--accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   21. SETTINGS PAGE
+   ─────────────────────────────────────────────────────────────*/
+.settings-page {
+  background: var(--bg) !important;
+}
+
+.sp-header {
+  background: rgba(6, 14, 32, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.sp-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--t1) !important;
+}
+
+.sp-group-body {
+  background: rgba(30, 41, 59, 0.5) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(24px) !important;
+}
+
+.sp-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+.sp-row-title {
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+.sp-row-sub {
+  color: var(--t3) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   22. SYNC INDICATOR
+   ─────────────────────────────────────────────────────────────*/
+.bl-sync-indicator {
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  padding: 3px 10px !important;
+  border-radius: 50px !important;
+  border: 1px solid rgba(78, 222, 163, 0.25) !important;
+  background: rgba(78, 222, 163, 0.08) !important;
+  color: var(--inc) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   23. TRANSACTIONS FULL PAGE
+   ─────────────────────────────────────────────────────────────*/
+#txnFullPage {
+  background: var(--bg) !important;
+}
+
+.txn-page-header {
+  background: rgba(6, 14, 32, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.txn-page-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.txn-page-search-input {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t1) !important;
+  border-radius: 10px !important;
+}
+
+.txn-page-search-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(110, 136, 255, 0.12) !important;
+}
+
+.txn-page-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t3) !important;
+  border-radius: 50px !important;
+}
+
+.txn-page-chip--active {
+  background: rgba(110, 136, 255, 0.14) !important;
+  border-color: rgba(185, 195, 255, 0.25) !important;
+  color: var(--accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   24. SHEET / DRAWER
+   ─────────────────────────────────────────────────────────────*/
+.bn-sheet {
+  background: #131b2e !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px 20px 0 0 !important;
+}
+
+.bn-sheet-title {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.bn-ring-card {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+}
+
+.bn-ring-income {
+  border-color: rgba(78, 222, 163, 0.25) !important;
+}
+.bn-ring-expense {
+  border-color: rgba(255, 180, 171, 0.25) !important;
+}
+
+.bn-ring-label {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+}
+
+.bn-settings-panel {
+  background: #131b2e !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.bn-settings-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: var(--t2) !important;
+}
+
+.bn-settings-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+.bn-settings-danger {
+  color: var(--exp) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   25. MOBILE RESPONSIVE — stat cards & grid below 768px
+   ─────────────────────────────────────────────────────────────*/
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-area {
+    margin-left: 0 !important;
+  }
+
+  .db-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .db-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .db-greeting-name {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   26. NEON GLOW EFFECTS on key cards
+   ─────────────────────────────────────────────────────────────*/
+.db-card-panel::after,
+.db-chart-card::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(110, 136, 255, 0.12) 0%,
+    transparent 70%
+  );
+  top: -40px;
+  right: -40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   27. SCROLLBARS — subtle premium look
+   ─────────────────────────────────────────────────────────────*/
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   28. CONTEXT MENU, TOAST
+   ─────────────────────────────────────────────────────────────*/
+#contextMenu {
+  background: #131b2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ctx-item {
+  color: var(--t2) !important;
+}
+.ctx-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.ctx-item.danger {
+  color: var(--exp) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   29. LOCK SCREEN PIN KEYS
+   ─────────────────────────────────────────────────────────────*/
+.pin-key {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--t1) !important;
+  border-radius: 50% !important;
+}
+
+.pin-key:hover {
+  background: rgba(110, 136, 255, 0.15) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   30. ANIMATIONS — subtle fade-in for premium feel
+   ─────────────────────────────────────────────────────────────*/
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.db-stat-card {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.db-stat-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.db-stat-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.db-stat-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.db-chart-card {
+  animation: fadeInUp 0.4s 0.12s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.db-card-panel {
+  animation: fadeInUp 0.4s 0.08s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
