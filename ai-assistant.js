@@ -667,11 +667,11 @@ function _buildPage() {
           <!-- cards injected by _renderAnalysis() -->
         </div>
       </div>
-      <div class="aia-cta-bar">
-        <button class="aia-cta-btn" onclick="aiaSetMode('chat');_clearChat();">
-          <i class="fas fa-comment-dots"></i> Continue with AI Assistant
-        </button>
-      </div>
+      // <div class="aia-cta-bar">
+      //   <button class="aia-cta-btn" onclick="aiaSetMode('chat');_clearChat();">
+      //     <i class="fas fa-comment-dots"></i> Continue with AI Assistant
+      //   </button>
+      // </div>
     </div>
 
     <!-- ── CHAT VIEW ──────────────────────────────────────── -->
