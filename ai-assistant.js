@@ -636,13 +636,6 @@ function _buildPage() {
     </div>
     <div class="aia-sb-list" id="aiaSbPins"></div>
 
-    <div class="aia-sb-bottom">
-      <button class="aia-sb-bottom-btn" onclick="closeAIAssistant()" title="Close">
-        <i class="fas fa-times"></i>
-        <span class="aia-sb-text">Close</span>
-      </button>
-    </div>
-
   </aside>
 
   <!-- ══ MAIN ══════════════════════════════════════════════ -->
