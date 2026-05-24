@@ -928,8 +928,9 @@ function _renderAnalysis() {
 
     <div class="aia-card aia-card--pred">
       <div class="aia-card-hdr">
-        <div class="aia-card-icon" style="background:rgba(16,185,129,0.12);color:${predColor}"><i class="fas fa-chart-line"></i></div>
+        <div class="aia-card-icon" style="background:rgba(78,222,163,0.12);color:${predColor}"><i class="fas fa-chart-line"></i></div>
         <span class="aia-card-title">Month-end Prediction</span>
+        ${!over ? `<span class="aia-pred-ontrack">ON TRACK</span>` : ""}
       </div>
       <div class="aia-pred-amt" style="color:${predColor}">₹${proj.toLocaleString("en-IN")}</div>
       <div class="aia-pred-meta">
@@ -938,7 +939,16 @@ function _renderAnalysis() {
         <span><i class="fas fa-wallet"></i> ₹${Math.round(tmEx).toLocaleString("en-IN")} spent</span>
       </div>
       ${over ? `<div class="aia-pred-warn">⚠️ ₹${(proj - lim).toLocaleString("en-IN")} over ₹${lim.toLocaleString("en-IN")} budget</div>` : ""}
-      ${tmIn > 0 ? `<div class="aia-pred-savings">💰 Savings: ₹${Math.round(tmIn - tmEx).toLocaleString("en-IN")} (${savR}%)</div>` : ""}
+      ${
+        tmIn > 0
+          ? `
+      <div class="aia-pred-savings-row">
+        <div class="aia-pred-savings-label"><span>SAVINGS TARGET</span><span>${savR}%</span></div>
+        <div class="aia-pred-progress"><div class="aia-pred-progress-fill" style="width:${Math.min(savR, 100)}%"></div></div>
+      </div>
+      <div class="aia-pred-savings">💰 Savings: ₹${Math.round(tmIn - tmEx).toLocaleString("en-IN")} (${savR}%)</div>`
+          : ""
+      }
     </div>
 
   </div>
@@ -950,8 +960,8 @@ function _renderAnalysis() {
       <span class="aia-card-title">Spending Behaviour</span>
     </div>
     <div class="aia-behav-stats">
-      ${topCat ? `<div class="aia-bstat"><span class="aia-bstat-em">🏆</span><div><div class="aia-bstat-val">${safeText(topCat[0])}: ₹${Math.round(topCat[1]).toLocaleString("en-IN")}</div><div class="aia-bstat-lbl">Top category</div></div></div>` : ""}
-      ${topDow[0] && topDow[0][1] > 0 ? `<div class="aia-bstat"><span class="aia-bstat-em">📆</span><div><div class="aia-bstat-val">${dN[topDow[0][0]]}</div><div class="aia-bstat-lbl">Highest spend day</div></div></div>` : ""}
+      ${topCat ? `<div class="aia-bstat"><div class="aia-bstat-label">TOP CATEGORY</div><div class="aia-bstat-val">${safeText(topCat[0])}: ₹${Math.round(topCat[1]).toLocaleString("en-IN")}</div></div>` : ""}
+      ${topDow[0] && topDow[0][1] > 0 ? `<div class="aia-bstat"><div class="aia-bstat-label">HIGHEST SPEND DAY</div><div class="aia-bstat-val">${dN[topDow[0][0]]}</div></div>` : ""}
       ${fg ? `<div class="aia-bstat aia-bstat--warn"><span class="aia-bstat-em">📈</span><div><div class="aia-bstat-val">${safeText(fg.category)} +${fg.pct}%</div><div class="aia-bstat-lbl">Fastest growing</div></div></div>` : ""}
       ${lmEx > 0 && tmEx > 0 ? `<div class="aia-bstat ${mom > 10 ? "aia-bstat--warn" : ""}"><span class="aia-bstat-em">${mom > 0 ? "📈" : "📉"}</span><div><div class="aia-bstat-val">${mom > 0 ? "+" : ""}${mom}%</div><div class="aia-bstat-lbl">vs last month</div></div></div>` : ""}
     </div>
@@ -963,6 +973,7 @@ function _renderAnalysis() {
     <div class="aia-card-hdr">
       <div class="aia-card-icon" style="background:rgba(251,191,36,0.12);color:#fbbf24"><i class="fas fa-lightbulb"></i></div>
       <span class="aia-card-title">Smart Insights</span>
+      <button class="aia-ins-view-all" onclick="aiaSetMode('analysis')">View All</button>
       <button class="aia-pin-btn" onclick="aiaPinInsights()" title="Pin these insights"><i class="fas fa-thumbtack"></i> Pin</button>
     </div>
     <div class="aia-ins-list">${insHtml}</div>
