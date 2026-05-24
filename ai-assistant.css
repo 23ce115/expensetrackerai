@@ -1,38 +1,36 @@
 /* ═══════════════════════════════════════════════════════════════
    ai-assistant.css  —  BlueLedger AI Financial Workspace
-   Redesigned to match Premium Fintech Glass System
+   Redesigned to match Image 1 (target reference)
    ═══════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════
    VARIABLES
    ══════════════════════════════════════════════════════════════ */
 .aia-page {
-  --sb-w: 280px;
-  --sb-col-w: 52px;
-  --bg: #060e20;
-  --bg2: #0b1326;
-  --bg3: #0f1a30;
-  --bg4: rgba(30, 41, 59, 0.6);
-  --brd: rgba(255, 255, 255, 0.08);
-  --brd2: rgba(255, 255, 255, 0.14);
+  --sb-w: 220px;
+  --sb-col-w: 0px;
+  --bg: #070c18;
+  --bg2: #0a1020;
+  --bg3: rgba(255, 255, 255, 0.035);
+  --bg4: rgba(255, 255, 255, 0.05);
+  --brd: rgba(255, 255, 255, 0.07);
+  --brd2: rgba(255, 255, 255, 0.13);
   --t1: #dae2fd;
-  --t2: #c4c5d7;
-  --t3: #8e90a0;
-  --acc: #b9c3ff;
-  --acc-d: #6e88ff;
+  --t2: #9aa0bc;
+  --t3: #555e7a;
+  --acc: #818cf8;
+  --acc-d: #6366f1;
   --inc: #4edea3;
-  --exp: #ffb4ab;
+  --exp: #ff6b6b;
   --r: 14px;
   --r-sm: 10px;
-  --glass: rgba(30, 41, 59, 0.5);
-  --blur: 24px;
 }
 
 [data-theme="light"] .aia-page {
   --bg: #f0f4ff;
   --bg2: #ffffff;
-  --bg3: #f6f8ff;
-  --bg4: rgba(240, 244, 255, 0.8);
+  --bg3: rgba(0, 0, 0, 0.025);
+  --bg4: rgba(0, 0, 0, 0.04);
   --brd: rgba(0, 0, 0, 0.07);
   --brd2: rgba(0, 0, 0, 0.13);
   --t1: #1a1d2e;
@@ -49,28 +47,8 @@
   z-index: 3000;
   background: var(--bg);
   display: flex;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", "DM Sans", system-ui, sans-serif;
   overflow: hidden;
-}
-
-/* Ambient glow */
-.aia-page::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(
-      ellipse 60% 50% at 20% 10%,
-      rgba(110, 136, 255, 0.1) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 50% 45% at 80% 90%,
-      rgba(78, 222, 163, 0.06) 0%,
-      transparent 55%
-    );
 }
 
 .aia-shell {
@@ -78,42 +56,37 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  position: relative;
-  z-index: 1;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SIDEBAR
+   SIDEBAR — always expanded by default, matches Image 1
    ══════════════════════════════════════════════════════════════ */
 .aia-sidebar {
   width: var(--sb-w);
   flex-shrink: 0;
-  background: rgba(6, 14, 32, 0.95);
+  background: var(--bg2);
   border-right: 1px solid var(--brd);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 2;
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
 }
 
 .aia-sb--col {
   width: var(--sb-col-w) !important;
 }
 
+/* Collapsed state — hide all text content */
 .aia-shell--col .aia-sb-text,
 .aia-shell--col .aia-sb-section,
-.aia-shell--col .aia-sb-list,
-.aia-shell--col .aia-sb-search {
+.aia-shell--col .aia-sb-list {
   display: none !important;
 }
-
 .aia-shell--col .aia-sb-brand {
   justify-content: center;
-  padding: 0.85rem 0.5rem;
+  padding: 0.75rem 0.5rem;
 }
 .aia-shell--col .aia-sb-collapse-btn {
   position: static;
@@ -125,49 +98,47 @@
   padding: 0;
   justify-content: center;
   margin: 0.3rem auto;
-  border-radius: var(--r);
 }
 
 /* ── Brand bar ── */
 .aia-sb-brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 1.1rem 1rem 0.85rem;
+  gap: 0.55rem;
+  padding: 0.9rem 0.9rem 0.75rem;
   flex-shrink: 0;
 }
 
 .aia-sb-brand-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #3b5bdb, var(--acc));
+  background: linear-gradient(135deg, var(--acc-d), var(--acc));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: #fff;
-  box-shadow: 0 3px 14px rgba(110, 136, 255, 0.32);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.32);
 }
 
 .aia-sb-brand-label {
   flex: 1;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--t1);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .aia-sb-collapse-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--t3);
   background: none;
   border: none;
@@ -182,22 +153,52 @@
   color: var(--t2);
 }
 
+/* ── Search bar ── */
+.aia-sb-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0.7rem 0.65rem;
+  padding: 0.42rem 0.65rem;
+  background: var(--bg3);
+  border: 1px solid var(--brd);
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.aia-sb-search i {
+  font-size: 0.75rem;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.aia-sb-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.75rem;
+  color: var(--t1);
+  font-family: inherit;
+}
+.aia-sb-search-input::placeholder {
+  color: var(--t3);
+}
+
 /* ── New Analysis button ── */
 .aia-sb-new-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0 0.8rem 0.85rem;
-  padding: 0.62rem 1rem;
+  margin: 0 0.7rem 0.8rem;
+  padding: 0.55rem 0.85rem;
   background: linear-gradient(
     135deg,
-    rgba(110, 136, 255, 0.16),
-    rgba(185, 195, 255, 0.08)
+    rgba(99, 102, 241, 0.16),
+    rgba(129, 140, 248, 0.08)
   );
-  border: 1px solid rgba(185, 195, 255, 0.22);
-  border-radius: 12px;
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  border-radius: 10px;
   color: var(--acc);
-  font-size: 0.82rem;
+  font-size: 0.79rem;
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
@@ -206,13 +207,13 @@
   transition:
     background 0.14s,
     transform 0.1s;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 .aia-sb-new-btn:hover {
   background: linear-gradient(
     135deg,
-    rgba(110, 136, 255, 0.24),
-    rgba(185, 195, 255, 0.14)
+    rgba(99, 102, 241, 0.24),
+    rgba(129, 140, 248, 0.14)
   );
   transform: translateY(-1px);
 }
@@ -221,13 +222,13 @@
 .aia-sb-section {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.62rem;
+  gap: 0.35rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: var(--t3);
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  padding: 0.65rem 1rem 0.3rem;
+  padding: 0.55rem 0.9rem 0.25rem;
   flex-shrink: 0;
 }
 
@@ -236,7 +237,7 @@
   overflow-y: auto;
   flex-shrink: 1;
   min-height: 0;
-  padding: 0 0.55rem;
+  padding: 0 0.45rem;
   scrollbar-width: none;
 }
 .aia-sb-list::-webkit-scrollbar {
@@ -244,26 +245,37 @@
 }
 
 .aia-sb-empty {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--t3);
-  padding: 0.5rem 0.6rem;
+  padding: 0.4rem 0.5rem;
   font-style: italic;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 /* ── Report rows ── */
 .aia-sb-report {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.6rem;
-  border-radius: 10px;
-  margin-bottom: 0.15rem;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 9px;
+  margin-bottom: 0.1rem;
   cursor: pointer;
   transition: background 0.12s;
 }
 .aia-sb-report:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* Dot indicator */
+.aia-sb-report::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fbbf24;
+  flex-shrink: 0;
+  margin-left: 2px;
 }
 
 .aia-sb-report-top {
@@ -273,17 +285,15 @@
   flex: 1;
   min-width: 0;
 }
-
 .aia-sb-report-title {
-  font-size: 0.77rem;
-  font-weight: 600;
-  color: var(--t1);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--t2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
 }
-
 .aia-sb-report-meta {
   display: none !important;
 }
@@ -299,13 +309,13 @@
 
 /* ── Delete buttons ── */
 .aia-sb-del {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   color: var(--t3);
   background: none;
   border: none;
@@ -330,10 +340,10 @@
 .aia-sb-pin {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.48rem 0.6rem;
-  border-radius: 10px;
-  margin-bottom: 0.12rem;
+  gap: 0.45rem;
+  padding: 0.42rem 0.55rem;
+  border-radius: 9px;
+  margin-bottom: 0.1rem;
   cursor: default;
   transition: background 0.12s;
 }
@@ -341,14 +351,14 @@
   background: rgba(255, 255, 255, 0.04);
 }
 .aia-sb-pin-icon {
-  font-size: 0.7rem;
-  color: var(--acc);
+  font-size: 0.68rem;
+  color: var(--t3);
   flex-shrink: 0;
 }
 .aia-sb-pin-text {
-  font-size: 0.73rem;
-  color: var(--t2);
-  line-height: 1.45;
+  font-size: 0.71rem;
+  color: var(--t3);
+  line-height: 1.4;
   flex: 1;
 }
 
@@ -356,20 +366,19 @@
 .aia-sb-bottom {
   margin-top: auto;
   border-top: 1px solid var(--brd);
-  padding: 0.65rem 0.55rem;
+  padding: 0.55rem 0.45rem;
   flex-shrink: 0;
 }
-
 .aia-sb-bottom-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   width: 100%;
-  padding: 0.52rem 0.65rem;
-  border-radius: 9px;
-  font-size: 0.78rem;
+  padding: 0.48rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--t2);
+  color: var(--t3);
   background: none;
   border: none;
   cursor: pointer;
@@ -379,8 +388,8 @@
   font-family: inherit;
 }
 .aia-sb-bottom-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--t1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--t2);
 }
 
 .aia-sb-scroll-area {
@@ -404,43 +413,36 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
-  background: var(--bg2);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TOPBAR & TABS
+   TOPBAR — matches Image 1: hamburger | title || tabs | gear | avatar
    ══════════════════════════════════════════════════════════════ */
 .aia-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.35rem;
-  height: 56px;
+  padding: 0 1.25rem;
+  height: 52px;
   border-bottom: 1px solid var(--brd);
-  background: rgba(6, 14, 32, 0.8);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--bg2);
   flex-shrink: 0;
   gap: 0.75rem;
 }
-
 .aia-topbar-l {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   min-width: 0;
 }
-
 .aia-topbar-r {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
   flex-shrink: 0;
 }
-
 .aia-topbar-title {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--t1);
   display: flex;
@@ -451,13 +453,13 @@
 }
 
 .aia-icon-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   color: var(--t2);
   background: none;
   border: none;
@@ -471,43 +473,70 @@
   color: var(--t1);
 }
 
-/* Tab buttons */
+/* Settings gear icon — circle style from Image 1 */
+.aia-icon-btn.aia-settings-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--brd);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+}
+.aia-icon-btn.aia-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Avatar circle — matches Image 1 */
+.aia-avatar-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--acc-d), var(--acc));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  border: none;
+  cursor: default;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* Tab buttons — underline style from Image 1 */
 .aia-tab-btn {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: 0;
+  font-size: 0.77rem;
   font-weight: 500;
   color: var(--t3);
   background: none;
   border: none;
   cursor: pointer;
-  transition:
-    color 0.15s,
-    background 0.15s;
-  font-family: "Inter", sans-serif;
+  height: 52px;
+  transition: color 0.15s;
+  font-family: inherit;
 }
 .aia-tab-btn i {
   font-size: 0.82rem;
 }
 .aia-tab-btn:hover {
   color: var(--t1);
-  background: rgba(255, 255, 255, 0.05);
 }
 .aia-tab-btn.active {
   color: var(--acc);
-  background: transparent;
   font-weight: 600;
 }
 .aia-tab-btn.active::after {
   content: "";
   position: absolute;
-  bottom: -1px;
-  left: 0.5rem;
-  right: 0.5rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   border-radius: 2px 2px 0 0;
   background: var(--acc);
@@ -528,22 +557,22 @@
 .aia-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem 1.6rem;
+  padding: 1.25rem 1.5rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(185, 195, 255, 0.18) transparent;
+  scrollbar-color: rgba(129, 140, 248, 0.18) transparent;
 }
 .aia-scroll::-webkit-scrollbar {
   width: 4px;
 }
 .aia-scroll::-webkit-scrollbar-thumb {
-  background: rgba(185, 195, 255, 0.18);
+  background: rgba(129, 140, 248, 0.18);
   border-radius: 4px;
 }
 
 .aia-col {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1rem;
   max-width: 960px;
   margin: 0 auto;
 }
@@ -551,71 +580,62 @@
 .aia-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.1rem;
+  gap: 1rem;
 }
 
-/* ── The glass card ── */
+/* ── Glass card ── */
 .aia-card {
-  background: var(--glass);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--brd);
   border-radius: var(--r);
-  padding: 1.25rem 1.35rem;
+  padding: 1.15rem 1.25rem;
   transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
+    border-color 0.18s,
+    box-shadow 0.18s;
   position: relative;
   overflow: hidden;
 }
 .aia-card:hover {
   border-color: var(--brd2);
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.3),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .aia-card--score {
   background: linear-gradient(
     135deg,
-    rgba(110, 136, 255, 0.08),
-    rgba(185, 195, 255, 0.03)
+    rgba(99, 102, 241, 0.05),
+    rgba(129, 140, 248, 0.02)
   );
-  border-color: rgba(110, 136, 255, 0.2);
+  border-color: rgba(99, 102, 241, 0.14);
 }
 
 .aia-card-hdr {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
 }
-
 .aia-card-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   flex-shrink: 0;
 }
-
 .aia-card-title {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 700;
   color: var(--t1);
   flex: 1;
   letter-spacing: -0.01em;
 }
-
 .aia-card-desc {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--t2);
   line-height: 1.65;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.85rem;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -624,9 +644,8 @@
 .aia-score-body {
   display: flex;
   align-items: center;
-  gap: 1.1rem;
+  gap: 1rem;
 }
-
 .aia-ring-wrap {
   position: relative;
   flex-shrink: 0;
@@ -645,16 +664,15 @@
   pointer-events: none;
 }
 .aia-ring-num {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
   line-height: 1;
 }
 .aia-ring-den {
   font-size: 0.6rem;
   color: var(--t3);
-  margin-top: 0.08rem;
+  margin-top: 0.1rem;
 }
 
 .aia-score-info {
@@ -662,34 +680,33 @@
   min-width: 0;
 }
 .aia-score-grade {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 .aia-score-sub {
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   color: var(--t3);
-  margin: 0.08rem 0 0.5rem;
+  margin: 0.08rem 0 0.45rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 .aia-factors {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 .aia-factor {
   display: flex;
   align-items: flex-start;
-  gap: 0.38rem;
-  font-size: 0.7rem;
-  line-height: 1.45;
-  padding: 0.05rem 0;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  padding: 0.04rem 0;
 }
 .aia-factor i {
   font-size: 0.68rem;
-  margin-top: 0.12rem;
+  margin-top: 0.1rem;
   flex-shrink: 0;
 }
 .aia-factor--pos {
@@ -706,87 +723,63 @@
    PREDICTION CARD
    ══════════════════════════════════════════════════════════════ */
 .aia-pred-amt {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.7rem;
+  font-weight: 800;
   letter-spacing: -0.04em;
-  margin: 0.25rem 0 0.55rem;
+  margin: 0.15rem 0 0.45rem;
   line-height: 1;
 }
-
 .aia-pred-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  font-size: 0.71rem;
+  gap: 0.6rem;
+  font-size: 0.7rem;
   color: var(--t2);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.65rem;
 }
 .aia-pred-meta span {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-}
-
-.aia-pred-warn,
-.aia-pred-savings {
-  display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  margin-top: 0.5rem;
-  font-size: 0.73rem;
-  font-weight: 600;
-  padding: 0.4rem 0.7rem;
-  border-radius: 9px;
-}
-.aia-pred-warn {
-  color: var(--exp);
-  background: rgba(255, 180, 171, 0.07);
-  border: 1px solid rgba(255, 180, 171, 0.18);
-}
-.aia-pred-savings {
-  color: var(--inc);
-  background: rgba(78, 222, 163, 0.07);
-  border: 1px solid rgba(78, 222, 163, 0.18);
+  gap: 0.28rem;
 }
 
 /* ON TRACK badge */
 .aia-pred-ontrack {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--inc);
   background: rgba(78, 222, 163, 0.1);
-  border: 1px solid rgba(78, 222, 163, 0.22);
+  border: 1px solid rgba(78, 222, 163, 0.3);
   border-radius: 50px;
-  padding: 0.2rem 0.6rem;
+  padding: 0.22rem 0.65rem;
   margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Savings target progress */
 .aia-pred-savings-row {
-  margin-top: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 .aia-pred-savings-label {
   display: flex;
   justify-content: space-between;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: var(--t3);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 .aia-pred-savings-label span:last-child {
   color: var(--inc);
 }
 .aia-pred-progress {
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -797,21 +790,42 @@
   transition: width 1s ease;
 }
 
+.aia-pred-warn,
+.aia-pred-savings {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.38rem 0.65rem;
+  border-radius: 9px;
+}
+.aia-pred-warn {
+  color: var(--exp);
+  background: rgba(255, 107, 107, 0.07);
+  border: 1px solid rgba(255, 107, 107, 0.18);
+}
+.aia-pred-savings {
+  color: var(--inc);
+  background: rgba(78, 222, 163, 0.07);
+  border: 1px solid rgba(78, 222, 163, 0.2);
+}
+
 /* ══════════════════════════════════════════════════════════════
-   SPENDING BEHAVIOUR
+   SPENDING BEHAVIOUR — 2-col stat boxes like Image 1
    ══════════════════════════════════════════════════════════════ */
 .aia-behav-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.6rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.9rem;
 }
-
 .aia-bstat {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--brd);
-  border-radius: 12px;
-  padding: 0.75rem 0.9rem;
+  border-radius: 11px;
+  padding: 0.7rem 0.85rem;
 }
 .aia-bstat-em {
   display: none;
@@ -824,22 +838,22 @@
 }
 
 .aia-bstat-label {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.3rem;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.28rem;
+  display: block;
 }
 .aia-bstat-val {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--t1);
   line-height: 1.2;
 }
 .aia-bstat-lbl {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   color: var(--t3);
   margin-top: 0.1rem;
 }
@@ -848,109 +862,59 @@
 .aia-dow-chart {
   display: flex;
   align-items: flex-end;
-  gap: 0.35rem;
-  height: 60px;
-  padding-top: 0.25rem;
+  gap: 0;
+  height: 56px;
+  padding: 0 0.1rem;
 }
 .aia-dow-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.22rem;
   flex: 1;
 }
 .aia-dow-bar {
-  width: 100%;
-  max-width: 28px;
-  border-radius: 5px 5px 0 0;
-  background: rgba(185, 195, 255, 0.15);
+  width: 60%;
+  max-width: 22px;
+  border-radius: 4px 4px 0 0;
+  background: rgba(129, 140, 248, 0.15);
   transition: height 0.5s ease;
-  min-height: 4px;
+  min-height: 3px;
 }
 .aia-dow-bar--top {
-  background: rgba(110, 136, 255, 0.65);
-  box-shadow: 0 0 12px rgba(110, 136, 255, 0.3);
+  background: #818cf8;
+  box-shadow: 0 0 14px rgba(129, 140, 248, 0.35);
 }
 .aia-dow-lbl {
   font-size: 0.56rem;
   color: var(--t3);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SMART INSIGHTS
+   SMART INSIGHTS — icon rows like Image 1
    ══════════════════════════════════════════════════════════════ */
 .aia-pin-btn {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-left: auto;
-  font-size: 0.68rem;
+  gap: 0.28rem;
+  margin-left: 0.5rem;
+  font-size: 0.67rem;
   font-weight: 600;
-  padding: 0.24rem 0.58rem;
+  padding: 0.22rem 0.55rem;
   border-radius: 7px;
-  border: 1px solid rgba(185, 195, 255, 0.22);
+  border: 1px solid rgba(129, 140, 248, 0.22);
   color: var(--acc);
-  background: rgba(185, 195, 255, 0.08);
+  background: rgba(129, 140, 248, 0.08);
   cursor: pointer;
   transition: background 0.12s;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 .aia-pin-btn:hover {
-  background: rgba(185, 195, 255, 0.16);
+  background: rgba(129, 140, 248, 0.15);
 }
 
-.aia-ins-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.aia-ins-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.025);
-  border-left: 3px solid var(--acc);
-  transition: filter 0.12s;
-}
-.aia-ins-row:hover {
-  filter: brightness(1.06);
-}
-.aia-ins-row--positive {
-  border-left-color: var(--inc);
-}
-.aia-ins-row--warn {
-  border-left-color: #fbbf24;
-}
-.aia-ins-row--danger {
-  border-left-color: var(--exp);
-  background: rgba(255, 180, 171, 0.04);
-}
-.aia-ins-row--info {
-  border-left-color: var(--acc);
-}
-
-.aia-ins-em {
-  display: none;
-}
-
-.aia-ins-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--t1);
-  line-height: 1.35;
-}
-.aia-ins-body {
-  font-size: 0.71rem;
-  color: var(--t2);
-  line-height: 1.55;
-  margin-top: 0.18rem;
-}
-
-/* View All link for insights */
+/* View All link */
 .aia-ins-view-all {
   font-size: 0.72rem;
   font-weight: 600;
@@ -959,11 +923,93 @@
   margin-left: auto;
   background: none;
   border: none;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
   transition: opacity 0.14s;
 }
 .aia-ins-view-all:hover {
-  opacity: 0.75;
+  opacity: 0.7;
+}
+
+.aia-ins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Insight row with left icon like Image 1 */
+.aia-ins-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--brd);
+  transition: border-color 0.15s;
+}
+.aia-ins-row:hover {
+  border-color: var(--brd2);
+}
+
+/* Remove old left-border style — use icon instead */
+.aia-ins-row--positive {
+  border-color: var(--brd);
+}
+.aia-ins-row--warn {
+  border-color: var(--brd);
+}
+.aia-ins-row--danger {
+  border-color: var(--brd);
+  background: rgba(255, 107, 107, 0.03);
+}
+.aia-ins-row--info {
+  border-color: var(--brd);
+}
+
+/* Icon circle — matches Image 1 style */
+.aia-ins-em {
+  display: none;
+}
+
+/* We inject a CSS icon circle via the icon container span */
+.aia-ins-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+.aia-ins-row--positive .aia-ins-ico {
+  background: rgba(78, 222, 163, 0.12);
+  color: var(--inc);
+}
+.aia-ins-row--warn .aia-ins-ico {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+.aia-ins-row--danger .aia-ins-ico {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--exp);
+}
+.aia-ins-row--info .aia-ins-ico {
+  background: rgba(129, 140, 248, 0.12);
+  color: var(--acc);
+}
+
+.aia-ins-title {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.35;
+}
+.aia-ins-body {
+  font-size: 0.7rem;
+  color: var(--t2);
+  line-height: 1.5;
+  margin-top: 0.15rem;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -972,28 +1018,27 @@
 .aia-recs {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
-
 .aia-rec {
   display: flex;
-  gap: 0.65rem;
+  gap: 0.6rem;
   align-items: flex-start;
-  padding: 0.65rem 0.8rem;
-  background: rgba(255, 255, 255, 0.025);
-  border-radius: 11px;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
   border: 1px solid var(--brd);
 }
 .aia-rec-icon {
   display: none;
 }
 .aia-rec-title {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-rec-body {
-  font-size: 0.7rem;
+  font-size: 0.69rem;
   color: var(--t2);
   line-height: 1.55;
   margin-top: 0.1rem;
@@ -1003,16 +1048,16 @@
    DEEP ANALYSIS
    ══════════════════════════════════════════════════════════════ */
 #acDeep {
-  border-color: rgba(110, 136, 255, 0.18);
+  border-color: rgba(129, 140, 248, 0.14);
 }
 
 .aia-deep-btn {
   width: 100%;
-  padding: 0.78rem 1rem;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4f46e5, var(--acc));
+  padding: 0.72rem 1rem;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
   color: #fff;
-  font-size: 0.83rem;
+  font-size: 0.81rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1023,9 +1068,8 @@
   transition:
     opacity 0.18s,
     transform 0.12s;
-  box-shadow: 0 4px 24px rgba(79, 70, 229, 0.3);
-  font-family: "Inter", sans-serif;
-  letter-spacing: 0.01em;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+  font-family: inherit;
 }
 .aia-deep-btn:hover {
   opacity: 0.9;
@@ -1040,19 +1084,18 @@
 .aia-deep-loading {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.78rem;
+  gap: 0.5rem;
+  font-size: 0.77rem;
   color: var(--t2);
   margin-top: 0.75rem;
-  padding: 0.6rem 0;
+  padding: 0.5rem 0;
 }
 
-/* Deep result card */
 .aia-deep-card {
-  margin-top: 1rem;
-  padding: 1.1rem 1.2rem;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(110, 136, 255, 0.18);
+  margin-top: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(129, 140, 248, 0.18);
   border-radius: var(--r);
   animation: cardIn 0.3s ease;
 }
@@ -1070,14 +1113,14 @@
 .aia-deep-src {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.64rem;
+  gap: 0.28rem;
+  font-size: 0.63rem;
   color: var(--t3);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--brd);
   border-radius: 20px;
-  padding: 0.18rem 0.55rem;
-  margin-bottom: 0.6rem;
+  padding: 0.16rem 0.5rem;
+  margin-bottom: 0.55rem;
 }
 .aia-deep-src--local {
   color: #fbbf24;
@@ -1085,94 +1128,92 @@
 }
 
 .aia-deep-headline {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: var(--inc);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 .aia-deep-assess {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--t1);
-  line-height: 1.68;
-  padding-bottom: 0.8rem;
+  line-height: 1.65;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--brd);
 }
 
 .aia-deep-sec {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.64rem;
+  gap: 0.38rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--t3);
-  margin: 0.9rem 0 0.55rem;
+  margin: 0.85rem 0 0.5rem;
 }
 
 .aia-di-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.38rem;
 }
 .aia-di {
-  padding: 0.58rem 0.85rem;
-  border-radius: 10px;
+  padding: 0.52rem 0.8rem;
+  border-radius: 9px;
   border-left: 3px solid var(--acc);
-  background: rgba(185, 195, 255, 0.05);
+  background: rgba(129, 140, 248, 0.04);
 }
 .aia-di--high {
   border-left-color: var(--exp);
-  background: rgba(255, 180, 171, 0.05);
+  background: rgba(255, 107, 107, 0.04);
 }
 .aia-di--medium {
   border-left-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.05);
+  background: rgba(251, 191, 36, 0.04);
 }
 .aia-di--low {
   border-left-color: var(--inc);
-  background: rgba(78, 222, 163, 0.05);
+  background: rgba(78, 222, 163, 0.04);
 }
 .aia-di-title {
-  font-size: 0.77rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-di-body {
-  font-size: 0.7rem;
+  font-size: 0.69rem;
   color: var(--t2);
-  margin-top: 0.15rem;
-  line-height: 1.55;
+  margin-top: 0.14rem;
+  line-height: 1.5;
 }
 
 .aia-dp-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 .aia-dp {
-  padding: 0.65rem 0.8rem;
-  border-radius: 11px;
-  background: rgba(185, 195, 255, 0.05);
-  border: 1px solid rgba(185, 195, 255, 0.12);
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(129, 140, 248, 0.05);
+  border: 1px solid rgba(129, 140, 248, 0.12);
 }
 .aia-dp-lbl {
-  font-size: 0.6rem;
+  font-size: 0.59rem;
   color: var(--t3);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   font-weight: 700;
 }
 .aia-dp-val {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--acc);
-  margin: 0.12rem 0 0.05rem;
+  margin: 0.1rem 0 0.04rem;
 }
 .aia-dp-rsn {
-  font-size: 0.66rem;
+  font-size: 0.65rem;
   color: var(--t2);
   line-height: 1.5;
 }
@@ -1180,63 +1221,62 @@
 .aia-da-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.38rem;
 }
 .aia-da {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.55rem;
   align-items: flex-start;
-  padding: 0.6rem 0.75rem;
-  border-radius: 11px;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
   background: rgba(78, 222, 163, 0.04);
 }
 .aia-da-num {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   background: rgba(78, 222, 163, 0.14);
   color: var(--inc);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-top: 0.04rem;
-  font-family: "Space Grotesk", sans-serif;
 }
 .aia-da-step {
-  font-size: 0.77rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--t1);
 }
 .aia-da-impact {
-  font-size: 0.69rem;
+  font-size: 0.67rem;
   color: var(--t2);
-  margin-top: 0.12rem;
+  margin-top: 0.1rem;
   line-height: 1.5;
 }
 
 .aia-deep-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.9rem;
-  padding-top: 0.8rem;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--brd);
 }
 .aia-deep-dismiss,
 .aia-deep-pin {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.44rem 0.85rem;
-  border-radius: 9px;
-  font-size: 0.74rem;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.12s;
   border: none;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 .aia-deep-dismiss {
   background: rgba(255, 255, 255, 0.05);
@@ -1249,39 +1289,38 @@
   border-color: rgba(239, 68, 68, 0.2);
 }
 .aia-deep-pin {
-  background: rgba(185, 195, 255, 0.1);
+  background: rgba(129, 140, 248, 0.1);
   color: var(--acc);
-  border: 1px solid rgba(185, 195, 255, 0.22);
+  border: 1px solid rgba(129, 140, 248, 0.22);
 }
 .aia-deep-pin:hover {
-  background: rgba(185, 195, 255, 0.18);
+  background: rgba(129, 140, 248, 0.18);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CTA BAR
+   CTA BAR — "Continue with AI Assistant" button
    ══════════════════════════════════════════════════════════════ */
 .aia-cta-bar {
-  padding: 0.9rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-top: 1px solid var(--brd);
-  background: rgba(6, 14, 32, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.22);
+  background: var(--bg2);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
   flex-shrink: 0;
 }
-
+.aia-cta-hint {
+  display: none;
+}
 .aia-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.68rem 1.5rem;
-  border-radius: 12px;
-  background: rgba(185, 195, 255, 0.1);
-  border: 1px solid rgba(185, 195, 255, 0.22);
+  padding: 0.7rem 1.75rem;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--acc);
   font-size: 0.82rem;
   font-weight: 600;
@@ -1290,10 +1329,10 @@
   transition:
     background 0.14s,
     transform 0.1s;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 .aia-cta-btn:hover {
-  background: rgba(185, 195, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
 }
 
@@ -1303,19 +1342,18 @@
 .aia-chat-msgs {
   flex: 1;
   overflow-y: auto;
-  padding: 1.25rem 1.5rem;
+  padding: 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(185, 195, 255, 0.18) transparent;
-  background: var(--bg2);
+  scrollbar-color: rgba(129, 140, 248, 0.18) transparent;
 }
 .aia-chat-msgs::-webkit-scrollbar {
   width: 4px;
 }
 .aia-chat-msgs::-webkit-scrollbar-thumb {
-  background: rgba(185, 195, 255, 0.18);
+  background: rgba(129, 140, 248, 0.18);
   border-radius: 4px;
 }
 
@@ -1324,64 +1362,59 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 3rem 1rem 1.5rem;
-  gap: 0.6rem;
+  padding: 2.5rem 1rem 1rem;
+  gap: 0.55rem;
 }
-
 .aia-welcome-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   background: linear-gradient(135deg, var(--acc-d), var(--acc));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
-  color: #00228a;
-  box-shadow: 0 6px 24px rgba(110, 136, 255, 0.32);
-  margin-bottom: 0.35rem;
+  font-size: 1.3rem;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  margin-bottom: 0.25rem;
 }
-
 .aia-welcome-title {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--t1);
   letter-spacing: -0.02em;
 }
-
 .aia-welcome-sub {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--t2);
-  max-width: 340px;
-  line-height: 1.6;
+  max-width: 300px;
+  line-height: 1.55;
 }
 
 .aia-qps {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.35rem;
   justify-content: center;
-  margin-top: 0.6rem;
-  max-width: 560px;
+  margin-top: 0.5rem;
+  max-width: 540px;
 }
-
 .aia-qp {
-  padding: 0.38rem 0.75rem;
+  padding: 0.36rem 0.72rem;
   border-radius: 20px;
-  background: rgba(185, 195, 255, 0.08);
-  border: 1px solid rgba(185, 195, 255, 0.2);
+  background: rgba(129, 140, 248, 0.08);
+  border: 1px solid rgba(129, 140, 248, 0.18);
   color: var(--acc);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 500;
   cursor: pointer;
   transition:
     background 0.13s,
     transform 0.1s;
-  font-family: "Inter", sans-serif;
+  font-family: inherit;
 }
 .aia-qp:hover {
-  background: rgba(185, 195, 255, 0.16);
+  background: rgba(129, 140, 248, 0.16);
   transform: translateY(-1px);
 }
 
@@ -1391,7 +1424,7 @@
 }
 .aia-msg-ai {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.55rem;
 }
 .aia-msg-user {
   display: flex;
@@ -1409,17 +1442,17 @@
 }
 
 .aia-msg-av {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
   flex-shrink: 0;
   margin-top: 0.04rem;
   background: linear-gradient(135deg, var(--acc-d), var(--acc));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  color: #00228a;
+  font-size: 0.72rem;
+  color: #fff;
 }
 .aia-msg-ai-body {
   display: flex;
@@ -1435,31 +1468,29 @@
 
 .aia-bubble-ai,
 .aia-bubble-user {
-  padding: 0.7rem 0.9rem;
+  padding: 0.65rem 0.85rem;
   border-radius: 12px;
   font-size: 0.8rem;
-  line-height: 1.65;
+  line-height: 1.6;
   word-break: break-word;
 }
 .aia-bubble-ai {
-  background: var(--glass);
+  background: var(--bg3);
   border: 1px solid var(--brd);
   color: var(--t1);
   border-radius: 4px 12px 12px 12px;
-  backdrop-filter: blur(8px);
 }
 .aia-bubble-user {
   background: linear-gradient(135deg, var(--acc-d), var(--acc));
-  color: #00228a;
+  color: #fff;
   border-radius: 12px 4px 12px 12px;
-  font-weight: 500;
 }
 .aia-bubble-ai strong {
   color: var(--acc);
 }
 .aia-bubble-ai code {
-  background: rgba(185, 195, 255, 0.12);
-  padding: 0.08rem 0.32rem;
+  background: rgba(129, 140, 248, 0.12);
+  padding: 0.08rem 0.3rem;
   border-radius: 4px;
   font-size: 0.75rem;
 }
@@ -1476,7 +1507,6 @@
 .aia-msg-meta--r {
   justify-content: flex-end;
 }
-
 .aia-copy-btn {
   width: 19px;
   height: 19px;
@@ -1538,12 +1568,10 @@
 .aia-input-bar {
   display: flex;
   align-items: flex-end;
-  gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
+  gap: 0.45rem;
+  padding: 0.75rem 1.1rem;
   border-top: 1px solid var(--brd);
-  background: rgba(6, 14, 32, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--bg2);
   flex-shrink: 0;
 }
 .aia-input-wrap {
@@ -1552,28 +1580,24 @@
 }
 .aia-input {
   width: 100%;
-  background: var(--glass);
+  background: var(--bg3);
   border: 1px solid var(--brd);
-  border-radius: 12px;
-  padding: 0.6rem 0.9rem;
+  border-radius: 11px;
+  padding: 0.55rem 0.8rem;
   color: var(--t1);
-  font-size: 0.82rem;
-  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  font-family: inherit;
   outline: none;
   resize: none;
-  line-height: 1.55;
-  transition:
-    border-color 0.16s,
-    box-shadow 0.16s;
+  line-height: 1.5;
+  transition: border-color 0.14s;
   display: block;
   box-sizing: border-box;
   max-height: 120px;
   overflow-y: auto;
-  backdrop-filter: blur(8px);
 }
 .aia-input:focus {
-  border-color: rgba(185, 195, 255, 0.38);
-  box-shadow: 0 0 0 4px rgba(110, 136, 255, 0.1);
+  border-color: rgba(129, 140, 248, 0.4);
 }
 .aia-input::placeholder {
   color: var(--t3);
@@ -1581,13 +1605,13 @@
 
 .aia-voice-btn,
 .aia-send-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   flex-shrink: 0;
   border: none;
   cursor: pointer;
@@ -1598,7 +1622,6 @@
 .aia-voice-btn {
   background: rgba(255, 255, 255, 0.06);
   color: var(--t2);
-  border: 1px solid var(--brd);
 }
 .aia-voice-btn:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -1618,15 +1641,13 @@
     box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
   }
 }
-
 .aia-send-btn {
-  background: var(--acc);
-  color: #00228a;
-  box-shadow: 0 3px 14px rgba(110, 136, 255, 0.32);
+  background: linear-gradient(135deg, var(--acc-d), var(--acc));
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.28);
 }
 .aia-send-btn:hover {
   transform: scale(1.06);
-  filter: brightness(1.08);
 }
 .aia-send-btn:disabled {
   opacity: 0.5;
@@ -1635,40 +1656,37 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   APP SIDEBAR TRIGGER BUTTONS
+   TRIGGER BUTTONS (main app sidebar)
    ══════════════════════════════════════════════════════════════ */
 .sb-btn-aia {
   background: linear-gradient(
     135deg,
-    rgba(110, 136, 255, 0.14),
-    rgba(185, 195, 255, 0.07)
+    rgba(99, 102, 241, 0.14),
+    rgba(129, 140, 248, 0.07)
   ) !important;
-  border: 1px solid rgba(185, 195, 255, 0.2) !important;
-  color: var(--acc, #b9c3ff) !important;
+  border: 1px solid rgba(129, 140, 248, 0.2) !important;
+  color: #818cf8 !important;
 }
 .sb-btn-aia:hover {
   background: linear-gradient(
     135deg,
-    rgba(110, 136, 255, 0.22),
-    rgba(185, 195, 255, 0.14)
+    rgba(99, 102, 241, 0.22),
+    rgba(129, 140, 248, 0.14)
   ) !important;
 }
 .bn-tab-aia {
-  color: #b9c3ff !important;
+  color: #818cf8 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   LIGHT THEME OVERRIDES
+   LIGHT THEME
    ══════════════════════════════════════════════════════════════ */
-[data-theme="light"] .aia-page {
-  --glass: rgba(240, 244, 255, 0.7);
-}
 [data-theme="light"] .aia-sb-report:hover,
 [data-theme="light"] .aia-sb-pin:hover {
   background: rgba(0, 0, 0, 0.03);
 }
 [data-theme="light"] .aia-cta-bar {
-  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.06);
 }
 [data-theme="light"] .aia-ins-row:hover {
   filter: brightness(0.97);
@@ -1707,28 +1725,27 @@
     border-right: none;
   }
   .aia-scroll {
-    padding: 0.85rem;
+    padding: 0.75rem;
   }
   .aia-chat-msgs {
-    padding: 0.85rem;
+    padding: 0.75rem;
   }
   .aia-input-bar {
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.75rem;
   }
   .aia-topbar {
     height: 50px;
-    padding: 0 0.85rem;
+    padding: 0 0.75rem;
   }
   .aia-tab-btn span {
     display: none;
   }
   .aia-tab-btn {
-    padding: 0.38rem 0.6rem;
+    padding: 0.38rem 0.55rem;
+    height: 50px;
   }
   .aia-cta-bar {
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.8rem 1rem;
+    padding: 0.75rem 1rem;
   }
   .aia-cta-btn {
     width: 100%;
@@ -1737,9 +1754,6 @@
   .aia-msg-ai-body,
   .aia-msg-user-body {
     max-width: 88%;
-  }
-  .aia-scroll {
-    padding: 0.85rem 0.85rem;
   }
 }
 
@@ -1756,15 +1770,11 @@
     transform: translateY(0);
   }
 }
-
 .aia-card {
-  animation: fadeUp 0.35s ease both;
+  animation: fadeUp 0.32s ease both;
 }
-.aia-row-2 .aia-card:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.aia-row-2 .aia-card:nth-child(2) {
-  animation-delay: 0.1s;
+.aia-row-2 > .aia-card:nth-child(2) {
+  animation-delay: 0.06s;
 }
 .aia-col > .aia-card:nth-child(2) {
   animation-delay: 0.08s;
