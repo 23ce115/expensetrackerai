@@ -1728,11 +1728,9 @@ body::after {
 
 .insights-card {
   padding: 1.35rem 1.4rem 1.4rem;
-  background: rgba(8, 9, 20, 0.7) !important;
-  border: 1px solid rgba(79, 110, 247, 0.1) !important;
-  box-shadow:
-    0 0 0 1px rgba(79, 110, 247, 0.04) inset,
-    0 24px 64px rgba(0, 0, 0, 0.5) !important;
+  background: var(--bg-card);
+  border: 1px solid var(--border-md);
+  box-shadow: var(--shadow-md);
 }
 
 /* Header */
@@ -1853,18 +1851,18 @@ body::after {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-card-hi);
+  border: 1px solid var(--border);
   border-radius: 13px;
   padding: 0.85rem 0.9rem;
   transition: all 0.22s ease;
   cursor: default;
 }
 .insight-card:hover {
-  background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-surface);
+  border-color: var(--border-md);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .insight-icon {
@@ -3166,7 +3164,7 @@ select.form-input option,
 #txnFullPage {
   position: fixed;
   inset: 0;
-  background: #0e1117;
+  background: var(--bg);
   z-index: 2500;
   overflow: hidden;
   display: none;
@@ -3185,7 +3183,7 @@ select.form-input option,
   justify-content: space-between;
   padding: 0.95rem 1.45rem;
   border-bottom: 1px solid var(--border);
-  background: rgba(8, 9, 15, 0.7);
+  background: var(--bg2);
   backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
@@ -6285,8 +6283,29 @@ select.form-input option,
 [data-theme="light"] .db-stat-card,
 [data-theme="light"] .db-chart-card,
 [data-theme="light"] .db-panel {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(79, 110, 247, 0.1);
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06);
+}
+
+/* Kill dark shimmer pseudo-element on cards */
+[data-theme="light"] .db-stat-card::before,
+[data-theme="light"] .db-chart-card::before,
+[data-theme="light"] .db-panel::before {
+  background: none !important;
+}
+
+/* Card text colours */
+[data-theme="light"] .dsc-label {
+  color: #64748b;
+}
+[data-theme="light"] .db-panel-title,
+[data-theme="light"] .db-panel-sub,
+[data-theme="light"] .dcc-title {
+  color: #191c1e;
+}
+[data-theme="light"] .db-panel-sub {
+  color: #64748b;
 }
 
 [data-theme="light"] .modal-content {
@@ -8154,15 +8173,7 @@ mark.txn-page-hl {
 
 /* Sidebar spacer — matches sidebar width on desktop */
 .sp-sidebar-spacer {
-  width: 72px;
-  flex-shrink: 0;
-  height: 100%;
-  background: rgba(7, 8, 16, 0.92);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 20px;
+  display: none;
 }
 
 /* Body — must fill all remaining width after sidebar spacer */
@@ -8183,9 +8194,9 @@ mark.txn-page-hl {
   gap: 1rem;
   padding: 0 2.5rem;
   height: 72px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  background: rgba(7, 8, 16, 0.9);
+  background: var(--bg2);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -8479,7 +8490,7 @@ mark.txn-page-hl {
 /* Danger zone group */
 .sp-group--danger-zone .sp-group-body {
   border-color: rgba(239, 68, 68, 0.12);
-  background: rgba(15, 8, 8, 0.9);
+  background: color-mix(in srgb, var(--bg2) 90%, #ff0000 10%);
 }
 
 /* ── Toggle switch — premium feel ────────────────────────── */
@@ -8542,13 +8553,20 @@ mark.txn-page-hl {
 }
 
 [data-theme="light"] .sp-header {
-  background: rgba(248, 250, 253, 0.95);
-  border-bottom-color: rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .sp-title {
+  color: #191c1e;
+}
+
+[data-theme="light"] .sp-subtitle {
+  color: #64748b;
 }
 
 [data-theme="light"] .sp-sidebar-spacer {
-  background: rgba(248, 250, 253, 0.98);
-  border-right-color: rgba(0, 0, 0, 0.07);
+  display: none;
 }
 
 [data-theme="light"] .sp-group-body {
@@ -8559,6 +8577,15 @@ mark.txn-page-hl {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+[data-theme="light"] .sp-row-title {
+  color: #191c1e;
+}
+
+[data-theme="light"] .sp-row-sub {
+  color: #64748b;
+  opacity: 1;
+}
+
 [data-theme="light"] .sp-row--divider {
   border-top-color: rgba(0, 0, 0, 0.06);
 }
@@ -8566,12 +8593,16 @@ mark.txn-page-hl {
 [data-theme="light"] .sp-back-btn {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.09);
-  color: var(--t2);
+  color: #464555;
 }
 
 [data-theme="light"] .sp-header-badge {
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .sp-sync-label {
+  color: #64748b;
 }
 
 [data-theme="light"] .sp-toggle-track {
@@ -8587,14 +8618,22 @@ mark.txn-page-hl {
   background: rgba(0, 0, 0, 0.07);
 }
 
-[data-theme="light"] .sp-row-sub {
-  color: #64748b;
-  opacity: 0.85;
+[data-theme="light"] .sp-row-chevron {
+  color: #94a3b8;
+  opacity: 0.7;
+}
+
+[data-theme="light"] .sp-row:hover {
+  background: rgba(0, 0, 0, 0.025);
 }
 
 [data-theme="light"] .sp-group--danger-zone .sp-group-body {
   background: #fff8f8;
   border-color: rgba(239, 68, 68, 0.12);
+}
+
+[data-theme="light"] .sp-row--danger .sp-row-title {
+  color: #dc2626;
 }
 
 /* ── Responsive — Mobile ─────────────────────────────────── */
@@ -8734,12 +8773,10 @@ mark.txn-page-hl {
 /* ── Modal content box ───────────────────────────────────────── */
 
 .blsm-content {
-  background: #13161c;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg2);
+  border: 1px solid var(--border-md);
   border-radius: 18px;
-  box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(79, 110, 247, 0.06) inset;
+  box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 480px;
   max-height: 88vh;
@@ -13414,398 +13451,216 @@ textarea.form-input:focus {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   LIGHT MODE — COMPREHENSIVE FIXES
-   Covers: stat cards, chart card, db-panels, modals (Add Income /
-   Add Expense / Set Budgets), Monthly Report modal, All Transactions
-   page, Insights card, and all pseudo-element glass tints.
+   LIGHT MODE — TEXT READABILITY & SURFACE FIXES  (final pass)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Stat cards (Income / Expense / Net) ─────────────────── */
-[data-theme="light"] .db-stat-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow:
-    0 2px 8px rgba(25, 28, 30, 0.06),
-    0 1px 2px rgba(25, 28, 30, 0.04) !important;
-}
-
-/* Remove dark glass shimmer pseudo-element */
-[data-theme="light"] .db-stat-card::before,
-[data-theme="light"] .db-chart-card::before,
-[data-theme="light"] .db-panel::before {
-  background: none !important;
-}
-
-/* ── 2. Revenue / Chart card ────────────────────────────────── */
-[data-theme="light"] .db-chart-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
-}
-
-/* ── 3. Right-panel cards (My Card, All Expenses, Monthly Report) */
-[data-theme="light"] .db-panel {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
-}
-
-[data-theme="light"] .db-card-panel {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
-}
-
-/* ── 4. Insights card ───────────────────────────────────────── */
-[data-theme="light"] .insights-card {
-  background: #f8f9fb !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.04) !important;
-}
-
-[data-theme="light"] .insight-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: none !important;
-}
-
-[data-theme="light"] .insight-card:hover {
-  background: #f4f6fa !important;
-  border-color: rgba(79, 70, 229, 0.14) !important;
-  box-shadow: 0 4px 12px rgba(25, 28, 30, 0.08) !important;
-  transform: translateY(-1px) !important;
-}
-
-[data-theme="light"] .insights-grid .insight-card:first-child {
-  background: linear-gradient(
-    135deg,
-    rgba(244, 63, 94, 0.04) 0%,
-    rgba(244, 63, 94, 0.01) 100%
-  ) !important;
-  border-color: rgba(244, 63, 94, 0.12) !important;
-}
-
-[data-theme="light"] .insights-badge {
-  background: rgba(15, 23, 42, 0.05) !important;
-  border-color: rgba(15, 23, 42, 0.1) !important;
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .ai-insights-panel {
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.05) 0%,
-    rgba(79, 110, 247, 0.03) 100%
-  ) !important;
-  border-color: rgba(139, 92, 246, 0.15) !important;
-  color: var(--t2) !important;
-}
-
-[data-theme="light"] #anomalyAlerts .anomaly-alert {
-  background: rgba(239, 68, 68, 0.04) !important;
-  border-color: rgba(239, 68, 68, 0.12) !important;
-  color: #b91c1c !important;
-}
-
-[data-theme="light"] #anomalyAlerts .anomaly-alert i {
-  color: #dc2626 !important;
-}
-
-[data-theme="light"] .ai-insights-btn {
-  background: rgba(139, 92, 246, 0.08) !important;
-  border-color: rgba(139, 92, 246, 0.2) !important;
-  color: #7c3aed !important;
-}
-
-/* ── 5. Add Income / Add Expense modals ─────────────────────── */
-[data-theme="light"] .modal-content {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.09) !important;
-  box-shadow: 0 20px 60px rgba(25, 28, 30, 0.12) !important;
-}
-
-/* Kill the dark gradient tint overlay */
-[data-theme="light"] .modal-content::before {
+/* ── Settings sidebar spacer: gone in ALL modes ───────────── */
+.sp-sidebar-spacer {
   display: none !important;
 }
 
-[data-theme="light"] .modal-header {
-  background: #ffffff !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+/* ── Settings page text ───────────────────────────────────── */
+[data-theme="light"] .sp-title {
+  color: #191c1e !important;
+}
+[data-theme="light"] .sp-subtitle {
+  color: #64748b !important;
+}
+[data-theme="light"] .sp-row-title {
+  color: #191c1e !important;
+}
+[data-theme="light"] .sp-row-sub {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+[data-theme="light"] .sp-group-label {
+  color: #94a3b8 !important;
+}
+[data-theme="light"] .sp-row-chevron {
+  color: #94a3b8 !important;
+}
+[data-theme="light"] .sp-sync-label {
+  color: #64748b !important;
 }
 
-[data-theme="light"] .modal-header-icon {
-  /* Preserve icon colours — don't override */
+/* ── Dashboard stat card text ─────────────────────────────── */
+[data-theme="light"] .dsc-label {
+  color: #64748b !important;
+}
+[data-theme="light"] .db-stat-card .amount {
+  color: #191c1e !important;
+}
+[data-theme="light"] .db-stat-card .change {
+  color: #64748b !important;
+}
+[data-theme="light"] .income-amount {
+  color: #059669 !important;
+}
+[data-theme="light"] .expense-amount {
+  color: #ba1a1a !important;
 }
 
-[data-theme="light"] .modal-body {
-  background: #ffffff !important;
+/* ── Chart card text ──────────────────────────────────────── */
+[data-theme="light"] .dcc-title {
+  color: #191c1e !important;
+}
+[data-theme="light"] .dcc-legend span {
+  color: #464555 !important;
 }
 
-/* Card selector row (Axis · Switch) */
-[data-theme="light"] .modal-card-indicator,
-[data-theme="light"] .card-select-row,
-[data-theme="light"] [id*="incomeCardIndicator"],
-[data-theme="light"] [id*="expenseCardIndicator"],
-[data-theme="light"] .card-indicator {
-  background: #f3f4f6 !important;
-  border: 1px solid rgba(15, 23, 42, 0.09) !important;
-  color: var(--t2) !important;
+/* ── Panel text (My Card / All Expenses / Monthly Report) ─── */
+[data-theme="light"] .db-panel-title {
+  color: #191c1e !important;
+}
+[data-theme="light"] .db-panel-sub {
+  color: #64748b !important;
+}
+[data-theme="light"] .rp-txn-desc {
+  color: #191c1e !important;
+}
+[data-theme="light"] .rp-txn-cat {
+  color: #64748b !important;
+}
+[data-theme="light"] .rp-txn-amt {
+  color: #191c1e !important;
 }
 
-/* Form labels */
-[data-theme="light"] .modal-content .form-label,
+/* ── Insights card text ───────────────────────────────────── */
+[data-theme="light"] .insights-card .card-title {
+  color: #191c1e !important;
+}
+[data-theme="light"] .insight-value {
+  color: #191c1e !important;
+}
+[data-theme="light"] .insight-label {
+  color: #64748b !important;
+}
+[data-theme="light"] .insights-badge {
+  background: rgba(15, 23, 42, 0.05) !important;
+  color: #64748b !important;
+}
+
+/* ── Add Income / Add Expense modal text ──────────────────── */
+[data-theme="light"] .modal-title,
+[data-theme="light"] .modal-content h2,
+[data-theme="light"] .modal-content h3 {
+  color: #191c1e !important;
+}
+[data-theme="light"] .form-label,
 [data-theme="light"] .modal-content label {
-  color: var(--t2) !important;
+  color: #464555 !important;
 }
-
-/* Form inputs */
-[data-theme="light"] .modal-content .form-input,
-[data-theme="light"] .modal-content .form-select,
-[data-theme="light"] .modal-content input,
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select,
+[data-theme="light"] .modal-content input:not([type="checkbox"]),
 [data-theme="light"] .modal-content select,
 [data-theme="light"] .modal-content textarea {
   background: #f2f4f6 !important;
   border: 1px solid rgba(119, 117, 135, 0.22) !important;
   color: #191c1e !important;
 }
-
-[data-theme="light"] .modal-content .form-input:focus,
-[data-theme="light"] .modal-content input:focus,
-[data-theme="light"] .modal-content select:focus,
-[data-theme="light"] .modal-content textarea:focus {
-  background: #ffffff !important;
-  border-color: rgba(91, 94, 246, 0.3) !important;
-  box-shadow: 0 0 0 3px rgba(91, 94, 246, 0.07) !important;
+[data-theme="light"] .modal-content input::placeholder,
+[data-theme="light"] .modal-content textarea::placeholder {
+  color: #94a3b8 !important;
 }
 
-/* Make this recurring checkbox label */
-[data-theme="light"] .modal-content .recurring-label,
-[data-theme="light"] .modal-content [class*="recurring"] {
-  color: var(--t2) !important;
+/* Card selector row */
+[data-theme="light"] [id*="CardIndicator"],
+[data-theme="light"] .card-indicator,
+[data-theme="light"] .modal-card-row {
+  background: #f3f4f6 !important;
+  color: #191c1e !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
 }
 
-/* ── 6. Set Category Budgets modal (blsm) ───────────────────── */
+/* Recurring label */
+[data-theme="light"] .modal-content label {
+  color: #464555 !important;
+}
+
+/* ── Set Budgets modal (blsm) ─────────────────────────────── */
 [data-theme="light"] .blsm-content {
   background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.09) !important;
-  box-shadow: 0 20px 60px rgba(25, 28, 30, 0.12) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
 }
-
-[data-theme="light"] .blsm-header,
-[data-theme="light"] [class*="blsm-head"] {
-  background: #f8f9fb !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
-  color: var(--t1) !important;
+[data-theme="light"] .blsm-header *,
+[data-theme="light"] [class*="blsm-title"] {
+  color: #191c1e !important;
 }
-
 [data-theme="light"] .blsm-section-label {
-  color: var(--t3) !important;
+  color: #94a3b8 !important;
 }
-
-[data-theme="light"] .blsm-content .form-input,
+[data-theme="light"] .blsm-content .bl-cat-name,
+[data-theme="light"] .blsm-content span,
+[data-theme="light"] .blsm-content p {
+  color: #191c1e !important;
+}
 [data-theme="light"] .blsm-content input[type="number"],
 [data-theme="light"] .blsm-content input[type="text"] {
   background: #f2f4f6 !important;
   border-color: rgba(119, 117, 135, 0.22) !important;
-  color: var(--t1) !important;
+  color: #191c1e !important;
 }
 
-/* Budget category rows */
-[data-theme="light"] .cat-budget-row,
-[data-theme="light"] [class*="budget-row"],
-[data-theme="light"] .blsm-content li,
-[data-theme="light"] .blsm-content .bl-row {
-  border-bottom-color: rgba(15, 23, 42, 0.06) !important;
-  color: var(--t1) !important;
-}
-
-/* No-limit badges */
-[data-theme="light"] .bl-nolimit,
-[data-theme="light"] [class*="no-limit"],
-[data-theme="light"] .budget-badge {
-  background: #f2f4f6 !important;
-  border-color: rgba(15, 23, 42, 0.12) !important;
-  color: var(--t3) !important;
-}
-
-/* ── 7. Monthly Report modal (donut chart + stat cells) ─────── */
-[data-theme="light"] #monthlyReportModal .modal-content,
-[data-theme="light"] .report-modal-content {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.09) !important;
-}
-
-[data-theme="light"] .summary-stat,
-[data-theme="light"] .report-stat-cell,
-[data-theme="light"] [class*="report-stat"] {
-  background: #f8f9fb !important;
-  border: 1px solid rgba(15, 23, 42, 0.07) !important;
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .summary-label,
-[data-theme="light"] .report-stat-cell .pv-label,
-[data-theme="light"] #monthlyReportModal [class*="label"] {
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .summary-value,
-[data-theme="light"] #monthlyReportModal [class*="value"],
-[data-theme="light"] #monthlyReportModal p,
-[data-theme="light"] #monthlyReportModal h2,
-[data-theme="light"] #monthlyReportModal h3 {
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .summary-value.positive {
-  color: var(--inc) !important;
-}
-[data-theme="light"] .summary-value.negative {
-  color: var(--exp) !important;
-}
-
-/* Expense breakdown section */
-[data-theme="light"] [class*="breakdown"],
-[data-theme="light"] .expense-breakdown {
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .dcc-legend span,
-[data-theme="light"] [class*="legend"] span,
-[data-theme="light"] .expense-breakdown-label {
-  color: var(--t2) !important;
-}
-
-/* ── 8. All Transactions full-page (#txnFullPage) ───────────── */
+/* ── All Transactions page ────────────────────────────────── */
 [data-theme="light"] #txnFullPage {
-  background: var(--bg) !important;
+  background: #f4f6fb !important;
 }
-
-[data-theme="light"] .txn-page-header {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05) !important;
-}
-
 [data-theme="light"] .txn-page-title {
-  color: var(--t1) !important;
+  color: #191c1e !important;
 }
-
 [data-theme="light"] .txn-month-label {
-  color: var(--t3) !important;
+  color: #64748b !important;
   border-bottom-color: rgba(15, 23, 42, 0.07) !important;
-  letter-spacing: normal !important;
-  font-weight: 700 !important;
 }
-
-[data-theme="light"] .txn-full-row {
-  background: transparent !important;
-  border-radius: 10px !important;
+[data-theme="light"] .txn-full-desc {
+  color: #191c1e !important;
+  font-weight: 600 !important;
 }
-
+[data-theme="light"] .txn-full-cat {
+  color: #64748b !important;
+}
+[data-theme="light"] .txn-full-account {
+  color: #64748b !important;
+}
 [data-theme="light"] .txn-full-row:hover {
   background: rgba(15, 23, 42, 0.025) !important;
   transform: none !important;
   box-shadow: none !important;
 }
-
-[data-theme="light"] .txn-full-desc {
-  color: var(--t1) !important;
-  font-weight: 600 !important;
-}
-
-[data-theme="light"] .txn-full-cat {
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .txn-full-account {
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .txn-month-group {
-  background: transparent !important;
-}
-
-/* Search bar on transactions page */
-[data-theme="light"] .txn-page-search-wrap {
+[data-theme="light"] .txn-page-search-input {
   background: #f2f4f6 !important;
-  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #191c1e !important;
 }
-
-/* Filter chips (All / Income / Expense) */
 [data-theme="light"] .txn-page-chip {
   background: #f2f4f6 !important;
+  color: #464555 !important;
   border-color: rgba(15, 23, 42, 0.1) !important;
-  color: var(--t2) !important;
 }
-
 [data-theme="light"] .txn-page-chip--active {
   background: rgba(79, 70, 229, 0.1) !important;
-  border-color: rgba(79, 70, 229, 0.25) !important;
   color: #4f46e5 !important;
+  border-color: rgba(79, 70, 229, 0.25) !important;
 }
 
-/* ── 9. Right-panel text colours ────────────────────────────── */
-[data-theme="light"] .db-panel-title,
-[data-theme="light"] .db-card-title {
-  color: var(--t1) !important;
+/* ── Monthly Report modal ─────────────────────────────────── */
+[data-theme="light"] .summary-label {
+  color: #64748b !important;
+}
+[data-theme="light"] .summary-value {
+  color: #191c1e !important;
+}
+[data-theme="light"] .summary-value.positive {
+  color: #059669 !important;
+}
+[data-theme="light"] .summary-value.negative {
+  color: #ba1a1a !important;
+}
+[data-theme="light"] .summary-stat {
+  background: #f8f9fb !important;
+  border-color: rgba(15, 23, 42, 0.07) !important;
 }
 
-[data-theme="light"] .db-panel-sub {
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .rp-txn-desc {
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .rp-txn-cat {
-  color: var(--t3) !important;
-}
-
-/* ── 10. Settings page (sp-*) text & row colours ────────────── */
-[data-theme="light"] .sp-row-title {
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .sp-row-sub {
-  color: var(--t3) !important;
-}
-
-[data-theme="light"] .sp-row:hover {
-  background: rgba(15, 23, 42, 0.02) !important;
-}
-
-[data-theme="light"] .sp-group-label {
-  color: #94a3b8 !important;
-}
-
-/* ── 11. Context menu in light mode ─────────────────────────── */
-[data-theme="light"] #contextMenu {
-  background: #ffffff !important;
-  border: 1px solid rgba(15, 23, 42, 0.1) !important;
-  box-shadow: 0 8px 24px rgba(25, 28, 30, 0.12) !important;
-}
-
-[data-theme="light"] .ctx-item {
-  color: var(--t1) !important;
-}
-
-[data-theme="light"] .ctx-item:hover {
-  background: rgba(15, 23, 42, 0.04) !important;
-}
-
-/* ── 12. Scrollbar in light mode ────────────────────────────── */
-[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.12) !important;
-}
-
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.2) !important;
-}
 /* ═══════════════════════════════════════════════════════════════
-   END LIGHT MODE COMPREHENSIVE FIXES
+   END LIGHT MODE TEXT READABILITY FIXES
    ═══════════════════════════════════════════════════════════════ */
