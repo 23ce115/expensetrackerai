@@ -8154,7 +8154,15 @@ mark.txn-page-hl {
 
 /* Sidebar spacer — matches sidebar width on desktop */
 .sp-sidebar-spacer {
-  display: none;
+  width: 72px;
+  flex-shrink: 0;
+  height: 100%;
+  background: rgba(7, 8, 16, 0.92);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
 }
 
 /* Body — must fill all remaining width after sidebar spacer */
@@ -13404,3 +13412,400 @@ textarea.form-input:focus {
 .db-card-panel {
   animation: fadeInUp 0.4s 0.08s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE — COMPREHENSIVE FIXES
+   Covers: stat cards, chart card, db-panels, modals (Add Income /
+   Add Expense / Set Budgets), Monthly Report modal, All Transactions
+   page, Insights card, and all pseudo-element glass tints.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Stat cards (Income / Expense / Net) ─────────────────── */
+[data-theme="light"] .db-stat-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    0 2px 8px rgba(25, 28, 30, 0.06),
+    0 1px 2px rgba(25, 28, 30, 0.04) !important;
+}
+
+/* Remove dark glass shimmer pseudo-element */
+[data-theme="light"] .db-stat-card::before,
+[data-theme="light"] .db-chart-card::before,
+[data-theme="light"] .db-panel::before {
+  background: none !important;
+}
+
+/* ── 2. Revenue / Chart card ────────────────────────────────── */
+[data-theme="light"] .db-chart-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
+}
+
+/* ── 3. Right-panel cards (My Card, All Expenses, Monthly Report) */
+[data-theme="light"] .db-panel {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
+}
+
+[data-theme="light"] .db-card-panel {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.06) !important;
+}
+
+/* ── 4. Insights card ───────────────────────────────────────── */
+[data-theme="light"] .insights-card {
+  background: #f8f9fb !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(25, 28, 30, 0.04) !important;
+}
+
+[data-theme="light"] .insight-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .insight-card:hover {
+  background: #f4f6fa !important;
+  border-color: rgba(79, 70, 229, 0.14) !important;
+  box-shadow: 0 4px 12px rgba(25, 28, 30, 0.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+[data-theme="light"] .insights-grid .insight-card:first-child {
+  background: linear-gradient(
+    135deg,
+    rgba(244, 63, 94, 0.04) 0%,
+    rgba(244, 63, 94, 0.01) 100%
+  ) !important;
+  border-color: rgba(244, 63, 94, 0.12) !important;
+}
+
+[data-theme="light"] .insights-badge {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .ai-insights-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.05) 0%,
+    rgba(79, 110, 247, 0.03) 100%
+  ) !important;
+  border-color: rgba(139, 92, 246, 0.15) !important;
+  color: var(--t2) !important;
+}
+
+[data-theme="light"] #anomalyAlerts .anomaly-alert {
+  background: rgba(239, 68, 68, 0.04) !important;
+  border-color: rgba(239, 68, 68, 0.12) !important;
+  color: #b91c1c !important;
+}
+
+[data-theme="light"] #anomalyAlerts .anomaly-alert i {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .ai-insights-btn {
+  background: rgba(139, 92, 246, 0.08) !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  color: #7c3aed !important;
+}
+
+/* ── 5. Add Income / Add Expense modals ─────────────────────── */
+[data-theme="light"] .modal-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 20px 60px rgba(25, 28, 30, 0.12) !important;
+}
+
+/* Kill the dark gradient tint overlay */
+[data-theme="light"] .modal-content::before {
+  display: none !important;
+}
+
+[data-theme="light"] .modal-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+}
+
+[data-theme="light"] .modal-header-icon {
+  /* Preserve icon colours — don't override */
+}
+
+[data-theme="light"] .modal-body {
+  background: #ffffff !important;
+}
+
+/* Card selector row (Axis · Switch) */
+[data-theme="light"] .modal-card-indicator,
+[data-theme="light"] .card-select-row,
+[data-theme="light"] [id*="incomeCardIndicator"],
+[data-theme="light"] [id*="expenseCardIndicator"],
+[data-theme="light"] .card-indicator {
+  background: #f3f4f6 !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: var(--t2) !important;
+}
+
+/* Form labels */
+[data-theme="light"] .modal-content .form-label,
+[data-theme="light"] .modal-content label {
+  color: var(--t2) !important;
+}
+
+/* Form inputs */
+[data-theme="light"] .modal-content .form-input,
+[data-theme="light"] .modal-content .form-select,
+[data-theme="light"] .modal-content input,
+[data-theme="light"] .modal-content select,
+[data-theme="light"] .modal-content textarea {
+  background: #f2f4f6 !important;
+  border: 1px solid rgba(119, 117, 135, 0.22) !important;
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .modal-content .form-input:focus,
+[data-theme="light"] .modal-content input:focus,
+[data-theme="light"] .modal-content select:focus,
+[data-theme="light"] .modal-content textarea:focus {
+  background: #ffffff !important;
+  border-color: rgba(91, 94, 246, 0.3) !important;
+  box-shadow: 0 0 0 3px rgba(91, 94, 246, 0.07) !important;
+}
+
+/* Make this recurring checkbox label */
+[data-theme="light"] .modal-content .recurring-label,
+[data-theme="light"] .modal-content [class*="recurring"] {
+  color: var(--t2) !important;
+}
+
+/* ── 6. Set Category Budgets modal (blsm) ───────────────────── */
+[data-theme="light"] .blsm-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 20px 60px rgba(25, 28, 30, 0.12) !important;
+}
+
+[data-theme="light"] .blsm-header,
+[data-theme="light"] [class*="blsm-head"] {
+  background: #f8f9fb !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .blsm-section-label {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .blsm-content .form-input,
+[data-theme="light"] .blsm-content input[type="number"],
+[data-theme="light"] .blsm-content input[type="text"] {
+  background: #f2f4f6 !important;
+  border-color: rgba(119, 117, 135, 0.22) !important;
+  color: var(--t1) !important;
+}
+
+/* Budget category rows */
+[data-theme="light"] .cat-budget-row,
+[data-theme="light"] [class*="budget-row"],
+[data-theme="light"] .blsm-content li,
+[data-theme="light"] .blsm-content .bl-row {
+  border-bottom-color: rgba(15, 23, 42, 0.06) !important;
+  color: var(--t1) !important;
+}
+
+/* No-limit badges */
+[data-theme="light"] .bl-nolimit,
+[data-theme="light"] [class*="no-limit"],
+[data-theme="light"] .budget-badge {
+  background: #f2f4f6 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: var(--t3) !important;
+}
+
+/* ── 7. Monthly Report modal (donut chart + stat cells) ─────── */
+[data-theme="light"] #monthlyReportModal .modal-content,
+[data-theme="light"] .report-modal-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+}
+
+[data-theme="light"] .summary-stat,
+[data-theme="light"] .report-stat-cell,
+[data-theme="light"] [class*="report-stat"] {
+  background: #f8f9fb !important;
+  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .summary-label,
+[data-theme="light"] .report-stat-cell .pv-label,
+[data-theme="light"] #monthlyReportModal [class*="label"] {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .summary-value,
+[data-theme="light"] #monthlyReportModal [class*="value"],
+[data-theme="light"] #monthlyReportModal p,
+[data-theme="light"] #monthlyReportModal h2,
+[data-theme="light"] #monthlyReportModal h3 {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .summary-value.positive {
+  color: var(--inc) !important;
+}
+[data-theme="light"] .summary-value.negative {
+  color: var(--exp) !important;
+}
+
+/* Expense breakdown section */
+[data-theme="light"] [class*="breakdown"],
+[data-theme="light"] .expense-breakdown {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .dcc-legend span,
+[data-theme="light"] [class*="legend"] span,
+[data-theme="light"] .expense-breakdown-label {
+  color: var(--t2) !important;
+}
+
+/* ── 8. All Transactions full-page (#txnFullPage) ───────────── */
+[data-theme="light"] #txnFullPage {
+  background: var(--bg) !important;
+}
+
+[data-theme="light"] .txn-page-header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .txn-page-title {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .txn-month-label {
+  color: var(--t3) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.07) !important;
+  letter-spacing: normal !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .txn-full-row {
+  background: transparent !important;
+  border-radius: 10px !important;
+}
+
+[data-theme="light"] .txn-full-row:hover {
+  background: rgba(15, 23, 42, 0.025) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .txn-full-desc {
+  color: var(--t1) !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .txn-full-cat {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .txn-full-account {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .txn-month-group {
+  background: transparent !important;
+}
+
+/* Search bar on transactions page */
+[data-theme="light"] .txn-page-search-wrap {
+  background: #f2f4f6 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Filter chips (All / Income / Expense) */
+[data-theme="light"] .txn-page-chip {
+  background: #f2f4f6 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: var(--t2) !important;
+}
+
+[data-theme="light"] .txn-page-chip--active {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: rgba(79, 70, 229, 0.25) !important;
+  color: #4f46e5 !important;
+}
+
+/* ── 9. Right-panel text colours ────────────────────────────── */
+[data-theme="light"] .db-panel-title,
+[data-theme="light"] .db-card-title {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .db-panel-sub {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .rp-txn-desc {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .rp-txn-cat {
+  color: var(--t3) !important;
+}
+
+/* ── 10. Settings page (sp-*) text & row colours ────────────── */
+[data-theme="light"] .sp-row-title {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .sp-row-sub {
+  color: var(--t3) !important;
+}
+
+[data-theme="light"] .sp-row:hover {
+  background: rgba(15, 23, 42, 0.02) !important;
+}
+
+[data-theme="light"] .sp-group-label {
+  color: #94a3b8 !important;
+}
+
+/* ── 11. Context menu in light mode ─────────────────────────── */
+[data-theme="light"] #contextMenu {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 8px 24px rgba(25, 28, 30, 0.12) !important;
+}
+
+[data-theme="light"] .ctx-item {
+  color: var(--t1) !important;
+}
+
+[data-theme="light"] .ctx-item:hover {
+  background: rgba(15, 23, 42, 0.04) !important;
+}
+
+/* ── 12. Scrollbar in light mode ────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.2) !important;
+}
+/* ═══════════════════════════════════════════════════════════════
+   END LIGHT MODE COMPREHENSIVE FIXES
+   ═══════════════════════════════════════════════════════════════ */
