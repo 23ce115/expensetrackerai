@@ -110,7 +110,7 @@ img {
 /* ── Light theme ────────────────────────────────────────────── */
 
 [data-theme="light"] {
-  --bg: #f7f9fb;
+  --bg: #e8ebf0;
   --bg2: #f8fafc;
   --bg3: #f2f4f6;
   --bg-card: #ffffff;
@@ -133,6 +133,9 @@ img {
   --exp: #ba1a1a;
   --exp-dim: rgba(186, 26, 26, 0.1);
   --shadow-0: none;
+
+  --shadow-sm:
+    0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
 
   --shadow-1:
     0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.03);
