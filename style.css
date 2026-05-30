@@ -11507,7 +11507,9 @@ body {
   color: var(--t1) !important;
 }
 
-body::before {
+/* Dark-only ambient gradient — scoped so light mode is not overridden */
+:root:not([data-theme="light"]) body::before,
+[data-theme="dark"] body::before {
   background:
     radial-gradient(
       ellipse 70% 55% at 15% 10%,
@@ -11530,7 +11532,8 @@ body::before {
 /* ─────────────────────────────────────────────────────────────
    3. SIDEBAR — expand to 280px with labels (matches reference)
    ─────────────────────────────────────────────────────────────*/
-.sidebar {
+:root:not([data-theme="light"]) .sidebar,
+[data-theme="dark"] .sidebar {
   width: var(--sidebar-w) !important;
   min-width: var(--sidebar-w) !important;
   max-width: var(--sidebar-w) !important;
@@ -12649,7 +12652,9 @@ body {
   color: var(--t1) !important;
 }
 
-body::before {
+/* Dark-only ambient gradient — scoped so light mode is not overridden */
+:root:not([data-theme="light"]) body::before,
+[data-theme="dark"] body::before {
   background:
     radial-gradient(
       ellipse 70% 55% at 15% 10%,
@@ -12672,7 +12677,8 @@ body::before {
 /* ─────────────────────────────────────────────────────────────
    3. SIDEBAR — expand to 280px with labels (matches reference)
    ─────────────────────────────────────────────────────────────*/
-.sidebar {
+:root:not([data-theme="light"]) .sidebar,
+[data-theme="dark"] .sidebar {
   width: var(--sidebar-w) !important;
   min-width: var(--sidebar-w) !important;
   max-width: var(--sidebar-w) !important;
