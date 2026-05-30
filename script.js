@@ -7050,12 +7050,10 @@ function openSettingsPage() {
   // Update sync status
   _updateSpSyncStatus();
 
-  // Update theme label
-  var themeLabel = document.getElementById("spThemeLabel");
-  var themeIcon = document.getElementById("spThemeIcon");
-  var isDark = document.documentElement.getAttribute("data-theme") !== "light";
-  if (themeLabel) themeLabel.textContent = isDark ? "Dark Mode" : "Light Mode";
-  if (themeIcon) themeIcon.className = isDark ? "fas fa-moon" : "fas fa-sun";
+  // Sync theme UI (label, icon, active button) via central helper
+  var _currentTheme =
+    document.documentElement.getAttribute("data-theme") || "dark";
+  if (typeof syncThemeUi === "function") syncThemeUi(_currentTheme);
 
   // Show biometric row if available
   var hasBio = localStorage.getItem("bl_webauthn_cred_id");
@@ -7669,6 +7667,37 @@ function syncThemeUi(theme) {
   const mobileLabel = document.getElementById("themeModeLabelMobile");
   if (mobileLabel)
     mobileLabel.textContent = theme === "dark" ? "Dark mode" : "Light mode";
+
+  // Sync settings page theme label / icon (opened via sp- settings page)
+  var themeLabel = document.getElementById("spThemeLabel");
+  var themeIcon = document.getElementById("spThemeIcon");
+  if (themeLabel)
+    themeLabel.textContent = theme === "dark" ? "Dark Mode" : "Light Mode";
+  if (themeIcon)
+    themeIcon.className = theme === "dark" ? "fas fa-moon" : "fas fa-sun";
+
+  // Sync Appearance modal bltheme-item active state
+  document.querySelectorAll(".bltheme-item").forEach(function (btn) {
+    if (btn.dataset.theme === theme) {
+      btn.classList.add("bltheme-item--active");
+    } else {
+      btn.classList.remove("bltheme-item--active");
+    }
+  });
+
+  // Re-render charts with correct theme colours
+  try {
+    if (typeof initOverviewChart === "function") {
+      initOverviewChart();
+      setTimeout(function () {
+        var period =
+          typeof chartPeriod !== "undefined" ? chartPeriod : "monthly";
+        if (typeof updateOverviewChart === "function")
+          updateOverviewChart(period);
+      }, 0);
+    }
+    if (typeof initCategoryChart === "function") initCategoryChart();
+  } catch (_) {}
 }
 
 function toggleTheme() {
@@ -7678,6 +7707,62 @@ function toggleTheme() {
   html.setAttribute("data-theme", newTheme);
   localStorage.setItem("bl_theme", newTheme);
   syncThemeUi(newTheme);
+}
+
+/* ── setAppTheme — called by Appearance modal buttons ───────── */
+function setAppTheme(theme) {
+  if (theme !== "light" && theme !== "dark") return;
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("bl_theme", theme);
+  syncThemeUi(theme);
+}
+
+/* ── Settings-module modal helpers (blsm overlays) ──────────── */
+function _openSettingsModal(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = "flex";
+  // Allow display to take effect before triggering the CSS opacity transition
+  requestAnimationFrame(function () {
+    el.classList.add("blsm--open");
+  });
+  // Sync active theme button whenever Appearance modal is opened
+  if (id === "blAppearanceModal") {
+    var current = document.documentElement.getAttribute("data-theme") || "dark";
+    document.querySelectorAll(".bltheme-item").forEach(function (btn) {
+      btn.classList.toggle(
+        "bltheme-item--active",
+        btn.dataset.theme === current,
+      );
+    });
+  }
+  // Close on backdrop click
+  el._blsmClose = function (e) {
+    if (e.target === el) _closeSettingsModal(id);
+  };
+  el.addEventListener("click", el._blsmClose);
+}
+
+function _closeSettingsModal(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove("blsm--open");
+  if (el._blsmClose) {
+    el.removeEventListener("click", el._blsmClose);
+    el._blsmClose = null;
+  }
+  // Wait for opacity transition before hiding
+  var onEnd = function () {
+    el.style.display = "none";
+    el.removeEventListener("transitionend", onEnd);
+  };
+  el.addEventListener("transitionend", onEnd);
+  // Fallback if transition doesn't fire (e.g. prefers-reduced-motion)
+  setTimeout(function () {
+    if (el.classList.contains("blsm--open")) return;
+    el.style.display = "none";
+    el.removeEventListener("transitionend", onEnd);
+  }, 300);
 }
 
 function setGlassOpacity(val) {
