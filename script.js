@@ -5023,8 +5023,15 @@ function updateMyCardWidget() {
         return userData.name.trim().split(/\s+/)[0];
       }
       if (typeof cards !== "undefined" && cards.length) {
-        var n = cards[0].userData && cards[0].userData.name;
-        if (n && n.trim()) return n.trim().split(/\s+/)[0];
+        // Prefer nickname over name; skip all-caps bank names (e.g. "AXIS", "HDFC")
+        var card0 = cards[0].userData;
+        var n =
+          (card0 && card0.nickname && card0.nickname.trim()) ||
+          (card0 && card0.name && card0.name.trim());
+        // If it looks like a bank name (all uppercase, no spaces with length<8)
+        // or is a known bank pattern, skip it
+        if (n && /^[A-Z0-9 ]{1,10}$/.test(n.trim())) n = null;
+        if (n) return n.trim().split(/\s+/)[0];
       }
       var meta = window._blUserMeta;
       if (meta?.name) return meta.name.trim().split(/\s+/)[0];
@@ -5446,34 +5453,12 @@ function toggleTxnExpanded() {
   renderTxns(currentPeriod);
 }
 
-function getCatColor(category) {
-  const isLight = document.documentElement.dataset.theme === "light";
-
-  const lightColors = {
-    Transport: "#4F46E5",
-    Entertainment: "#0891B2",
-    Food: "#059669",
-    Shopping: "#D97706",
-    Health: "#DC2626",
-    Investment: "#7C3AED",
-    Salary: "#065F46",
-    Other: "#64748B",
-  };
-
-  const darkColors = {
-    Transport: "#3B82F6",
-    Entertainment: "#8B5CF6",
-    Food: "#F97316",
-    Shopping: "#EAB308",
-    Health: "#EC4899",
-    Investment: "#10B981",
-    Salary: "#22C55E",
-    Other: "#94A3B8",
-  };
-
-  return isLight
-    ? lightColors[category] || "#64748B"
-    : darkColors[category] || "#94A3B8";
+function getCatColor(cat) {
+  if (CAT_COLORS[cat]) return CAT_COLORS[cat];
+  let hash = 0;
+  for (let i = 0; i < cat.length; i++)
+    hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+  return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`;
 }
 
 function getAllCategories() {
@@ -7050,10 +7035,12 @@ function openSettingsPage() {
   // Update sync status
   _updateSpSyncStatus();
 
-  // Sync theme UI (label, icon, active button) via central helper
-  var _currentTheme =
-    document.documentElement.getAttribute("data-theme") || "dark";
-  if (typeof syncThemeUi === "function") syncThemeUi(_currentTheme);
+  // Update theme label
+  var themeLabel = document.getElementById("spThemeLabel");
+  var themeIcon = document.getElementById("spThemeIcon");
+  var isDark = document.documentElement.getAttribute("data-theme") !== "light";
+  if (themeLabel) themeLabel.textContent = isDark ? "Dark Mode" : "Light Mode";
+  if (themeIcon) themeIcon.className = isDark ? "fas fa-moon" : "fas fa-sun";
 
   // Show biometric row if available
   var hasBio = localStorage.getItem("bl_webauthn_cred_id");
@@ -7261,13 +7248,7 @@ function _renderSummaryPie(sortedCats, exp) {
           data: sortedCats.map(([, a]) => a),
           backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
           borderColor: "transparent",
-          borderWidth:
-            document.documentElement.dataset.theme === "light" ? 2 : 0,
-
-          borderColor:
-            document.documentElement.dataset.theme === "light"
-              ? "#FFFFFF"
-              : "transparent",
+          borderWidth: 0,
           offset: offsets,
           hoverOffset: 8,
         },
@@ -7667,37 +7648,6 @@ function syncThemeUi(theme) {
   const mobileLabel = document.getElementById("themeModeLabelMobile");
   if (mobileLabel)
     mobileLabel.textContent = theme === "dark" ? "Dark mode" : "Light mode";
-
-  // Sync settings page theme label / icon (opened via sp- settings page)
-  var themeLabel = document.getElementById("spThemeLabel");
-  var themeIcon = document.getElementById("spThemeIcon");
-  if (themeLabel)
-    themeLabel.textContent = theme === "dark" ? "Dark Mode" : "Light Mode";
-  if (themeIcon)
-    themeIcon.className = theme === "dark" ? "fas fa-moon" : "fas fa-sun";
-
-  // Sync Appearance modal bltheme-item active state
-  document.querySelectorAll(".bltheme-item").forEach(function (btn) {
-    if (btn.dataset.theme === theme) {
-      btn.classList.add("bltheme-item--active");
-    } else {
-      btn.classList.remove("bltheme-item--active");
-    }
-  });
-
-  // Re-render charts with correct theme colours
-  try {
-    if (typeof initOverviewChart === "function") {
-      initOverviewChart();
-      setTimeout(function () {
-        var period =
-          typeof chartPeriod !== "undefined" ? chartPeriod : "monthly";
-        if (typeof updateOverviewChart === "function")
-          updateOverviewChart(period);
-      }, 0);
-    }
-    if (typeof initCategoryChart === "function") initCategoryChart();
-  } catch (_) {}
 }
 
 function toggleTheme() {
@@ -7707,62 +7657,6 @@ function toggleTheme() {
   html.setAttribute("data-theme", newTheme);
   localStorage.setItem("bl_theme", newTheme);
   syncThemeUi(newTheme);
-}
-
-/* ── setAppTheme — called by Appearance modal buttons ───────── */
-function setAppTheme(theme) {
-  if (theme !== "light" && theme !== "dark") return;
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("bl_theme", theme);
-  syncThemeUi(theme);
-}
-
-/* ── Settings-module modal helpers (blsm overlays) ──────────── */
-function _openSettingsModal(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.style.display = "flex";
-  // Allow display to take effect before triggering the CSS opacity transition
-  requestAnimationFrame(function () {
-    el.classList.add("blsm--open");
-  });
-  // Sync active theme button whenever Appearance modal is opened
-  if (id === "blAppearanceModal") {
-    var current = document.documentElement.getAttribute("data-theme") || "dark";
-    document.querySelectorAll(".bltheme-item").forEach(function (btn) {
-      btn.classList.toggle(
-        "bltheme-item--active",
-        btn.dataset.theme === current,
-      );
-    });
-  }
-  // Close on backdrop click
-  el._blsmClose = function (e) {
-    if (e.target === el) _closeSettingsModal(id);
-  };
-  el.addEventListener("click", el._blsmClose);
-}
-
-function _closeSettingsModal(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove("blsm--open");
-  if (el._blsmClose) {
-    el.removeEventListener("click", el._blsmClose);
-    el._blsmClose = null;
-  }
-  // Wait for opacity transition before hiding
-  var onEnd = function () {
-    el.style.display = "none";
-    el.removeEventListener("transitionend", onEnd);
-  };
-  el.addEventListener("transitionend", onEnd);
-  // Fallback if transition doesn't fire (e.g. prefers-reduced-motion)
-  setTimeout(function () {
-    if (el.classList.contains("blsm--open")) return;
-    el.style.display = "none";
-    el.removeEventListener("transitionend", onEnd);
-  }, 300);
 }
 
 function setGlassOpacity(val) {
