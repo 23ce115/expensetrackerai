@@ -18,10 +18,14 @@ let _resizeDebounceTimer = null;
 // Track last known container width to avoid no-op rebuilds
 let _lastContainerWidth = 0;
 
-const INCOME_COLOR = "#059669"; // emerald 600
-const EXPENSE_COLOR = "#DC2626"; // red 600
-const INCOME_COLOR_DIM = "rgba(52,211,153,0.08)";
-const EXPENSE_COLOR_DIM = "rgba(249,115,22,0.08)";
+const _lt = () =>
+  document.documentElement.getAttribute("data-theme") === "light";
+const INCOME_COLOR = () => (_lt() ? "#059669" : "#34d399");
+const EXPENSE_COLOR = () => (_lt() ? "#DC2626" : "#f97316");
+const INCOME_COLOR_DIM = () =>
+  _lt() ? "rgba(5,150,105,0.08)" : "rgba(52,211,153,0.08)";
+const EXPENSE_COLOR_DIM = () =>
+  _lt() ? "rgba(220,38,38,0.08)" : "rgba(249,115,22,0.08)";
 
 /* ══════════════════════════════════════════════════════════════
     RESPONSIVE RESIZE SYSTEM
@@ -244,9 +248,9 @@ function _buildOverviewChart(canvas) {
 
   const isDark =
     document.documentElement.getAttribute("data-theme") !== "light";
-  const gridCol = isDark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.05)";
+  const gridCol = isDark ? "rgba(129,140,248,0.05)" : "rgba(15,23,42,0.05)";
 
-  const tickCol = isDark ? "rgba(230,237,243,0.4)" : "#94A3B8";
+  const tickCol = isDark ? "#334155" : "#94A3B8";
   const ptBorderCol = isDark ? "#08090f" : "#ffffff";
   const tooltipBg = isDark ? "rgba(8,9,20,0.96)" : "rgba(255,255,255,0.97)";
   const tooltipBorder = isDark
@@ -259,9 +263,18 @@ function _buildOverviewChart(canvas) {
   const incomes = data.map((d) => d.income || 0);
   const expenses = data.map((d) => d.expense || 0);
 
-  const incGradient = _makeGradient(ctx, "#34d399", 0.32, 0.0);
-  const expGradient = _makeGradient(ctx, "#f97316", 0.28, 0.0);
-
+  const incGradient = _makeGradient(
+    ctx,
+    INCOME_COLOR(),
+    isDark ? 0.32 : 0.14,
+    0.0,
+  );
+  const expGradient = _makeGradient(
+    ctx,
+    EXPENSE_COLOR(),
+    isDark ? 0.28 : 0.12,
+    0.0,
+  );
   canvas.style.background = "transparent";
 
   _overviewChart = new Chart(ctx, {
@@ -272,10 +285,10 @@ function _buildOverviewChart(canvas) {
         {
           label: "Income",
           data: incomes,
-          borderColor: INCOME_COLOR,
+          borderColor: INCOME_COLOR(),
           backgroundColor: incGradient,
-          pointBackgroundColor: INCOME_COLOR,
-          pointBorderColor: ptBorderCol,
+          pointBackgroundColor: INCOME_COLOR(),
+          pointBorderColor: isDark ? "#08090f" : "#ffffff",
           pointBorderWidth: 2,
           pointRadius: 5,
           pointHoverRadius: 8,
@@ -286,10 +299,10 @@ function _buildOverviewChart(canvas) {
         {
           label: "Expense",
           data: expenses,
-          borderColor: EXPENSE_COLOR,
+          borderColor: EXPENSE_COLOR(),
           backgroundColor: expGradient,
-          pointBackgroundColor: EXPENSE_COLOR,
-          pointBorderColor: ptBorderCol,
+          pointBackgroundColor: EXPENSE_COLOR(),
+          pointBorderColor: isDark ? "#08090f" : "#ffffff",
           pointBorderWidth: 2,
           pointRadius: 5,
           pointHoverRadius: 8,
@@ -313,11 +326,14 @@ function _buildOverviewChart(canvas) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: tooltipBg,
-          borderColor: tooltipBorder,
-          borderWidth: 1,
-          titleColor: tooltipTitle,
-          bodyColor: tooltipBody,
+          backgroundColor: isDark
+            ? "rgba(8,9,20,0.96)"
+            : "rgba(255,255,255,0.97)",
+          borderColor: isDark
+            ? "rgba(129,140,248,0.22)"
+            : "rgba(15,23,42,0.12)",
+          titleColor: isDark ? "#e2e8f0" : "#1A1D23",
+          bodyColor: isDark ? "#94a3b8" : "#64748B",
           padding: 12,
           cornerRadius: 10,
           callbacks: {
@@ -439,20 +455,19 @@ function updateOverviewChart(period) {
   const expenses = data.map((d) => d.expense || 0);
 
   // Rebuild gradients (canvas context dimensions may have changed).
-  const ctx = canvas.getContext("2d");
+  const _ld = document.documentElement.getAttribute("data-theme") !== "light";
   _overviewChart.data.datasets[0].backgroundColor = _makeGradient(
     ctx,
-    "#34d399",
-    0.32,
+    INCOME_COLOR(),
+    _ld ? 0.32 : 0.14,
     0.0,
   );
   _overviewChart.data.datasets[1].backgroundColor = _makeGradient(
     ctx,
-    "#f97316",
-    0.28,
+    EXPENSE_COLOR(),
+    _ld ? 0.28 : 0.12,
     0.0,
   );
-
   _overviewChart.data.labels = labels;
   _overviewChart.data.datasets[0].data = incomes;
   _overviewChart.data.datasets[1].data = expenses;
