@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
-    charts.js — BlueLedger Chart Rendering (Chart.js) — FINAL
-    Premium Edition: gradient fills, smooth animations, no grid lines
-    Responsive Edition: ResizeObserver + debounced resize, no stale canvas
-    ═══════════════════════════════════════════════════════════════ */
+   charts.js — BlueLedger Chart Rendering (Chart.js) — FINAL
+   Premium Edition: gradient fills, smooth animations, no grid lines
+   Responsive Edition: ResizeObserver + debounced resize, no stale canvas
+   ═══════════════════════════════════════════════════════════════ */
 
 "use strict";
 
@@ -18,18 +18,18 @@ let _resizeDebounceTimer = null;
 // Track last known container width to avoid no-op rebuilds
 let _lastContainerWidth = 0;
 
-const _lt = () =>
+const _isLightMode = () =>
   document.documentElement.getAttribute("data-theme") === "light";
-const INCOME_COLOR = () => (_lt() ? "#059669" : "#34d399");
-const EXPENSE_COLOR = () => (_lt() ? "#DC2626" : "#f97316");
+const INCOME_COLOR = () => (_isLightMode() ? "#059669" : "#34d399");
+const EXPENSE_COLOR = () => (_isLightMode() ? "#DC2626" : "#f97316");
 const INCOME_COLOR_DIM = () =>
-  _lt() ? "rgba(5,150,105,0.08)" : "rgba(52,211,153,0.08)";
+  _isLightMode() ? "rgba(5,150,105,0.08)" : "rgba(52,211,153,0.08)";
 const EXPENSE_COLOR_DIM = () =>
-  _lt() ? "rgba(220,38,38,0.08)" : "rgba(249,115,22,0.08)";
+  _isLightMode() ? "rgba(220,38,38,0.08)" : "rgba(249,115,22,0.08)";
 
 /* ══════════════════════════════════════════════════════════════
-    RESPONSIVE RESIZE SYSTEM
-    ══════════════════════════════════════════════════════════════ */
+   RESPONSIVE RESIZE SYSTEM
+   ══════════════════════════════════════════════════════════════ */
 
 /**
  * Debounce a function call. Returns a cancel handle.
@@ -165,8 +165,8 @@ function _rebuildOverviewChart() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-    OVERVIEW CHART — init
-    ══════════════════════════════════════════════════════════════ */
+   OVERVIEW CHART — init
+   ══════════════════════════════════════════════════════════════ */
 
 function initOverviewChart() {
   const container = safeGet("chartContainer");
@@ -189,10 +189,10 @@ function initOverviewChart() {
     const controls = document.createElement("div");
     controls.className = "chart-period-controls";
     controls.innerHTML = `
-        <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
-        <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
-        <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
-      `;
+      <button class="cpc-btn ${_currentOverviewPeriod === "daily" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('daily')">Daily</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "weekly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('weekly')">Weekly</button>
+      <button class="cpc-btn ${_currentOverviewPeriod === "monthly" ? "cpc-btn--active" : ""}" onclick="setChartPeriod('monthly')">Monthly</button>
+    `;
     cardHeader.appendChild(controls);
   }
 
@@ -249,15 +249,7 @@ function _buildOverviewChart(canvas) {
   const isDark =
     document.documentElement.getAttribute("data-theme") !== "light";
   const gridCol = isDark ? "rgba(129,140,248,0.05)" : "rgba(15,23,42,0.05)";
-
   const tickCol = isDark ? "#334155" : "#94A3B8";
-  const ptBorderCol = isDark ? "#08090f" : "#ffffff";
-  const tooltipBg = isDark ? "rgba(8,9,20,0.96)" : "rgba(255,255,255,0.97)";
-  const tooltipBorder = isDark
-    ? "rgba(129,140,248,0.22)"
-    : "rgba(119,117,135,0.2)";
-  const tooltipTitle = isDark ? "#e2e8f0" : "#191c1e";
-  const tooltipBody = isDark ? "#94a3b8" : "#464555";
 
   const labels = data.map((d) => d.label || "");
   const incomes = data.map((d) => d.income || 0);
@@ -275,7 +267,6 @@ function _buildOverviewChart(canvas) {
     isDark ? 0.28 : 0.12,
     0.0,
   );
-  canvas.style.background = "transparent";
 
   _overviewChart = new Chart(ctx, {
     type: "line",
@@ -290,9 +281,9 @@ function _buildOverviewChart(canvas) {
           pointBackgroundColor: INCOME_COLOR(),
           pointBorderColor: isDark ? "#08090f" : "#ffffff",
           pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 8,
-          pointHoverBorderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          borderWidth: 2.5,
           fill: true,
           tension: 0.42,
         },
@@ -304,9 +295,9 @@ function _buildOverviewChart(canvas) {
           pointBackgroundColor: EXPENSE_COLOR(),
           pointBorderColor: isDark ? "#08090f" : "#ffffff",
           pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 8,
-          pointHoverBorderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          borderWidth: 2.5,
           fill: true,
           tension: 0.38,
         },
@@ -332,6 +323,7 @@ function _buildOverviewChart(canvas) {
           borderColor: isDark
             ? "rgba(129,140,248,0.22)"
             : "rgba(15,23,42,0.12)",
+          borderWidth: 1,
           titleColor: isDark ? "#e2e8f0" : "#1A1D23",
           bodyColor: isDark ? "#94a3b8" : "#64748B",
           padding: 12,
@@ -405,8 +397,8 @@ function _tooltipTitle(period, data, idx) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-    OVERVIEW CHART — public update
-    ══════════════════════════════════════════════════════════════ */
+   OVERVIEW CHART — public update
+   ══════════════════════════════════════════════════════════════ */
 
 function updateOverviewChart(period) {
   _currentOverviewPeriod = period || _currentOverviewPeriod;
@@ -455,6 +447,7 @@ function updateOverviewChart(period) {
   const expenses = data.map((d) => d.expense || 0);
 
   // Rebuild gradients (canvas context dimensions may have changed).
+  const ctx = canvas.getContext("2d");
   const _ld = document.documentElement.getAttribute("data-theme") !== "light";
   _overviewChart.data.datasets[0].backgroundColor = _makeGradient(
     ctx,
@@ -468,6 +461,7 @@ function updateOverviewChart(period) {
     _ld ? 0.28 : 0.12,
     0.0,
   );
+
   _overviewChart.data.labels = labels;
   _overviewChart.data.datasets[0].data = incomes;
   _overviewChart.data.datasets[1].data = expenses;
@@ -475,8 +469,8 @@ function updateOverviewChart(period) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-    CHART PERIOD
-    ══════════════════════════════════════════════════════════════ */
+   CHART PERIOD
+   ══════════════════════════════════════════════════════════════ */
 
 function setChartPeriod(period) {
   try {
@@ -489,8 +483,8 @@ function setChartPeriod(period) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-    CATEGORY STACKED BAR (thin 8px strip)
-    ══════════════════════════════════════════════════════════════ */
+   CATEGORY STACKED BAR (thin 8px strip)
+   ══════════════════════════════════════════════════════════════ */
 
 function initCategoryChart() {
   if (safeGet("categoryChartWrap")) return;
@@ -503,17 +497,6 @@ function updateCategoryChart(catsData) {
   const wrap = safeGet("categoryChartWrap");
   if (!wrap) return;
   const total = (catsData || []).reduce((s, c) => s + (c.value || 0), 0);
-
-  const _catIsDark =
-    document.documentElement.getAttribute("data-theme") !== "light";
-  const _catTooltipBg = _catIsDark
-    ? "rgba(8,9,20,0.96)"
-    : "rgba(255,255,255,0.97)";
-  const _catTooltipBorder = _catIsDark
-    ? "rgba(129,140,248,0.22)"
-    : "rgba(119,117,135,0.2)";
-  const _catTooltipTitle = _catIsDark ? "#e2e8f0" : "#191c1e";
-  const _catTooltipBody = _catIsDark ? "#94a3b8" : "#464555";
 
   if (!total || !catsData?.length) {
     if (_categoryChart) {
@@ -557,11 +540,11 @@ function updateCategoryChart(catsData) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: _catTooltipBg,
-          borderColor: _catTooltipBorder,
+          backgroundColor: "rgba(8,9,20,0.96)",
+          borderColor: "rgba(129,140,248,0.22)",
           borderWidth: 1,
-          titleColor: _catTooltipTitle,
-          bodyColor: _catTooltipBody,
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
           padding: 10,
           cornerRadius: 8,
           callbacks: {
@@ -581,8 +564,8 @@ function updateCategoryChart(catsData) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-    BACKWARD-COMPAT WRAPPERS
-    ══════════════════════════════════════════════════════════════ */
+   BACKWARD-COMPAT WRAPPERS
+   ══════════════════════════════════════════════════════════════ */
 
 function renderChartJS(period) {
   updateOverviewChart(period);
