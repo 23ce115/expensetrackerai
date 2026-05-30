@@ -110,8 +110,8 @@ img {
 /* ── Light theme ────────────────────────────────────────────── */
 
 [data-theme="light"] {
-  --bg: #e8ebf0;
-  --bg2: #f8fafc;
+  --bg: #f7f9fb;
+  --bg2: #ffffff;
   --bg3: #f2f4f6;
   --bg-card: #ffffff;
   --bg-card-hi: #f2f4f6;
@@ -132,22 +132,12 @@ img {
   --inc-dim: rgba(5, 150, 105, 0.1);
   --exp: #ba1a1a;
   --exp-dim: rgba(186, 26, 26, 0.1);
-  --shadow-0: none;
-
   --shadow-sm:
-    0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
-
-  --shadow-1:
-    0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.03);
-
-  --shadow-2:
-    0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
-
-  --shadow-3:
-    0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
-
-  --shadow-4:
-    0 8px 32px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.07);
+    0 2px 8px rgba(25, 28, 30, 0.06), 0 1px 2px rgba(25, 28, 30, 0.04);
+  --shadow-md:
+    0 4px 20px rgba(25, 28, 30, 0.08), 0 2px 4px rgba(25, 28, 30, 0.04);
+  --shadow-lg:
+    0 8px 32px rgba(25, 28, 30, 0.1), 0 4px 8px rgba(25, 28, 30, 0.06);
 }
 /* ── Base ───────────────────────────────────────────────────── */
 
@@ -176,21 +166,26 @@ body::before {
   z-index: -2;
   background:
     radial-gradient(
-      ellipse 80% 50% at -5% -5%,
-      rgba(79, 70, 229, 0.05) 0%,
+      ellipse 90% 55% at -5% -5%,
+      rgba(59, 91, 219, 0.14) 0%,
       transparent 60%
     ),
     radial-gradient(
-      ellipse 50% 40% at 105% 0%,
-      rgba(139, 92, 246, 0.04) 0%,
+      ellipse 60% 45% at 105% 0%,
+      rgba(139, 92, 246, 0.11) 0%,
       transparent 55%
     ),
     radial-gradient(
-      ellipse 60% 60% at 50% 110%,
-      rgba(5, 150, 105, 0.03) 0%,
+      ellipse 55% 55% at 50% 105%,
+      rgba(34, 197, 94, 0.06) 0%,
       transparent 60%
     ),
-    linear-gradient(180deg, #f0f2f5 0%, #f0f2f5 100%);
+    radial-gradient(
+      ellipse 40% 35% at 80% 60%,
+      rgba(79, 110, 247, 0.07) 0%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg) 100%);
 }
 
 /* Cursor radial */
@@ -313,10 +308,6 @@ body::after {
   transform: translateX(1px);
 }
 
-[data-theme="light"] .sb-btn:hover {
-  background: rgba(79, 70, 229, 0.05);
-}
-
 .sb-btn.active,
 .sb-btn.bn-tab--active {
   background: rgba(79, 110, 247, 0.12);
@@ -335,25 +326,6 @@ body::after {
   background: linear-gradient(180deg, var(--accent-deep), var(--accent));
   border-radius: 0 4px 4px 0;
   box-shadow: 2px 0 12px rgba(79, 110, 247, 0.5);
-}
-
-/* ───────── LIGHT MODE SIDEBAR FIXES ───────── */
-
-[data-theme="light"] .sidebar {
-  background: #f8fafc;
-  border-right: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-[data-theme="light"] .sb-btn.active,
-[data-theme="light"] .sb-btn.bn-tab--active {
-  background: rgba(79, 70, 229, 0.08);
-  color: #4f46e5;
-  box-shadow: none;
-}
-
-[data-theme="light"] .sb-btn.active::before {
-  background: #4f46e5;
-  box-shadow: none;
 }
 
 .sidebar-bottom {
@@ -412,7 +384,7 @@ body::after {
   font-weight: 700;
   color: var(--t1);
   white-space: nowrap;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -428,18 +400,6 @@ body::after {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 100%;
   box-shadow: 0 0 0 0 transparent;
-}
-
-[data-theme="light"] .topbar-search {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-}
-
-[data-theme="light"] .topbar-search:focus-within {
-  background: #ffffff;
-  border-color: #4f46e5;
-
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
 }
 
 .topbar-search:focus-within {
@@ -525,18 +485,6 @@ body::after {
   color: var(--t1);
 }
 
-/* Light Mode Ghost Buttons */
-[data-theme="light"] .tb-ghost {
-  background: #f1f5f9;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  color: #334155;
-}
-
-[data-theme="light"] .tb-ghost:hover {
-  background: #e2e8f0;
-  color: #1e293b;
-}
-
 .tb-icon,
 .tb-icon-sm {
   width: 32px;
@@ -563,19 +511,6 @@ body::after {
   color: var(--t1);
 }
 
-[data-theme="light"] .tb-icon,
-[data-theme="light"] .tb-icon-sm {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-}
-
-[data-theme="light"] .tb-icon:hover,
-[data-theme="light"] .tb-icon-sm:hover {
-  background: #f8fafc;
-  color: #334155;
-}
-
 .topbar-avatar {
   width: 36px;
   height: 36px;
@@ -590,7 +525,7 @@ body::after {
   border: 2px solid rgba(79, 110, 247, 0.35);
   box-shadow: 0 0 18px rgba(79, 110, 247, 0.22);
   flex-shrink: 0;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -773,7 +708,7 @@ body::after {
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--t1);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
 }
 
 .db-pills {
@@ -876,26 +811,6 @@ body::after {
   pointer-events: none;
 }
 
-.db-stat-card.primary {
-  background: #ffffff;
-  border: 0.5px solid rgba(15, 23, 42, 0.07);
-  box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.06),
-    0 6px 24px rgba(15, 23, 42, 0.08);
-}
-
-/* Hero number */
-.db-stat-card.primary .amount {
-  font-size: 38px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-
-[data-theme="light"] .dashboard-card {
-  box-shadow: var(--shadow-2);
-}
-
 .dsc-icon {
   width: 36px;
   height: 36px;
@@ -951,16 +866,6 @@ body::after {
   gap: 0.25rem;
 }
 
-[data-theme="light"] .db-stat-card.income {
-  background: linear-gradient(145deg, rgba(5, 150, 105, 0.05) 0%, #ffffff 60%);
-  border-top: 2px solid rgba(5, 150, 105, 0.35);
-}
-
-[data-theme="light"] .db-stat-card.expense {
-  background: linear-gradient(145deg, rgba(186, 26, 26, 0.05) 0%, #ffffff 60%);
-  border-top: 2px solid rgba(186, 26, 26, 0.3);
-}
-
 .income-amount {
   color: var(--inc) !important;
 }
@@ -1006,21 +911,6 @@ body::after {
   pointer-events: none;
 }
 
-[data-theme="light"] .db-chart-card {
-  background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-
-  box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.04),
-    0 12px 32px rgba(79, 70, 229, 0.06);
-
-  border-top: 3px solid rgba(79, 70, 229, 0.2);
-}
-
-[data-theme="light"] .db-chart-card {
-  box-shadow: var(--shadow-3);
-}
-
 .dcc-header {
   display: flex;
   align-items: center;
@@ -1032,7 +922,7 @@ body::after {
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--t1);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -1155,7 +1045,7 @@ body::after {
   font-size: 0.88rem;
   font-weight: 800;
   color: var(--t1);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -1283,21 +1173,6 @@ body::after {
   position: relative !important;
 }
 
-/* Light Mode Right Panel */
-
-[data-theme="light"] .db-card-panel {
-  background: #f8fafc !important;
-  border: 1px solid rgba(15, 23, 42, 0.07) !important;
-
-  box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.04),
-    0 12px 32px rgba(15, 23, 42, 0.06);
-}
-
-[data-theme="light"] .db-card-panel {
-  box-shadow: var(--shadow-2);
-}
-
 .card-stack {
   position: relative;
   height: 170px;
@@ -1321,11 +1196,6 @@ body::after {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
-[data-theme="light"] .cs-back-2 {
-  background: #f1f5f9;
-  border: 1px solid rgba(15, 23, 42, 0.05);
-}
-
 .cs-back-1 {
   bottom: 10px;
   left: 50%;
@@ -1335,11 +1205,6 @@ body::after {
   border: 1px solid rgba(79, 110, 247, 0.18);
   z-index: 2;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="light"] .cs-back-1 {
-  background: #e2e8f0;
-  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .cs-main {
@@ -1399,16 +1264,6 @@ body::after {
     transparent 65%
   );
   pointer-events: none;
-}
-
-[data-theme="light"] .cs-main {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-
-  border: 1px solid rgba(79, 70, 229, 0.15);
-
-  box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.18),
-    0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .csm-top {
@@ -1551,16 +1406,6 @@ body::after {
   padding-right: 4px;
 }
 
-/* Light Mode Transaction List */
-
-[data-theme="light"] .rp-txn-row {
-  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
-}
-
-[data-theme="light"] .rp-txn-row:hover {
-  background: rgba(79, 70, 229, 0.03);
-}
-
 .rp-txn-icon {
   width: 34px;
   height: 34px;
@@ -1596,7 +1441,7 @@ body::after {
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   flex-shrink: 0;
 }
 
@@ -2397,14 +2242,6 @@ body::after {
   display: flex !important;
 }
 
-/* Light Mode Modal Overlay */
-
-[data-theme="light"] .modal {
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
 .modal-content {
   background: var(--bg-card);
   border: 1px solid var(--border-md);
@@ -2444,16 +2281,6 @@ body::after {
   max-width: 680px;
 }
 
-[data-theme="light"] .modal-content {
-  background: #ffffff;
-
-  border: 1px solid rgba(15, 23, 42, 0.1);
-
-  box-shadow:
-    0 8px 32px rgba(15, 23, 42, 0.1),
-    0 2px 8px rgba(15, 23, 42, 0.06);
-}
-
 .modal-header {
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -2466,7 +2293,7 @@ body::after {
   font-size: 1rem;
   font-weight: 800;
   color: var(--t1);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   letter-spacing: -0.02em;
 }
 
@@ -2560,28 +2387,6 @@ select.form-input option,
 .form-select option {
   background: var(--bg-card);
   color: var(--t1);
-}
-
-/* ───────── Light Mode Form Controls ───────── */
-
-[data-theme="light"] .form-input,
-[data-theme="light"] .form-select {
-  background: #f8fafc;
-  border: 1px solid rgba(15, 23, 42, 0.15);
-  color: #1e293b;
-
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
-
-[data-theme="light"] .form-input:focus,
-[data-theme="light"] .form-select:focus {
-  background: #ffffff;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  outline: none;
 }
 
 .form-hint {
@@ -3579,7 +3384,7 @@ select.form-input option,
   font-size: 0.95rem;
   font-weight: 800;
   color: var(--t1);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -3791,28 +3596,6 @@ select.form-input option,
   padding: 0.28rem;
 }
 
-#contextMenu {
-  background: #131b2e;
-}
-
-[data-theme="light"] #contextMenu {
-  background: #ffffff !important;
-
-  border: 1px solid rgba(15, 23, 42, 0.1) !important;
-
-  box-shadow:
-    0 4px 16px rgba(15, 23, 42, 0.08),
-    0 2px 6px rgba(15, 23, 42, 0.05) !important;
-}
-
-[data-theme="light"] .ctx-item {
-  color: #334155 !important;
-}
-
-[data-theme="light"] .ctx-item:hover {
-  background: #f1f5f9 !important;
-}
-
 .ctx-item {
   display: flex;
   align-items: center;
@@ -3948,19 +3731,6 @@ select.form-input option,
   border: 1px solid var(--border);
   border-radius: 9px;
   padding: 0.72rem;
-}
-
-[data-theme="light"] .summary-stat {
-  box-shadow: var(--shadow-1);
-}
-
-/* Monthly Report Stat Cards */
-
-[data-theme="light"] .summary-stat {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-  border-radius: 10px;
 }
 
 .summary-label {
@@ -5251,7 +5021,7 @@ select.form-input option,
   letter-spacing: 0.06em;
   margin-top: 0.15rem;
   transition: color 0.3s ease;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   font-weight: 800;
   margin-bottom: 0.75rem !important;
 }
@@ -6442,7 +6212,7 @@ select.form-input option,
     ═══════════════════════════════════════════════════════════════ */
 
 .ci-name {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   font-weight: 700;
   font-size: 0.82rem;
   letter-spacing: 0.05em;
@@ -6474,7 +6244,7 @@ select.form-input option,
   }
 
   .rtp-title {
-    font-family: "Space Grotesk", sans-serif;
+    font-family: "Syne", sans-serif;
     font-weight: 800;
     font-size: 0.95rem;
   }
@@ -7971,7 +7741,7 @@ mark.txn-fp-hl {
 }
 
 .db-greeting-name {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Syne", sans-serif;
   font-size: 6rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -8569,10 +8339,6 @@ mark.txn-page-hl {
   gap: 0.6rem;
 }
 
-[data-theme="light"] .sp-group-label {
-  color: #64748b !important;
-}
-
 .sp-group-label::after {
   content: "";
   flex: 1;
@@ -8605,15 +8371,6 @@ mark.txn-page-hl {
   min-height: 80px;
   position: relative;
   -webkit-tap-highlight-color: transparent;
-}
-
-[data-theme="light"] .sp-row {
-  padding: 14px 16px;
-  min-height: 52px;
-}
-
-[data-theme="light"] .sp-row:not(:last-child) {
-  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
 }
 
 .sp-row:hover {
@@ -8771,14 +8528,6 @@ mark.txn-page-hl {
 .sp-toggle input:checked + .sp-toggle-track {
   background: var(--accent, #4f6ef7);
   border-color: var(--accent, #4f6ef7);
-}
-
-[data-theme="light"] .sp-toggle-track {
-  background: #cbd5e1; /* unchecked */
-  transition: background 0.2s;
-}
-[data-theme="light"] .sp-toggle-track.on {
-  background: #4f46e5; /* checked */
 }
 
 .sp-toggle-thumb {
@@ -10841,10 +10590,8 @@ mark.txn-page-hl {
 
 [data-theme="light"] .summary-stat,
 [data-theme="light"] .inline-report-stat {
-  background: #ffffff !important;
+  background: #f8f9fb !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
-  border-radius: 10px !important;
 }
 
 [data-theme="light"] .summary-label,
@@ -11510,9 +11257,7 @@ body {
   color: var(--t1) !important;
 }
 
-/* Dark-only ambient gradient — scoped so light mode is not overridden */
-:root:not([data-theme="light"]) body::before,
-[data-theme="dark"] body::before {
+body::before {
   background:
     radial-gradient(
       ellipse 70% 55% at 15% 10%,
@@ -11535,8 +11280,7 @@ body {
 /* ─────────────────────────────────────────────────────────────
    3. SIDEBAR — expand to 280px with labels (matches reference)
    ─────────────────────────────────────────────────────────────*/
-:root:not([data-theme="light"]) .sidebar,
-[data-theme="dark"] .sidebar {
+.sidebar {
   width: var(--sidebar-w) !important;
   min-width: var(--sidebar-w) !important;
   max-width: var(--sidebar-w) !important;
@@ -12655,9 +12399,7 @@ body {
   color: var(--t1) !important;
 }
 
-/* Dark-only ambient gradient — scoped so light mode is not overridden */
-:root:not([data-theme="light"]) body::before,
-[data-theme="dark"] body::before {
+body::before {
   background:
     radial-gradient(
       ellipse 70% 55% at 15% 10%,
@@ -12680,8 +12422,7 @@ body {
 /* ─────────────────────────────────────────────────────────────
    3. SIDEBAR — expand to 280px with labels (matches reference)
    ─────────────────────────────────────────────────────────────*/
-:root:not([data-theme="light"]) .sidebar,
-[data-theme="dark"] .sidebar {
+.sidebar {
   width: var(--sidebar-w) !important;
   min-width: var(--sidebar-w) !important;
   max-width: var(--sidebar-w) !important;
@@ -13923,3 +13664,444 @@ textarea.form-input:focus {
 /* ═══════════════════════════════════════════════════════════════
    END LIGHT MODE TEXT READABILITY FIXES
    ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE — COMPREHENSIVE FIX PATCH
+   Appended to bottom of style.css — all rules use !important
+   so they beat every earlier declaration in this file.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   1. ROOT TOKENS — darken page bg so white cards lift off it
+      #f7f9fb vs #ffffff = 2% delta (invisible)
+      #E8EBF0 vs #ffffff = clearly distinct surfaces
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg: #e8ebf0 !important;
+  --bg2: #f3f5f8 !important;
+  --bg3: #eceef2 !important;
+  --bg-card: #ffffff !important;
+  --bg-card-hi: #f8fafc !important;
+  --glass: rgba(255, 255, 255, 0.94) !important;
+  --glass-blur: 0px !important; /* kills the grey bleed through cards */
+
+  --shadow-sm:
+    0 1px 4px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  --shadow-md:
+    0 3px 12px rgba(15, 23, 42, 0.09), 0 1px 4px rgba(15, 23, 42, 0.05) !important;
+  --shadow-lg:
+    0 6px 28px rgba(15, 23, 42, 0.11), 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+  --shadow-xl:
+    0 12px 48px rgba(15, 23, 42, 0.13), 0 4px 14px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. KILL backdrop-filter on every surface card
+      This is the #1 cause of the washed-grey look.
+      The 24px blur bleeds the grey page bg through white cards.
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .db-stat-card,
+[data-theme="light"] .db-chart-card,
+[data-theme="light"] .db-panel,
+[data-theme="light"] .db-card-panel,
+[data-theme="light"] .card,
+[data-theme="light"] .sidebar,
+[data-theme="light"] .topbar,
+[data-theme="light"] .modal-content,
+[data-theme="light"] .blsm-content,
+[data-theme="light"] .auth-popup,
+[data-theme="light"] .auth-card,
+[data-theme="light"] .lock-card,
+[data-theme="light"] .settings-menu,
+[data-theme="light"] .bn-sheet,
+[data-theme="light"] .ask-bl-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. STAT CARDS — clean white with real shadow
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .db-stat-card {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.08),
+    0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .db-stat-card:hover {
+  box-shadow:
+    0 6px 22px rgba(15, 23, 42, 0.11),
+    0 2px 6px rgba(15, 23, 42, 0.06) !important;
+  transform: translateY(-3px) !important;
+}
+/* Kill the neon glow on card hover */
+[data-theme="light"] .db-stat-card:hover::after,
+[data-theme="light"] .db-stat-card::after {
+  display: none !important;
+}
+/* Kill inner shimmer gradient */
+[data-theme="light"] .db-stat-card::before {
+  background: none !important;
+}
+/* Income card top accent */
+[data-theme="light"] .db-stat-card:has(.dsc-icon--income) {
+  border-top: 2px solid rgba(5, 150, 105, 0.5) !important;
+}
+/* Expense card top accent */
+[data-theme="light"] .db-stat-card:has(.dsc-icon--expense) {
+  border-top: 2px solid rgba(186, 26, 26, 0.45) !important;
+}
+/* Net balance card top accent */
+[data-theme="light"] .db-stat-card:has(.dsc-icon--net) {
+  border-top: 2px solid rgba(79, 70, 229, 0.45) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. CHART CARD
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .db-chart-card {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  border-top: 2px solid rgba(79, 70, 229, 0.3) !important;
+  box-shadow:
+    0 3px 14px rgba(15, 23, 42, 0.09),
+    0 1px 4px rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .db-chart-card::before,
+[data-theme="light"] .db-chart-card::after {
+  display: none !important;
+}
+/* Chart legend dots — light-mode semantic colors */
+[data-theme="light"] .dcc-legend .leg-dot:first-of-type {
+  background: #059669 !important;
+}
+[data-theme="light"] .dcc-legend span:nth-child(2) .leg-dot {
+  background: #dc2626 !important;
+}
+/* Period selector buttons */
+[data-theme="light"] .cpc-btn {
+  background: #edeff4 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .cpc-btn:hover {
+  background: #e2e5ee !important;
+  color: #1e293b !important;
+}
+[data-theme="light"] .cpc-btn--active {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: rgba(79, 70, 229, 0.28) !important;
+  color: #4f46e5 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. RIGHT PANEL (My Card, All Expenses, Monthly Report)
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .db-panel,
+[data-theme="light"] .db-card-panel {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+[data-theme="light"] .db-panel::before,
+[data-theme="light"] .db-panel::after,
+[data-theme="light"] .db-card-panel::before,
+[data-theme="light"] .db-card-panel::after {
+  display: none !important;
+}
+/* Transaction row dividers — rgba(255,255,255,0.02) is invisible on white */
+[data-theme="light"] .rp-txn-row {
+  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .rp-txn-row:hover {
+  background: rgba(79, 70, 229, 0.03) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. SIDEBAR — distinct surface, no glow
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .sidebar {
+  background: #f3f5f8 !important;
+  border-right: 0.5px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: none !important;
+}
+/* Active button — remove the neon glow, replace with solid tint */
+[data-theme="light"] .sb-btn.active,
+[data-theme="light"] .sb-btn.bn-tab--active {
+  box-shadow: none !important;
+}
+[data-theme="light"] .sb-btn.active::before {
+  box-shadow: none !important;
+}
+/* Sidebar upgrade card */
+[data-theme="light"] .sidebar-upgrade-card {
+  background: rgba(79, 70, 229, 0.07) !important;
+  border: 0.5px solid rgba(79, 70, 229, 0.18) !important;
+}
+[data-theme="light"] .sidebar-upgrade-title {
+  color: #4f46e5 !important;
+}
+[data-theme="light"] .sidebar-upgrade-sub {
+  color: #64748b !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. TOPBAR — no backdrop blur bleeding
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-bottom: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06) !important;
+}
+/* Ghost icon buttons — rgba(255,255,255,0.04) = invisible on white */
+[data-theme="light"] .tb-icon,
+[data-theme="light"] .tb-icon-sm {
+  background: #edeff4 !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .tb-icon:hover,
+[data-theme="light"] .tb-icon-sm:hover {
+  background: #e2e5ee !important;
+  color: #1e293b !important;
+}
+[data-theme="light"] .tb-ghost {
+  background: #edeff4 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .tb-ghost:hover {
+  background: #e2e5ee !important;
+  color: #1e293b !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. MODALS — lighter overlay, real shadow
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .modal,
+[data-theme="light"] .blsm {
+  background: rgba(15, 23, 42, 0.38) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+[data-theme="light"] .modal-content,
+[data-theme="light"] .blsm-content {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow:
+    0 8px 40px rgba(15, 23, 42, 0.13),
+    0 2px 10px rgba(15, 23, 42, 0.07) !important;
+}
+/* Form inputs focus ring */
+[data-theme="light"] .form-input:focus,
+[data-theme="light"] .form-select:focus {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+  background: #ffffff !important;
+  outline: none !important;
+}
+/* Category chips */
+[data-theme="light"] .bl-cat-chip {
+  background: #edeff4 !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
+  color: #3d4252 !important;
+}
+[data-theme="light"] .bl-cat-chip:hover,
+[data-theme="light"] .bl-cat-chip.active {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: rgba(79, 70, 229, 0.28) !important;
+  color: #4f46e5 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. CONTEXT MENU — hardcoded #131b2e never overridden
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] #contextMenu,
+[data-theme="light"] #cardOptionsMenu {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow:
+    0 6px 24px rgba(15, 23, 42, 0.1),
+    0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] .ctx-item {
+  color: #3d4252 !important;
+}
+[data-theme="light"] .ctx-item:hover {
+  background: #f1f5f9 !important;
+  color: #1a1d23 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   10. PIN / LOCK SCREEN KEYS — rgba(30,41,59,0.7) = near-black
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .pin-key {
+  background: #edeff4 !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.12) !important;
+  color: #1a1d23 !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07) !important;
+}
+[data-theme="light"] .pin-key:hover {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: rgba(79, 70, 229, 0.25) !important;
+  color: #4f46e5 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. SCROLLBARS — rgba(255,255,255,0.1) = invisible on white
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15) !important;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.24) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   12. AMBIENT GLOW — dark-mode intensities (11–14%) on light bg
+       Drop to 3–5% so it's a subtle tint, not a garish blob
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(
+      ellipse 80% 50% at -5% -5%,
+      rgba(79, 70, 229, 0.05) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 105% 0%,
+      rgba(139, 92, 246, 0.04) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 60% at 50% 110%,
+      rgba(5, 150, 105, 0.03) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #e8ebf0 0%, #e8ebf0 100%) !important;
+}
+[data-theme="light"] body::after {
+  background: radial-gradient(
+    circle,
+    rgba(79, 70, 229, 0.03) 0%,
+    transparent 65%
+  ) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   13. NEON GLOW ORBS — suppress globally in light mode
+       Several ::after pseudo-elements have radial-gradient glows
+       at 12% opacity — invisible/useless on white.
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .db-card-panel::after,
+[data-theme="light"] .db-chart-card::after,
+[data-theme="light"] .db-stat-card::after {
+  display: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   14. SETTINGS PAGE
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .sp-group-card,
+[data-theme="light"] [class*="sp-group"] {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+[data-theme="light"] .sp-row {
+  min-height: 52px !important;
+  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .sp-row:last-child {
+  border-bottom: none !important;
+}
+[data-theme="light"] .sp-row:hover {
+  background: rgba(79, 70, 229, 0.03) !important;
+}
+/* WCAG fix: #94a3b8 on #e8ebf0 = 3.0:1 (fail AA). #64748B = 4.6:1 (pass) */
+[data-theme="light"] .sp-group-label {
+  color: #64748b !important;
+}
+/* Toggle track */
+[data-theme="light"] .sp-toggle-track {
+  background: #cbd5e1 !important;
+}
+[data-theme="light"] .sp-toggle-track.on {
+  background: #4f46e5 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   15. INSIGHTS CARD (legacy .card class)
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .insights-card {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+[data-theme="light"] .insights-card::before,
+[data-theme="light"] .insights-card::after {
+  display: none !important;
+}
+[data-theme="light"] .insights-badge {
+  background: rgba(15, 23, 42, 0.05) !important;
+  color: #64748b !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   16. MONTHLY REPORT inline panel
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] #inlineSummaryPanel {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+[data-theme="light"] .summary-stat {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
+  border-radius: 10px !important;
+}
+[data-theme="light"] .inline-report-full-btn {
+  background: rgba(79, 70, 229, 0.08) !important;
+  border-color: rgba(79, 70, 229, 0.2) !important;
+  color: #4f46e5 !important;
+}
+[data-theme="light"] .inline-report-full-btn:hover {
+  background: rgba(79, 70, 229, 0.14) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   17. ALL TRANSACTIONS PAGE
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .txn-full-row {
+  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .txn-full-row:hover {
+  background: rgba(79, 70, 229, 0.03) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   18. BOTTOM NAV (mobile)
+   ───────────────────────────────────────────────────────────── */
+[data-theme="light"] .bottom-nav {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-top: 0.5px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   END LIGHT MODE FIX PATCH
+   ───────────────────────────────────────────────────────────── */
