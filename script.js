@@ -5446,12 +5446,34 @@ function toggleTxnExpanded() {
   renderTxns(currentPeriod);
 }
 
-function getCatColor(cat) {
-  if (CAT_COLORS[cat]) return CAT_COLORS[cat];
-  let hash = 0;
-  for (let i = 0; i < cat.length; i++)
-    hash = cat.charCodeAt(i) + ((hash << 5) - hash);
-  return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`;
+function getCatColor(category) {
+  const isLight = document.documentElement.dataset.theme === "light";
+
+  const lightColors = {
+    Transport: "#4F46E5",
+    Entertainment: "#0891B2",
+    Food: "#059669",
+    Shopping: "#D97706",
+    Health: "#DC2626",
+    Investment: "#7C3AED",
+    Salary: "#065F46",
+    Other: "#64748B",
+  };
+
+  const darkColors = {
+    Transport: "#3B82F6",
+    Entertainment: "#8B5CF6",
+    Food: "#F97316",
+    Shopping: "#EAB308",
+    Health: "#EC4899",
+    Investment: "#10B981",
+    Salary: "#22C55E",
+    Other: "#94A3B8",
+  };
+
+  return isLight
+    ? lightColors[category] || "#64748B"
+    : darkColors[category] || "#94A3B8";
 }
 
 function getAllCategories() {
@@ -7241,7 +7263,13 @@ function _renderSummaryPie(sortedCats, exp) {
           data: sortedCats.map(([, a]) => a),
           backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
           borderColor: "transparent",
-          borderWidth: 0,
+          borderWidth:
+            document.documentElement.dataset.theme === "light" ? 2 : 0,
+
+          borderColor:
+            document.documentElement.dataset.theme === "light"
+              ? "#FFFFFF"
+              : "transparent",
           offset: offsets,
           hoverOffset: 8,
         },
