@@ -5023,13 +5023,17 @@ function updateMyCardWidget() {
         return userData.name.trim().split(/\s+/)[0];
       }
       if (typeof cards !== "undefined" && cards.length) {
-        var n = cards[0].userData && cards[0].userData.name;
-        if (n && n.trim()) return n.trim().split(/\s+/)[0];
+        var card0 = cards[0].userData;
+        var n =
+          (card0 && card0.nickname && card0.nickname.trim()) ||
+          (card0 && card0.name && card0.name.trim());
+        // Skip all-caps bank names like AXIS, HDFC, SBI
+        if (n && /^[A-Z0-9 ]{1,10}$/.test(n.trim())) n = null;
+        if (n) return n.trim().split(/\s+/)[0];
       }
       var meta = window._blUserMeta;
       if (meta?.name) return meta.name.trim().split(/\s+/)[0];
       if (meta?.full_name) return meta.full_name.trim().split(/\s+/)[0];
-      /* Last resort: check profile cache written by profile-fix */
       try {
         var cached = JSON.parse(
           localStorage.getItem("bl_profile_cache_v1") || "null",
@@ -6747,10 +6751,7 @@ function renderMonthlySummary() {
 async function downloadReport() {
   const modal = document.querySelector("#summaryModal .modal-content");
   if (!modal) return;
-
   notify("Generating PDF…", "info");
-
-  /* Load html2canvas if not already loaded */
   async function _loadScript(src) {
     if (document.querySelector(`script[src="${src}"]`)) return;
     return new Promise((res, rej) => {
@@ -6761,7 +6762,6 @@ async function downloadReport() {
       document.head.appendChild(s);
     });
   }
-
   try {
     await _loadScript(
       "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
@@ -6769,19 +6769,15 @@ async function downloadReport() {
     await _loadScript(
       "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
     );
-
     const isLight =
       document.documentElement.getAttribute("data-theme") === "light";
-    const bgColor = isLight ? "#ffffff" : "#0f172a";
-
     const canvas = await html2canvas(modal, {
-      backgroundColor: bgColor,
+      backgroundColor: isLight ? "#ffffff" : "#0f172a",
       scale: 2,
       useCORS: true,
       logging: false,
       ignoreElements: (el) => el.classList?.contains("modal-footer"),
     });
-
     const imgData = canvas.toDataURL("image/png");
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({
@@ -6789,33 +6785,24 @@ async function downloadReport() {
       unit: "mm",
       format: "a4",
     });
-
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const imgW = pageW - 20; /* 10mm margin each side */
+    const imgW = pageW - 20;
     const imgH = (canvas.height * imgW) / canvas.width;
-
-    /* Header bar */
     pdf.setFillColor(79, 70, 229);
     pdf.rect(0, 0, pageW, 14, "F");
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
     pdf.text("BlueLedger · Monthly Report", 10, 9.5);
-
     const month =
       document.getElementById("summaryMonthTitle")?.textContent || "Report";
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
     pdf.text(month, pageW - 10, 9.5, { align: "right" });
-
-    /* Report image — starts below header */
     const topMargin = 18;
-    const maxImgH = pageH - topMargin - 12; /* 12mm footer */
-    const finalH = Math.min(imgH, maxImgH);
+    const finalH = Math.min(imgH, pageH - topMargin - 12);
     pdf.addImage(imgData, "PNG", 10, topMargin, imgW, finalH);
-
-    /* Footer */
     pdf.setFillColor(248, 250, 252);
     pdf.rect(0, pageH - 10, pageW, 10, "F");
     pdf.setTextColor(148, 163, 184);
@@ -6827,7 +6814,6 @@ async function downloadReport() {
       pageH - 4,
       { align: "center" },
     );
-
     pdf.save(`BlueLedger-Report-${month.replace(/\s+/g, "-")}.pdf`);
     notify("PDF downloaded!", "success");
   } catch (e) {
