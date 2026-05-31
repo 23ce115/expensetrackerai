@@ -13684,24 +13684,24 @@ textarea.form-input:focus {
 
 /* 2. Ghost/icon buttons — rgba(255,255,255,0.04) invisible on white */
 [data-theme="light"] .tb-ghost {
-  background: #edeff4 !important;
-  border-color: rgba(15, 23, 42, 0.1) !important;
+  background: #EDEFF4 !important;
+  border-color: rgba(15,23,42,0.10) !important;
   color: #475569 !important;
 }
 [data-theme="light"] .tb-ghost:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
+  background: #E2E5EE !important;
+  color: #1E293B !important;
 }
 [data-theme="light"] .tb-icon,
 [data-theme="light"] .tb-icon-sm {
-  background: #edeff4 !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
+  background: #EDEFF4 !important;
+  border: 0.5px solid rgba(15,23,42,0.10) !important;
   color: #475569 !important;
 }
 [data-theme="light"] .tb-icon:hover,
 [data-theme="light"] .tb-icon-sm:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
+  background: #E2E5EE !important;
+  color: #1E293B !important;
 }
 
 /* 3. Sidebar active glow — dissolves on white, replace with solid tint */
@@ -13716,139 +13716,82 @@ textarea.form-input:focus {
 /* 4. Context menu — hardcoded #131b2e dark background */
 [data-theme="light"] #contextMenu,
 [data-theme="light"] #cardOptionsMenu {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
-  box-shadow:
-    0 6px 24px rgba(15, 23, 42, 0.1),
-    0 2px 8px rgba(15, 23, 42, 0.06) !important;
+  background: #FFFFFF !important;
+  border: 0.5px solid rgba(15,23,42,0.10) !important;
+  box-shadow: 0 6px 24px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.06) !important;
 }
-[data-theme="light"] .ctx-item {
-  color: #3d4252 !important;
-}
-[data-theme="light"] .ctx-item:hover {
-  background: #f1f5f9 !important;
-  color: #1a1d23 !important;
-}
+[data-theme="light"] .ctx-item { color: #3D4252 !important; }
+[data-theme="light"] .ctx-item:hover { background: #F1F5F9 !important; color: #1A1D23 !important; }
 
 /* 5. Pin keys — rgba(30,41,59,0.7) = near-black on white lock screen */
 [data-theme="light"] .pin-key {
-  background: #edeff4 !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.12) !important;
-  color: #1a1d23 !important;
+  background: #EDEFF4 !important;
+  border: 0.5px solid rgba(15,23,42,0.12) !important;
+  color: #1A1D23 !important;
 }
 [data-theme="light"] .pin-key:hover {
-  background: rgba(79, 70, 229, 0.1) !important;
-  color: #4f46e5 !important;
+  background: rgba(79,70,229,0.10) !important;
+  color: #4F46E5 !important;
 }
 
 /* 6. Scrollbars — rgba(255,255,255,0.1) invisible on white */
 [data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.15) !important;
+  background: rgba(15,23,42,0.15) !important;
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.24) !important;
+  background: rgba(15,23,42,0.24) !important;
 }
 
 /* 7. Transaction row text colors — dark-mode values not overridden */
-[data-theme="light"] .txn-full-desc {
-  color: #1a1d23 !important;
-}
-[data-theme="light"] .txn-full-cat {
-  color: #64748b !important;
-}
-[data-theme="light"] .txn-full-date {
-  color: #94a3b8 !important;
-}
-[data-theme="light"] .txn-full-account {
-  color: #94a3b8 !important;
-}
-[data-theme="light"] .txn-full-amt.pos {
-  color: #059669 !important;
-}
-[data-theme="light"] .txn-full-amt.neg {
-  color: #dc2626 !important;
-}
-[data-theme="light"] .txn-full-row:hover {
-  background: rgba(79, 70, 229, 0.04) !important;
-}
+[data-theme="light"] .txn-full-desc  { color: #1A1D23 !important; }
+[data-theme="light"] .txn-full-cat   { color: #64748B !important; }
+[data-theme="light"] .txn-full-date  { color: #94A3B8 !important; }
+[data-theme="light"] .txn-full-account { color: #94A3B8 !important; }
+[data-theme="light"] .txn-full-amt.pos { color: #059669 !important; }
+[data-theme="light"] .txn-full-amt.neg { color: #DC2626 !important; }
+[data-theme="light"] .txn-full-row:hover { background: rgba(79,70,229,0.04) !important; }
 
 /* 8. Settings page — icon colors + toggle + label contrast */
-[data-theme="light"] .sp-icon--blue {
-  background: rgba(59, 130, 246, 0.1) !important;
-  color: #3b82f6 !important;
-}
-[data-theme="light"] .sp-icon--purple {
-  background: rgba(79, 70, 229, 0.1) !important;
-  color: #4f46e5 !important;
-}
-[data-theme="light"] .sp-icon--teal {
-  background: rgba(20, 184, 166, 0.12) !important;
-  color: #0d9488 !important;
-}
-[data-theme="light"] .sp-icon--green {
-  background: rgba(5, 150, 105, 0.12) !important;
-  color: #059669 !important;
-}
-[data-theme="light"] .sp-icon--orange {
-  background: rgba(234, 88, 12, 0.1) !important;
-  color: #ea580c !important;
-}
-[data-theme="light"] .sp-icon--red {
-  background: rgba(220, 38, 38, 0.1) !important;
-  color: #dc2626 !important;
-}
-[data-theme="light"] .sp-group-label {
-  color: #64748b !important;
-}
-[data-theme="light"] .sp-toggle-track {
-  background: #cbd5e1 !important;
-}
-[data-theme="light"] .sp-toggle-track.on {
-  background: #4f46e5 !important;
-}
-[data-theme="light"] .sp-row:hover {
-  background: rgba(79, 70, 229, 0.04) !important;
-}
-[data-theme="light"] .sp-row-chevron {
-  color: #94a3b8 !important;
-  opacity: 0.8 !important;
-}
-[data-theme="light"] .sp-row:hover .sp-row-chevron {
-  color: #4f46e5 !important;
-  opacity: 1 !important;
-}
+[data-theme="light"] .sp-icon--blue   { background: rgba(59,130,246,0.10) !important; color: #3B82F6 !important; }
+[data-theme="light"] .sp-icon--purple { background: rgba(79,70,229,0.10) !important;  color: #4F46E5 !important; }
+[data-theme="light"] .sp-icon--teal   { background: rgba(20,184,166,0.12) !important; color: #0D9488 !important; }
+[data-theme="light"] .sp-icon--green  { background: rgba(5,150,105,0.12) !important;  color: #059669 !important; }
+[data-theme="light"] .sp-icon--orange { background: rgba(234,88,12,0.10) !important;  color: #EA580C !important; }
+[data-theme="light"] .sp-icon--red    { background: rgba(220,38,38,0.10) !important;  color: #DC2626 !important; }
+[data-theme="light"] .sp-group-label  { color: #64748B !important; }
+[data-theme="light"] .sp-toggle-track { background: #CBD5E1 !important; }
+[data-theme="light"] .sp-toggle-track.on { background: #4F46E5 !important; }
+[data-theme="light"] .sp-row:hover { background: rgba(79,70,229,0.04) !important; }
+[data-theme="light"] .sp-row-chevron { color: #94A3B8 !important; opacity: 0.8 !important; }
+[data-theme="light"] .sp-row:hover .sp-row-chevron { color: #4F46E5 !important; opacity: 1 !important; }
 
 /* 9. Chart period buttons — already partially fixed, reinforce */
 [data-theme="light"] .cpc-btn {
-  background: #edeff4 !important;
-  border-color: rgba(15, 23, 42, 0.12) !important;
+  background: #EDEFF4 !important;
+  border-color: rgba(15,23,42,0.12) !important;
   color: #475569 !important;
 }
 [data-theme="light"] .cpc-btn:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
+  background: #E2E5EE !important;
+  color: #1E293B !important;
 }
 [data-theme="light"] .cpc-btn--active {
-  background: rgba(79, 70, 229, 0.1) !important;
-  border-color: rgba(79, 70, 229, 0.28) !important;
-  color: #4f46e5 !important;
+  background: rgba(79,70,229,0.10) !important;
+  border-color: rgba(79,70,229,0.28) !important;
+  color: #4F46E5 !important;
 }
 
 /* 10. Neon glow orbs — suppress ::after glows on light bg */
 [data-theme="light"] .db-stat-card::after,
 [data-theme="light"] .db-chart-card::after,
-[data-theme="light"] .db-card-panel::after {
-  display: none !important;
-}
+[data-theme="light"] .db-card-panel::after { display: none !important; }
 [data-theme="light"] .db-stat-card::before,
-[data-theme="light"] .db-chart-card::before {
-  background: none !important;
-}
+[data-theme="light"] .db-chart-card::before { background: none !important; }
 
 /* 11. Sidebar upgrade card */
 [data-theme="light"] .sidebar-upgrade-card {
-  background: rgba(79, 70, 229, 0.07) !important;
-  border: 0.5px solid rgba(79, 70, 229, 0.18) !important;
+  background: rgba(79,70,229,0.07) !important;
+  border: 0.5px solid rgba(79,70,229,0.18) !important;
 }
 
 /* END LIGHT MODE FIX PATCH */
