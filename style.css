@@ -8571,14 +8571,14 @@ mark.txn-page-hl {
 
 [data-theme="light"] .sp-group-body {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.07);
+  border: 0.5px solid rgba(15, 23, 42, 0.08);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 2px 8px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
 [data-theme="light"] .sp-row-title {
-  color: #191c1e;
+  color: #1a1d23;
 }
 
 [data-theme="light"] .sp-row-sub {
@@ -8587,7 +8587,7 @@ mark.txn-page-hl {
 }
 
 [data-theme="light"] .sp-row--divider {
-  border-top-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(15, 23, 42, 0.06);
 }
 
 [data-theme="light"] .sp-back-btn {
@@ -8605,35 +8605,90 @@ mark.txn-page-hl {
   color: #64748b;
 }
 
+/* Toggle — off state visible, on state accent */
 [data-theme="light"] .sp-toggle-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: #cbd5e1;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+[data-theme="light"] .sp-toggle-track.on {
+  background: #4f46e5;
 }
 
+/* WCAG AA — #64748B on white = 4.6:1 */
 [data-theme="light"] .sp-group-label {
-  color: #94a3b8;
+  color: #64748b;
+  font-weight: 700;
 }
 
 [data-theme="light"] .sp-group-label::after {
-  background: rgba(0, 0, 0, 0.07);
+  background: rgba(15, 23, 42, 0.08);
 }
 
 [data-theme="light"] .sp-row-chevron {
   color: #94a3b8;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 [data-theme="light"] .sp-row:hover {
-  background: rgba(0, 0, 0, 0.025);
+  background: rgba(79, 70, 229, 0.04);
 }
 
+[data-theme="light"] .sp-row:hover .sp-row-chevron {
+  color: #4f46e5;
+  opacity: 1;
+}
+
+/* Danger zone */
 [data-theme="light"] .sp-group--danger-zone .sp-group-body {
   background: #fff8f8;
-  border-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(220, 38, 38, 0.12);
 }
 
 [data-theme="light"] .sp-row--danger .sp-row-title {
   color: #dc2626;
+}
+
+/* Icon backgrounds — light mode semantic colors */
+[data-theme="light"] .sp-icon--blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+[data-theme="light"] .sp-icon--purple {
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+}
+[data-theme="light"] .sp-icon--teal {
+  background: rgba(20, 184, 166, 0.12);
+  color: #0d9488;
+}
+[data-theme="light"] .sp-icon--green {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+[data-theme="light"] .sp-icon--orange {
+  background: rgba(234, 88, 12, 0.1);
+  color: #ea580c;
+}
+[data-theme="light"] .sp-icon--red {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+/* Settings header topbar area */
+[data-theme="light"] .sp-header {
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 0.5px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Settings page background */
+[data-theme="light"] #settingsPage,
+[data-theme="light"] .sp-body {
+  background: #e8ebf0;
+}
+
+/* Settings groups container */
+[data-theme="light"] .sp-groups {
+  background: #e8ebf0;
 }
 
 /* ── Responsive — Mobile ─────────────────────────────────── */
@@ -9703,11 +9758,33 @@ mark.txn-page-hl {
 
 [data-theme="light"] .txn-month-label {
   border-bottom-color: rgba(15, 23, 42, 0.07);
-  color: var(--t3);
+  color: #64748b;
 }
 
 [data-theme="light"] .txn-full-row:hover {
-  background: rgba(15, 23, 42, 0.025);
+  background: rgba(79, 70, 229, 0.04);
+}
+
+/* Row text colors — all dark-mode by default, need overriding */
+[data-theme="light"] .txn-full-date {
+  color: #94a3b8;
+}
+[data-theme="light"] .txn-full-desc {
+  color: #1a1d23;
+}
+[data-theme="light"] .txn-full-cat {
+  color: #64748b;
+}
+[data-theme="light"] .txn-full-account {
+  color: #94a3b8;
+}
+/* Positive amounts — use semantic green, not neon */
+[data-theme="light"] .txn-full-amt.pos {
+  color: #059669;
+}
+/* Negative amounts — use semantic red, not rose */
+[data-theme="light"] .txn-full-amt.neg {
+  color: #dc2626;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -13664,444 +13741,3 @@ textarea.form-input:focus {
 /* ═══════════════════════════════════════════════════════════════
    END LIGHT MODE TEXT READABILITY FIXES
    ═══════════════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════════════
-   LIGHT MODE — COMPREHENSIVE FIX PATCH
-   Appended to bottom of style.css — all rules use !important
-   so they beat every earlier declaration in this file.
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ─────────────────────────────────────────────────────────────
-   1. ROOT TOKENS — darken page bg so white cards lift off it
-      #f7f9fb vs #ffffff = 2% delta (invisible)
-      #E8EBF0 vs #ffffff = clearly distinct surfaces
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] {
-  --bg: #e8ebf0 !important;
-  --bg2: #f3f5f8 !important;
-  --bg3: #eceef2 !important;
-  --bg-card: #ffffff !important;
-  --bg-card-hi: #f8fafc !important;
-  --glass: rgba(255, 255, 255, 0.94) !important;
-  --glass-blur: 0px !important; /* kills the grey bleed through cards */
-
-  --shadow-sm:
-    0 1px 4px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-  --shadow-md:
-    0 3px 12px rgba(15, 23, 42, 0.09), 0 1px 4px rgba(15, 23, 42, 0.05) !important;
-  --shadow-lg:
-    0 6px 28px rgba(15, 23, 42, 0.11), 0 2px 8px rgba(15, 23, 42, 0.06) !important;
-  --shadow-xl:
-    0 12px 48px rgba(15, 23, 42, 0.13), 0 4px 14px rgba(15, 23, 42, 0.07) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   2. KILL backdrop-filter on every surface card
-      This is the #1 cause of the washed-grey look.
-      The 24px blur bleeds the grey page bg through white cards.
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .db-stat-card,
-[data-theme="light"] .db-chart-card,
-[data-theme="light"] .db-panel,
-[data-theme="light"] .db-card-panel,
-[data-theme="light"] .card,
-[data-theme="light"] .sidebar,
-[data-theme="light"] .topbar,
-[data-theme="light"] .modal-content,
-[data-theme="light"] .blsm-content,
-[data-theme="light"] .auth-popup,
-[data-theme="light"] .auth-card,
-[data-theme="light"] .lock-card,
-[data-theme="light"] .settings-menu,
-[data-theme="light"] .bn-sheet,
-[data-theme="light"] .ask-bl-panel {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   3. STAT CARDS — clean white with real shadow
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .db-stat-card {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow:
-    0 2px 10px rgba(15, 23, 42, 0.08),
-    0 1px 3px rgba(15, 23, 42, 0.05) !important;
-}
-[data-theme="light"] .db-stat-card:hover {
-  box-shadow:
-    0 6px 22px rgba(15, 23, 42, 0.11),
-    0 2px 6px rgba(15, 23, 42, 0.06) !important;
-  transform: translateY(-3px) !important;
-}
-/* Kill the neon glow on card hover */
-[data-theme="light"] .db-stat-card:hover::after,
-[data-theme="light"] .db-stat-card::after {
-  display: none !important;
-}
-/* Kill inner shimmer gradient */
-[data-theme="light"] .db-stat-card::before {
-  background: none !important;
-}
-/* Income card top accent */
-[data-theme="light"] .db-stat-card:has(.dsc-icon--income) {
-  border-top: 2px solid rgba(5, 150, 105, 0.5) !important;
-}
-/* Expense card top accent */
-[data-theme="light"] .db-stat-card:has(.dsc-icon--expense) {
-  border-top: 2px solid rgba(186, 26, 26, 0.45) !important;
-}
-/* Net balance card top accent */
-[data-theme="light"] .db-stat-card:has(.dsc-icon--net) {
-  border-top: 2px solid rgba(79, 70, 229, 0.45) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   4. CHART CARD
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .db-chart-card {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  border-top: 2px solid rgba(79, 70, 229, 0.3) !important;
-  box-shadow:
-    0 3px 14px rgba(15, 23, 42, 0.09),
-    0 1px 4px rgba(15, 23, 42, 0.05) !important;
-}
-[data-theme="light"] .db-chart-card::before,
-[data-theme="light"] .db-chart-card::after {
-  display: none !important;
-}
-/* Chart legend dots — light-mode semantic colors */
-[data-theme="light"] .dcc-legend .leg-dot:first-of-type {
-  background: #059669 !important;
-}
-[data-theme="light"] .dcc-legend span:nth-child(2) .leg-dot {
-  background: #dc2626 !important;
-}
-/* Period selector buttons */
-[data-theme="light"] .cpc-btn {
-  background: #edeff4 !important;
-  border-color: rgba(15, 23, 42, 0.12) !important;
-  color: #475569 !important;
-}
-[data-theme="light"] .cpc-btn:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
-}
-[data-theme="light"] .cpc-btn--active {
-  background: rgba(79, 70, 229, 0.1) !important;
-  border-color: rgba(79, 70, 229, 0.28) !important;
-  color: #4f46e5 !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   5. RIGHT PANEL (My Card, All Expenses, Monthly Report)
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .db-panel,
-[data-theme="light"] .db-card-panel {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow:
-    0 2px 10px rgba(15, 23, 42, 0.07),
-    0 1px 3px rgba(15, 23, 42, 0.04) !important;
-}
-[data-theme="light"] .db-panel::before,
-[data-theme="light"] .db-panel::after,
-[data-theme="light"] .db-card-panel::before,
-[data-theme="light"] .db-card-panel::after {
-  display: none !important;
-}
-/* Transaction row dividers — rgba(255,255,255,0.02) is invisible on white */
-[data-theme="light"] .rp-txn-row {
-  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
-}
-[data-theme="light"] .rp-txn-row:hover {
-  background: rgba(79, 70, 229, 0.03) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   6. SIDEBAR — distinct surface, no glow
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .sidebar {
-  background: #f3f5f8 !important;
-  border-right: 0.5px solid rgba(15, 23, 42, 0.09) !important;
-  box-shadow: none !important;
-}
-/* Active button — remove the neon glow, replace with solid tint */
-[data-theme="light"] .sb-btn.active,
-[data-theme="light"] .sb-btn.bn-tab--active {
-  box-shadow: none !important;
-}
-[data-theme="light"] .sb-btn.active::before {
-  box-shadow: none !important;
-}
-/* Sidebar upgrade card */
-[data-theme="light"] .sidebar-upgrade-card {
-  background: rgba(79, 70, 229, 0.07) !important;
-  border: 0.5px solid rgba(79, 70, 229, 0.18) !important;
-}
-[data-theme="light"] .sidebar-upgrade-title {
-  color: #4f46e5 !important;
-}
-[data-theme="light"] .sidebar-upgrade-sub {
-  color: #64748b !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   7. TOPBAR — no backdrop blur bleeding
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .topbar {
-  background: rgba(255, 255, 255, 0.97) !important;
-  border-bottom: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06) !important;
-}
-/* Ghost icon buttons — rgba(255,255,255,0.04) = invisible on white */
-[data-theme="light"] .tb-icon,
-[data-theme="light"] .tb-icon-sm {
-  background: #edeff4 !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
-  color: #475569 !important;
-}
-[data-theme="light"] .tb-icon:hover,
-[data-theme="light"] .tb-icon-sm:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
-}
-[data-theme="light"] .tb-ghost {
-  background: #edeff4 !important;
-  border-color: rgba(15, 23, 42, 0.1) !important;
-  color: #475569 !important;
-}
-[data-theme="light"] .tb-ghost:hover {
-  background: #e2e5ee !important;
-  color: #1e293b !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   8. MODALS — lighter overlay, real shadow
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .modal,
-[data-theme="light"] .blsm {
-  background: rgba(15, 23, 42, 0.38) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-}
-[data-theme="light"] .modal-content,
-[data-theme="light"] .blsm-content {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
-  box-shadow:
-    0 8px 40px rgba(15, 23, 42, 0.13),
-    0 2px 10px rgba(15, 23, 42, 0.07) !important;
-}
-/* Form inputs focus ring */
-[data-theme="light"] .form-input:focus,
-[data-theme="light"] .form-select:focus {
-  border-color: #4f46e5 !important;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
-  background: #ffffff !important;
-  outline: none !important;
-}
-/* Category chips */
-[data-theme="light"] .bl-cat-chip {
-  background: #edeff4 !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
-  color: #3d4252 !important;
-}
-[data-theme="light"] .bl-cat-chip:hover,
-[data-theme="light"] .bl-cat-chip.active {
-  background: rgba(79, 70, 229, 0.1) !important;
-  border-color: rgba(79, 70, 229, 0.28) !important;
-  color: #4f46e5 !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   9. CONTEXT MENU — hardcoded #131b2e never overridden
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] #contextMenu,
-[data-theme="light"] #cardOptionsMenu {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
-  box-shadow:
-    0 6px 24px rgba(15, 23, 42, 0.1),
-    0 2px 8px rgba(15, 23, 42, 0.06) !important;
-}
-[data-theme="light"] .ctx-item {
-  color: #3d4252 !important;
-}
-[data-theme="light"] .ctx-item:hover {
-  background: #f1f5f9 !important;
-  color: #1a1d23 !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   10. PIN / LOCK SCREEN KEYS — rgba(30,41,59,0.7) = near-black
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .pin-key {
-  background: #edeff4 !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.12) !important;
-  color: #1a1d23 !important;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07) !important;
-}
-[data-theme="light"] .pin-key:hover {
-  background: rgba(79, 70, 229, 0.1) !important;
-  border-color: rgba(79, 70, 229, 0.25) !important;
-  color: #4f46e5 !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   11. SCROLLBARS — rgba(255,255,255,0.1) = invisible on white
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.15) !important;
-}
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.24) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   12. AMBIENT GLOW — dark-mode intensities (11–14%) on light bg
-       Drop to 3–5% so it's a subtle tint, not a garish blob
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] body::before {
-  background:
-    radial-gradient(
-      ellipse 80% 50% at -5% -5%,
-      rgba(79, 70, 229, 0.05) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 50% 40% at 105% 0%,
-      rgba(139, 92, 246, 0.04) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 60% 60% at 50% 110%,
-      rgba(5, 150, 105, 0.03) 0%,
-      transparent 60%
-    ),
-    linear-gradient(180deg, #e8ebf0 0%, #e8ebf0 100%) !important;
-}
-[data-theme="light"] body::after {
-  background: radial-gradient(
-    circle,
-    rgba(79, 70, 229, 0.03) 0%,
-    transparent 65%
-  ) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   13. NEON GLOW ORBS — suppress globally in light mode
-       Several ::after pseudo-elements have radial-gradient glows
-       at 12% opacity — invisible/useless on white.
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .db-card-panel::after,
-[data-theme="light"] .db-chart-card::after,
-[data-theme="light"] .db-stat-card::after {
-  display: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   14. SETTINGS PAGE
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .sp-group-card,
-[data-theme="light"] [class*="sp-group"] {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06) !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-}
-[data-theme="light"] .sp-row {
-  min-height: 52px !important;
-  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
-}
-[data-theme="light"] .sp-row:last-child {
-  border-bottom: none !important;
-}
-[data-theme="light"] .sp-row:hover {
-  background: rgba(79, 70, 229, 0.03) !important;
-}
-/* WCAG fix: #94a3b8 on #e8ebf0 = 3.0:1 (fail AA). #64748B = 4.6:1 (pass) */
-[data-theme="light"] .sp-group-label {
-  color: #64748b !important;
-}
-/* Toggle track */
-[data-theme="light"] .sp-toggle-track {
-  background: #cbd5e1 !important;
-}
-[data-theme="light"] .sp-toggle-track.on {
-  background: #4f46e5 !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   15. INSIGHTS CARD (legacy .card class)
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .insights-card {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow:
-    0 2px 10px rgba(15, 23, 42, 0.07),
-    0 1px 3px rgba(15, 23, 42, 0.04) !important;
-}
-[data-theme="light"] .insights-card::before,
-[data-theme="light"] .insights-card::after {
-  display: none !important;
-}
-[data-theme="light"] .insights-badge {
-  background: rgba(15, 23, 42, 0.05) !important;
-  color: #64748b !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   16. MONTHLY REPORT inline panel
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] #inlineSummaryPanel {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow:
-    0 2px 10px rgba(15, 23, 42, 0.07),
-    0 1px 3px rgba(15, 23, 42, 0.04) !important;
-}
-[data-theme="light"] .summary-stat {
-  background: #ffffff !important;
-  border: 0.5px solid rgba(15, 23, 42, 0.07) !important;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
-  border-radius: 10px !important;
-}
-[data-theme="light"] .inline-report-full-btn {
-  background: rgba(79, 70, 229, 0.08) !important;
-  border-color: rgba(79, 70, 229, 0.2) !important;
-  color: #4f46e5 !important;
-}
-[data-theme="light"] .inline-report-full-btn:hover {
-  background: rgba(79, 70, 229, 0.14) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   17. ALL TRANSACTIONS PAGE
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .txn-full-row {
-  border-bottom: 0.5px solid rgba(15, 23, 42, 0.05) !important;
-}
-[data-theme="light"] .txn-full-row:hover {
-  background: rgba(79, 70, 229, 0.03) !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   18. BOTTOM NAV (mobile)
-   ───────────────────────────────────────────────────────────── */
-[data-theme="light"] .bottom-nav {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: rgba(255, 255, 255, 0.98) !important;
-  border-top: 0.5px solid rgba(15, 23, 42, 0.09) !important;
-  box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.07) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   END LIGHT MODE FIX PATCH
-   ───────────────────────────────────────────────────────────── */
