@@ -1187,10 +1187,14 @@
     <div class="modal-body add-txn-body" style="padding:1.25rem 1.4rem;display:flex;flex-direction:column;gap:.85rem">
 
       <!-- Account row -->
-      <div class="add-txn-account-row" style="background:var(--bg-card-hi);border:1px solid var(--border-md);border-radius:12px;padding:.65rem 1rem">
-        <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
-        <span id="incomeAccountName" style="font-size:.85rem;font-weight:600;color:var(--t1);flex:1">This account</span>
-        <button type="button" onclick="openAddTargetPicker('income','modal')" class="add-txn-switch-btn">Switch</button>
+      <div class="add-txn-account-row" style="background:var(--bg-card-hi);border:1px solid var(--border-md);border-radius:12px;padding:.6rem .9rem;display:flex;align-items:center;gap:.6rem">
+        <span style="width:28px;height:28px;border-radius:8px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.72rem"></i>
+        </span>
+        <span id="incomeAccountName" style="font-size:.84rem;font-weight:600;color:var(--t1);flex:1;letter-spacing:-.01em">This account</span>
+        <button type="button" onclick="openAddTargetPicker('income','modal')" style="display:inline-flex;align-items:center;gap:.35rem;padding:.32rem .7rem;border-radius:8px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--t3);font-size:.72rem;font-weight:600;letter-spacing:.02em;cursor:pointer;transition:all .15s;font-family:inherit" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--t3)'">
+          <i class="fas fa-exchange-alt" style="font-size:.65rem"></i> Switch
+        </button>
       </div>
 
       <!-- Amount + Date -->
@@ -1274,10 +1278,14 @@
     <div class="modal-body add-txn-body" style="padding:1.25rem 1.4rem;display:flex;flex-direction:column;gap:.85rem">
 
       <!-- Account row -->
-      <div class="add-txn-account-row" style="background:var(--bg-card-hi);border:1px solid var(--border-md);border-radius:12px;padding:.65rem 1rem">
-        <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.8rem;flex-shrink:0"></i>
-        <span id="expenseAccountName" style="font-size:.85rem;font-weight:600;color:var(--t1);flex:1">This account</span>
-        <button type="button" onclick="openAddTargetPicker('expense','modal')" class="add-txn-switch-btn">Switch</button>
+      <div class="add-txn-account-row" style="background:var(--bg-card-hi);border:1px solid var(--border-md);border-radius:12px;padding:.6rem .9rem;display:flex;align-items:center;gap:.6rem">
+        <span style="width:28px;height:28px;border-radius:8px;background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fas fa-credit-card" style="color:#60a5fa;font-size:.72rem"></i>
+        </span>
+        <span id="expenseAccountName" style="font-size:.84rem;font-weight:600;color:var(--t1);flex:1;letter-spacing:-.01em">This account</span>
+        <button type="button" onclick="openAddTargetPicker('expense','modal')" style="display:inline-flex;align-items:center;gap:.35rem;padding:.32rem .7rem;border-radius:8px;border:1px solid var(--border-md);background:var(--bg-card);color:var(--t3);font-size:.72rem;font-weight:600;letter-spacing:.02em;cursor:pointer;transition:all .15s;font-family:inherit" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--t3)'">
+          <i class="fas fa-exchange-alt" style="font-size:.65rem"></i> Switch
+        </button>
       </div>
 
       <!-- Amount + Date -->
@@ -1666,12 +1674,7 @@
             <div class="summary-stat">
               <div class="summary-label">Top Spending Category</div>
               <div
-                style="
-                  font-size: 0.85rem;
-                  font-weight: 600;
-                  color: #e2e8f0;
-                  margin-top: 0.2rem;
-                "
+                style="font-size: 0.85rem; font-weight: 600; color: var(--t1); margin-top: 0.2rem"
                 id="summaryTopCat"
                 class="summary-detail"
               >
@@ -1681,12 +1684,7 @@
             <div class="summary-stat">
               <div class="summary-label">Biggest Single Expense</div>
               <div
-                style="
-                  font-size: 0.85rem;
-                  font-weight: 600;
-                  color: #e2e8f0;
-                  margin-top: 0.2rem;
-                "
+                style="font-size: 0.85rem; font-weight: 600; color: var(--t1); margin-top: 0.2rem"
                 id="summaryBiggest"
                 class="summary-detail"
               >
@@ -1707,8 +1705,11 @@
           </div>
         </div>
         <div class="modal-footer" style="gap:0.75rem;">
-          <button class="btn btn-secondary" onclick="closeModal('summaryModal')" style="width:100%;justify-content:center;">
+          <button class="btn btn-secondary" onclick="closeModal('summaryModal')" style="flex:1;justify-content:center;">
             Close
+          </button>
+          <button class="btn" onclick="downloadReport()" style="flex:1;justify-content:center;display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,#4F46E5,#6366f1);color:#fff;border:none;border-radius:12px;padding:.75rem;font-weight:600;box-shadow:0 4px 14px rgba(79,70,229,0.28);cursor:pointer">
+            <i class="fas fa-download" style="font-size:.8rem"></i> Download PDF
           </button>
         </div>
       </div>
