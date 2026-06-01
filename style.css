@@ -14026,6 +14026,149 @@ textarea.form-input:focus {
   border-color: #e0e3e5;
 }
 
+/* Light mode repair: late dark rebuild rules above use important dark surfaces. */
+[data-theme="light"] .settings-page,
+[data-theme="light"] #settingsPage {
+  background: #f7f9fb !important;
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .sp-header {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(199, 196, 216, 0.55) !important;
+  box-shadow: 0 4px 20px rgba(77, 68, 227, 0.05) !important;
+}
+
+[data-theme="light"] .sp-group-body {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(199, 196, 216, 0.65) !important;
+  box-shadow: var(--shadow-md) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+}
+
+[data-theme="light"] .sp-row {
+  background: transparent !important;
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .sp-row:hover {
+  background: rgba(77, 68, 227, 0.06) !important;
+}
+
+[data-theme="light"] .sp-row--divider,
+[data-theme="light"] .sp-row--divider::before {
+  border-color: rgba(199, 196, 216, 0.55) !important;
+  background-color: rgba(199, 196, 216, 0.55) !important;
+}
+
+[data-theme="light"] .sp-title,
+[data-theme="light"] .sp-row-title,
+[data-theme="light"] .modal-title,
+[data-theme="light"] .modal-content h2,
+[data-theme="light"] .modal-content h3,
+[data-theme="light"] .blsm-content h2,
+[data-theme="light"] .blsm-content h3 {
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .sp-subtitle,
+[data-theme="light"] .sp-row-sub,
+[data-theme="light"] .sp-group-label,
+[data-theme="light"] .modal-body,
+[data-theme="light"] .modal-body p,
+[data-theme="light"] .blsm-content p {
+  color: #464555 !important;
+}
+
+[data-theme="light"] .sp-row-chevron {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .modal {
+  background: rgba(15, 23, 42, 0.28) !important;
+}
+
+[data-theme="light"] .modal-content,
+[data-theme="light"] .blsm-content,
+[data-theme="light"] .auth-popup {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #191c1e !important;
+  border: 1px solid rgba(199, 196, 216, 0.6) !important;
+  box-shadow: var(--shadow-xl) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+}
+
+[data-theme="light"] .modal-header,
+[data-theme="light"] .modal-footer {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(199, 196, 216, 0.5) !important;
+}
+
+[data-theme="light"] .form-label,
+[data-theme="light"] .modal-content label,
+[data-theme="light"] .blsm-section-label {
+  color: #777587 !important;
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select,
+[data-theme="light"] .modal-content input:not([type="checkbox"]),
+[data-theme="light"] .modal-content select,
+[data-theme="light"] .modal-content textarea,
+[data-theme="light"] .blsm-content input,
+[data-theme="light"] .blsm-content textarea {
+  background: #f2f4f6 !important;
+  color: #191c1e !important;
+  border-color: rgba(199, 196, 216, 0.8) !important;
+}
+
+[data-theme="light"] .form-input::placeholder,
+[data-theme="light"] .modal-content input::placeholder,
+[data-theme="light"] .modal-content textarea::placeholder,
+[data-theme="light"] .blsm-content input::placeholder {
+  color: rgba(70, 69, 85, 0.55) !important;
+}
+
+[data-theme="light"] .add-txn-account-row,
+[data-theme="light"] .card-selector,
+[data-theme="light"] .modal-card-row,
+[data-theme="light"] [class*="card-select"],
+[data-theme="light"] [class*="switch-card"] {
+  background: #f2f4f6 !important;
+  border-color: rgba(199, 196, 216, 0.75) !important;
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .add-txn-account-row span,
+[data-theme="light"] #incomeAccountName,
+[data-theme="light"] #expenseAccountName {
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .lock-screen,
+[data-theme="light"] #lockScreen {
+  background: #f7f9fb !important;
+}
+
+[data-theme="light"] .lock-card,
+[data-theme="light"] .lock-screen--password .lock-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #191c1e !important;
+  border: 1px solid rgba(199, 196, 216, 0.65) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+
+[data-theme="light"] .lock-subtitle,
+[data-theme="light"] .auth-divider {
+  color: #464555 !important;
+}
+
+[data-theme="light"] #lockScreen button[onclick*="doSignOut"] {
+  color: #4f46e5 !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    END LIGHT MODE MASTER OVERRIDES
    ═══════════════════════════════════════════════════════════════ */
