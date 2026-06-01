@@ -11163,7 +11163,7 @@ mark.txn-page-hl {
 /* ─────────────────────────────────────────────────────────────
    1. DESIGN TOKENS — replaces the existing :root block
    ─────────────────────────────────────────────────────────────*/
-:root {
+:root:not([data-theme="light"]) {
   /* Core surfaces */
   --bg: #0b1326;
   --bg2: #0f1a30;
@@ -12305,7 +12305,7 @@ textarea.form-input:focus {
 /* ─────────────────────────────────────────────────────────────
    1. DESIGN TOKENS — replaces the existing :root block
    ─────────────────────────────────────────────────────────────*/
-:root {
+:root:not([data-theme="light"]) {
   /* Core surfaces */
   --bg: #0b1326;
   --bg2: #0f1a30;
@@ -13651,16 +13651,6 @@ textarea.form-input:focus {
    Only fixes: backdrop-filter bleed, invisible buttons/borders,
    context menu, settings icons, txn text colors, scrollbars
    ═══════════════════════════════════════════════════════════════ */
-
-/* 1. Kill backdrop-filter bleed on cards — this is the grey bleed */
-[data-theme="light"] .db-stat-card,
-[data-theme="light"] .db-chart-card,
-[data-theme="light"] .db-panel,
-[data-theme="light"] .db-card-panel,
-[data-theme="light"] .card {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 
 /* 2. Ghost/icon buttons — rgba(255,255,255,0.04) invisible on white */
 [data-theme="light"] .tb-ghost {
