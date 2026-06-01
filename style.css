@@ -117,23 +117,27 @@ img {
   --bg-card: #ffffff;
   --bg-card-hi: #f2f4f6;
   --bg-surface: #eceef0;
-
-  /* ── Text ── */
+  --surface-1: #ffffff;
+  --surface-2: #f2f4f6;
+  --surface-3: #eceef0;
   --t1: #191c1e;
   --t2: #464555;
   --t3: #777587;
   --t4: #c7c4d8;
 
+  /* ── Text ── */
+
   /* ── Borders ── */
-  --border: rgba(199, 196, 216, 0.45);
-  --border-md: rgba(199, 196, 216, 0.65);
-  --border-hi: rgba(199, 196, 216, 0.9);
+  --border: #c7c4d8;
+  --border-md: #c7c4d8;
+  --border-hi: #777587;
 
   /* ── Accent (Indigo primary) ── */
   --accent: #4f46e5;
   --accent-deep: #3525cd;
-  --accent-dim: rgba(77, 68, 227, 0.08);
-  --accent-glow: rgba(77, 68, 227, 0.14);
+  --accent-dim: #e2dfff;
+  --accent-glow: rgba(77, 68, 227, 0.08);
+  --glow-accent: none;
 
   /* ── Glass ── */
   --glass: rgba(255, 255, 255, 0.8);
@@ -144,14 +148,14 @@ img {
   --inc-dim: rgba(5, 150, 105, 0.1);
   --exp: #ba1a1a;
   --exp-dim: rgba(186, 26, 26, 0.1);
-
-  /* ── Shadows (Lumina ambient, indigo-tinted) ── */
   --shadow-sm: 0 2px 8px rgba(77, 68, 227, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
   --shadow-lg:
     0 8px 40px rgba(77, 68, 227, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
   --shadow-xl:
     0 16px 56px rgba(77, 68, 227, 0.1), 0 6px 12px rgba(0, 0, 0, 0.05);
+
+  /* ── Shadows (Lumina ambient, indigo-tinted) ── */
 
   /* ── Radii ── */
   --r-sm: 4px;
@@ -9185,55 +9189,6 @@ mark.txn-page-hl {
    Replaces the existing [data-theme="light"] block with a richer,
    more balanced palette.
    ──────────────────────────────────────────────────────────────── */
-
-[data-theme="light"] {
-  /* Page backgrounds — layered off-white, not pure white */
-  --bg: #f3f4f6; /* outermost page */
-  --bg2: #eef0f5; /* secondary surface / sidebar tint */
-  --bg3: #e8edf4; /* tertiary surface */
-
-  /* Card / panel surfaces */
-  --surface-1: #ffffff;
-  --surface-2: #f9fafb;
-  --surface-3: #f1f5f9;
-
-  /* Borders — soft, low-contrast separators */
-  --border: rgba(15, 23, 42, 0.08);
-  --border-hi: rgba(79, 110, 247, 0.18);
-
-  /* Glass / blur tint */
-  --glass: rgba(255, 255, 255, 0.82);
-
-  /* Typography */
-  --t1: #0f172a; /* deep slate — primary */
-  --t2: #334155; /* secondary */
-  --t3: #64748b; /* muted / captions */
-  --t4: #cbd5e1; /* disabled / dividers */
-
-  /* Accent tokens — restrained, not glow-heavy */
-  --accent: #5b5ef6;
-  --accent-deep: #4338ca;
-  --accent-dim: rgba(91, 94, 246, 0.08);
-  --accent-glow: rgba(91, 94, 246, 0.12);
-  --border-hi: rgba(91, 94, 246, 0.18);
-
-  /* Semantic colors stay consistent */
-  --inc: #22c55e;
-  --inc-dim: rgba(34, 197, 94, 0.08);
-  --exp: #f43f5e;
-  --exp-dim: rgba(244, 63, 94, 0.08);
-
-  /* Shadows — soft, no harsh dark drops */
-  --shadow-sm:
-    0 1px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md:
-    0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
-  --shadow-lg:
-    0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.06);
-  --shadow-xl:
-    0 20px 48px rgba(15, 23, 42, 0.12), 0 8px 20px rgba(15, 23, 42, 0.07);
-  --glow-accent: 0 0 0 rgba(91, 94, 246, 0); /* no purple glow in light mode */
-}
 
 /* ────────────────────────────────────────────────────────────────
    AMBIENT BACKGROUND — Remove the dark radial glows in light mode
