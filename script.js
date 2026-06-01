@@ -7689,11 +7689,20 @@ function syncThemeUi(theme) {
 
 function toggleTheme() {
   const html = document.documentElement;
-  const isDark = html.getAttribute("data-theme") === "dark";
-  const newTheme = isDark ? "light" : "dark";
-  html.setAttribute("data-theme", newTheme);
-  localStorage.setItem("bl_theme", newTheme);
-  syncThemeUi(newTheme);
+  const current = html.getAttribute("data-theme");
+  const next = current === "light" ? "dark" : "light";
+
+  html.setAttribute("data-theme", next);
+  localStorage.setItem("bl_theme", next);
+
+  if (typeof _updateThemeIcon === "function") {
+    _updateThemeIcon();
+  }
+
+  // Call the new Chart Theme wrapper automatically when theme switches
+  if (window.updateChartTheme) {
+    window.updateChartTheme();
+  }
 }
 
 function setGlassOpacity(val) {
