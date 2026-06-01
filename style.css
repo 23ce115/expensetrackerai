@@ -13860,67 +13860,205 @@ textarea.form-input:focus {
 
 /* ═══════════════════════════════════════════════════════════════
    LIGHT MODE MASTER OVERRIDES
+   Lumina Finance — "Quietly Powerful" Glassmorphism Design System
    ═══════════════════════════════════════════════════════════════ */
 
-/* Body & App Shell */
+/* ── Body & App Shell ──────────────────────────────────────── */
 [data-theme="light"] body {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
+  background-color: #f7f9fb;
+  color: #191c1e;
+  font-family: "Inter", sans-serif;
 }
 [data-theme="light"] .app-container,
 [data-theme="light"] .main-content {
-  background-color: #f8fafc !important;
+  background-color: #f7f9fb;
 }
 
-/* Cards, Sidebar, Modals, and Dropdowns */
-[data-theme="light"] .card,
-[data-theme="light"] .sidebar,
-[data-theme="light"] .modal-content,
+/* ── Sidebar ────────────────────────────────────────────────── */
+[data-theme="light"] .sidebar {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 4px 0 24px rgba(77, 68, 227, 0.04);
+}
+
+/* ── Cards (Level 2 elevation) ──────────────────────────────── */
+[data-theme="light"] .card {
+  background: #ffffff;
+  border: 1px solid rgba(199, 196, 216, 0.5);
+  border-radius: 1rem;
+  box-shadow:
+    0px 4px 20px rgba(0, 0, 0, 0.04),
+    0px 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* ── Modals & Overlays (Level 3 — glass) ───────────────────── */
+[data-theme="light"] .modal-content {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(199, 196, 216, 0.3);
+  border-bottom: 1px solid rgba(199, 196, 216, 0.3);
+  box-shadow:
+    0px 8px 40px rgba(77, 68, 227, 0.08),
+    0px 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Dropdowns ──────────────────────────────────────────────── */
 [data-theme="light"] .dropdown-menu {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(199, 196, 216, 0.5);
+  border-radius: 0.75rem;
+  box-shadow:
+    0px 8px 32px rgba(77, 68, 227, 0.08),
+    0px 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-/* Typography & Text Contrast */
+/* ── Typography & Text Contrast ─────────────────────────────── */
 [data-theme="light"] h1,
 [data-theme="light"] h2,
 [data-theme="light"] h3,
 [data-theme="light"] .card-title {
-  color: #0f172a !important;
+  font-family: "Space Grotesk", sans-serif;
+  color: #191c1e;
+  letter-spacing: -0.01em;
 }
+[data-theme="light"] h1 {
+  letter-spacing: -0.02em;
+}
+
 [data-theme="light"] p,
 [data-theme="light"] .text-muted,
 [data-theme="light"] .rtp-cat,
 [data-theme="light"] .rtp-desc {
-  color: #64748b !important;
+  color: #464555;
 }
 
-/* Inputs & Forms */
+/* ── Inputs & Forms ─────────────────────────────────────────── */
 [data-theme="light"] .form-input,
 [data-theme="light"] input,
 [data-theme="light"] select,
 [data-theme="light"] textarea {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
+  background-color: #f2f4f6;
+  color: #191c1e;
+  border: 1px solid #c7c4d8;
+  border-radius: 0.5rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-[data-theme="light"] .form-input::placeholder {
-  color: #94a3b8 !important;
+[data-theme="light"] .form-input::placeholder,
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #777587;
 }
-[data-theme="light"] .form-input:focus {
-  border-color: #4f46e5 !important;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+[data-theme="light"] .form-input:focus,
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(77, 68, 227, 0.1);
+  outline: none;
 }
 
-/* List Rows & Hover States */
+/* ── List Rows & Hover States ───────────────────────────────── */
 [data-theme="light"] .rtp-row,
 [data-theme="light"] .sp-row {
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid #e0e3e5;
+  transition:
+    background 0.12s ease,
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
 }
 [data-theme="light"] .rtp-row:hover,
 [data-theme="light"] .sp-row:hover {
-  background: rgba(79, 70, 229, 0.04) !important;
+  background: rgba(77, 68, 227, 0.04);
+  box-shadow: 0 2px 8px rgba(77, 68, 227, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .button-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #3525cd 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 2px 8px rgba(77, 68, 227, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+[data-theme="light"] .btn-primary:hover,
+[data-theme="light"] .button-primary:hover {
+  box-shadow:
+    0 4px 16px rgba(77, 68, 227, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .btn-ghost,
+[data-theme="light"] .button-ghost {
+  background: transparent;
+  color: #4f46e5;
+  border: 1px solid rgba(77, 68, 227, 0.3);
+  border-radius: 0.5rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+[data-theme="light"] .btn-ghost:hover,
+[data-theme="light"] .button-ghost:hover {
+  background: rgba(77, 68, 227, 0.08);
+  border-color: rgba(77, 68, 227, 0.5);
+}
+
+/* ── Chips & Badges ─────────────────────────────────────────── */
+[data-theme="light"] .badge,
+[data-theme="light"] .chip {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 9999px;
+  padding: 2px 10px;
+}
+[data-theme="light"] .badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+[data-theme="light"] .badge-error {
+  background: rgba(186, 26, 26, 0.1);
+  color: #93000a;
+}
+[data-theme="light"] .badge-primary {
+  background: rgba(77, 68, 227, 0.1);
+  color: #3525cd;
+}
+
+/* ── Surface Containers ─────────────────────────────────────── */
+[data-theme="light"] .surface-low {
+  background-color: #f2f4f6;
+}
+[data-theme="light"] .surface-container {
+  background-color: #eceef0;
+}
+[data-theme="light"] .surface-high {
+  background-color: #e6e8ea;
+}
+
+/* ── Outline / Dividers ─────────────────────────────────────── */
+[data-theme="light"] hr,
+[data-theme="light"] .divider {
+  border-color: #e0e3e5;
 }
 
 /* ═══════════════════════════════════════════════════════════════
