@@ -1543,3 +1543,27 @@
     z-index: 9999 !important;
   }
 }
+
+/* ==========================================================================
+    Z-Index Layering (Sheets Over Nav)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Elevate Modals and Bottom Sheets OVER the navigation bar */
+  .modal,
+  .overlay,
+  .bn-settings-panel,
+  .bn-sheet,
+  .ms-card {
+    z-index: 10005 !important;
+  }
+
+  .modal-content {
+    z-index: 10006 !important;
+  }
+
+  .bn-settings-panel,
+  .bn-sheet,
+  .modal-content {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
