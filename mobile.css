@@ -1567,3 +1567,66 @@
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+/* ==========================================================================
+    Card Squishing & Form Inputs
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .card-stack-v2,
+  .cs-flip-scene {
+    height: 215px !important;
+    min-height: 215px !important;
+  }
+
+  .cs-flip-card,
+  .card-item {
+    padding: 20px 24px !important;
+    box-sizing: border-box !important;
+  }
+
+  .cs-flip-card h2,
+  .card-item h2,
+  .card-balance-val,
+  [class*="balance"] {
+    font-size: 1.75rem !important; /* Smaller balance text */
+    line-height: 1.1 !important;
+    margin-top: 4px !important;
+  }
+
+  .cs-flip-card .card-number,
+  .card-item .card-number,
+  [class*="number"] {
+    font-size: 1.1rem !important; /* Smaller card number */
+    letter-spacing: 2px !important;
+  }
+
+  .cs-flip-card .card-label,
+  .card-item .card-label,
+  [class*="label"] {
+    font-size: 0.65rem !important;
+  }
+
+  .card-chip,
+  [class*="chip"] {
+    transform: scale(0.85) !important;
+    transform-origin: left bottom !important;
+  }
+
+  .card-logo,
+  [class*="logo"] {
+    transform: scale(0.85) !important;
+    transform-origin: right top !important;
+  }
+
+  .form-input,
+  select.form-input,
+  .modal-content input,
+  .modal-content select {
+    height: 50px !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important; /* 16px prevents iOS from auto-zooming */
+    padding: 0 16px !important;
+  }
+}
