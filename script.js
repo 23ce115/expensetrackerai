@@ -6809,6 +6809,12 @@ function renderMonthlySummary() {
         biggest.description || biggest.category;
       document.getElementById("premiumTopSpendingAmt").textContent =
         "-₹" + Math.abs(biggest.amount).toLocaleString("en-IN");
+      // Populate the date stamp
+      const dateEl = document.getElementById("premiumTopSpendingDate");
+      if (dateEl && biggest.date) {
+        const d = new Date(biggest.date + "T00:00:00");
+        dateEl.textContent = d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+      }
       topCard.style.display = "block";
     } else {
       topCard.style.display = "none";
@@ -7345,16 +7351,37 @@ function _renderSummaryPie(sortedCats, exp) {
     window._summaryPieChart.destroy();
     window._summaryPieChart = null;
   }
+
+  // Update center total display
+  const centerTotal = document.getElementById("chartCenterTotalDisplay");
+  if (centerTotal) {
+    centerTotal.textContent = exp > 0 ? "₹" + exp.toLocaleString("en-IN") : "₹0";
+  }
+
+  // Update legend
+  const legendContainer = document.getElementById("summaryLegendContainer");
+  if (legendContainer) {
+    if (!sortedCats.length) {
+      legendContainer.innerHTML = "";
+    } else {
+      legendContainer.innerHTML = sortedCats
+        .map(([c]) => `<div class="cfl-item"><span class="cfl-dot" style="background:${getCatColor(c)}"></span><span>${c}</span></div>`)
+        .join("");
+    }
+  }
+
   if (!sortedCats.length) {
     pieCanvas.style.display = "none";
     return;
   }
   pieCanvas.style.display = "block";
-  const offsets = sortedCats.map((_, i) => (i === 0 ? 22 : 0));
-  const borderWidths = sortedCats.map((_, i) => (i === 0 ? 4 : 2));
-  const borderColors = sortedCats.map((_, i) =>
-    i === 0 ? "rgba(255,255,255,0.25)" : "#0f172a",
-  );
+
+  // Remove any inline width/height that would cause the canvas to escape its container
+  pieCanvas.removeAttribute("width");
+  pieCanvas.removeAttribute("height");
+  pieCanvas.style.width = "";
+  pieCanvas.style.height = "";
+
   window._summaryPieChart = new Chart(pieCanvas.getContext("2d"), {
     type: "doughnut",
     data: {
@@ -7363,17 +7390,16 @@ function _renderSummaryPie(sortedCats, exp) {
         {
           data: sortedCats.map(([, a]) => a),
           backgroundColor: sortedCats.map(([c]) => getCatColor(c)),
-          borderColor: "transparent",
-          borderWidth: 0,
-          offset: offsets,
-          hoverOffset: 8,
+          borderColor: "rgba(11,17,32,0.6)",
+          borderWidth: 2,
+          hoverOffset: 6,
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: "58%",
+      cutout: "62%",
       animation: { duration: 700, easing: "easeOutQuart" },
       plugins: {
         legend: { display: false },
@@ -7387,42 +7413,8 @@ function _renderSummaryPie(sortedCats, exp) {
           },
         },
       },
-      layout: { padding: 20 },
+      layout: { padding: 8 },
     },
-    plugins: [
-      {
-        id: "doughnutLabels",
-        afterDraw(chart) {
-          const { ctx, data } = chart;
-          const meta = chart.getDatasetMeta(0);
-          ctx.save();
-          meta.data.forEach((arc, i) => {
-            const pct =
-              exp > 0 ? Math.round((data.datasets[0].data[i] / exp) * 100) : 0;
-            if (pct < 5) return;
-            const angle = (arc.startAngle + arc.endAngle) / 2;
-            const r = (arc.innerRadius + arc.outerRadius) / 2;
-            const x = arc.x + Math.cos(angle) * r;
-            const y = arc.y + Math.sin(angle) * r;
-            if (i === 0) {
-              ctx.font = "bold 13px DM Sans, system-ui, sans-serif";
-              ctx.fillStyle = "#ffffff";
-              ctx.shadowColor = "rgba(0,0,0,0.6)";
-              ctx.shadowBlur = 4;
-            } else {
-              ctx.font = "bold 11px system-ui, sans-serif";
-              ctx.fillStyle = "rgba(255,255,255,0.9)";
-              ctx.shadowColor = "transparent";
-              ctx.shadowBlur = 0;
-            }
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(pct + "%", x, y);
-          });
-          ctx.restore();
-        },
-      },
-    ],
   });
 }
 
