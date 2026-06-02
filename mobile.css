@@ -1395,3 +1395,67 @@
     color: #ba1a1a !important;
   }
 }
+
+/* ==========================================================================
+    Mobile-First Viewport Scaffolding Fixes
+   ========================================================================== */
+@media (max-width: 768px) {
+  .report-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #0b1120 !important; /* Rich deep slate background matching layout tokens */
+    z-index: 10000 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Fixed Top Control Header Bar */
+  .report-page-header {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: env(safe-area-inset-top, 0px) var(--mob-px) 0 var(--mob-px);
+    background: rgba(11, 17, 32, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+  }
+
+  /* Core Data View Scroll Container */
+  .report-page-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 0 calc(100px + env(safe-area-inset-bottom, 0px)) 0 !important;
+  }
+
+  /* Stark White Card Core Breakdown Window */
+  .report-chart-section {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-radius: 24px !important;
+    margin: 14px 18px !important;
+    padding: 20px 16px !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  .report-section-title {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    color: #1e293b !important; /* Stark contrast title header */
+    margin-bottom: 16px;
+  }
+
+  /* Unified light-theme text styling inside breakdown modules */
+  [data-theme="light"] .report-chart-section {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+}
