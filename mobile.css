@@ -1710,3 +1710,68 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   }
 }
+
+/* ==========================================================================
+    Light Mode Panels & Bottom Nav Overrides
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  [data-theme="light"] .db-chart-card,
+  [data-theme="light"] .db-panel.section-expenses {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  [data-theme="light"] .db-panel.section-expenses .db-panel-title,
+  [data-theme="light"] .db-panel.section-expenses .total-expenses,
+  [data-theme="light"] .db-panel.section-expenses .exp-cat-amt,
+  [data-theme="light"] .db-panel.section-expenses .pv-value {
+    color: #191c1e !important;
+  }
+
+  [data-theme="light"] .db-panel.section-expenses .db-panel-sub,
+  [data-theme="light"] .db-panel.section-expenses .exp-cat-name,
+  [data-theme="light"] .db-panel.section-expenses .pv-label,
+  [data-theme="light"] .db-panel.section-expenses p /* Catches "No expenses this period" */ {
+    color: #64748b !important;
+  }
+
+  [data-theme="light"] .db-chart-card .dcc-title {
+    color: #191c1e !important;
+  }
+
+  [data-theme="light"] .db-chart-card .dcc-legend span,
+  [data-theme="light"] .db-chart-card .cpc-btn {
+    color: #475569 !important;
+  }
+
+  [data-theme="light"] .db-chart-card .cpc-btn {
+    background: #f2f4f6 !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  [data-theme="light"] .db-chart-card .cpc-btn--active {
+    background: rgba(79, 70, 229, 0.1) !important;
+    color: #4f46e5 !important;
+    border-color: rgba(79, 70, 229, 0.25) !important;
+  }
+
+  [data-theme="light"] .bottom-nav {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  [data-theme="light"] .bn-tab {
+    color: #64748b !important;
+  }
+
+  [data-theme="light"] .bn-tab.bn-tab--active {
+    color: #4f46e5 !important;
+  }
+
+  [data-theme="light"] .bn-tab.bn-tab--active i {
+    filter: none !important;
+  }
+}
