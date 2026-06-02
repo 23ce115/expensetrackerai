@@ -6953,46 +6953,58 @@ function syncFabVisibility() {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function bnSwitch(tab) {
-  // Clear active state
+  // Clear active highlight states across tabs
   document.querySelectorAll(".bn-tab").forEach((t) => {
-    safeRemoveClass(t, "bn-tab--active");
+    t.classList.remove("bn-tab--active");
   });
 
   if (tab === "add") {
-    // Don't mark Add as active — open sheet instead
     openBnSheet();
     return;
   }
 
+  // ── DIRECT ROUTING FOR MOBILE UI REPORT VIEW ──
   if (tab === "report") {
-    safeAddClass(safeGet("bnReport"), "bn-tab--active");
-    openBnReport();
-    return;
-  }
+    const reportTab = document.getElementById("bnReport");
+    if (reportTab) reportTab.classList.add("bn-tab--active");
 
-  if (tab === "cat") {
-    safeAddClass(safeGet("bnCat"), "bn-tab--active");
-    openCategoryManager();
+    // Initialize the live report metrics & cycle variables
+    window.summaryMonth = new Date().getMonth();
+    window.summaryYear = new Date().getFullYear();
 
-    setTimeout(() => {
-      document.querySelectorAll(".bn-tab").forEach((t) => {
-        safeRemoveClass(t, "bn-tab--active");
-      });
-      safeAddClass(safeGet("bnHome"), "bn-tab--active");
-    }, 300);
+    if (typeof window.renderMonthlySummary === "function") {
+      window.renderMonthlySummary();
+    }
 
+    // Smoothly call up the full report page viewport directly
+    const reportPage = document.getElementById("reportFullPage");
+    if (reportPage) {
+      reportPage.style.display = "flex";
+    }
     return;
   }
 
   if (tab === "settings") {
-    safeAddClass(safeGet("bnSettings"), "bn-tab--active");
+    const settingsTab = document.getElementById("bnSettings");
+    if (settingsTab) settingsTab.classList.add("bn-tab--active");
     openBnSettings();
     return;
   }
 
-  // Home
-  safeAddClass(safeGet("bnHome"), "bn-tab--active");
+  // Fallback default state: Return home
+  const homeTab = document.getElementById("bnHome");
+  if (homeTab) homeTab.classList.add("bn-tab--active");
 }
+
+function closeReportFullPage() {
+  const reportPage = document.getElementById("reportFullPage");
+  if (reportPage) {
+    reportPage.style.display = "none";
+  }
+  // Reset bottom capsule navigation state to home grid
+  bnSwitch("home");
+}
+window.closeReportFullPage = closeReportFullPage;
 
 function openBnSheet() {
   updateAddAccountUI();
