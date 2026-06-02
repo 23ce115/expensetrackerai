@@ -682,14 +682,14 @@
     display: none !important;
   }
 
-  /* ── Pill-Shaped Bottom Navigation (Reference Match) ─────────── */
+  /* ── Pill-Shaped Bottom Navigation  ─────────── */
   .bottom-nav {
-    background: #1e2235 !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    border-radius: 40px !important;
+    background: #1a233a !important; /* Perfect deep slate navy matching reference */
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 100px !important; /* Complete capsule curve */
     margin: 0 16px !important;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-    height: 64px !important;
+    height: 68px !important;
     padding: 0 12px !important;
     left: 0 !important;
     right: 0 !important;
@@ -698,44 +698,57 @@
     position: fixed !important;
     z-index: 9999 !important;
     align-items: center !important;
-    justify-content: space-around !important;
+    justify-content: space-around !important; /* Symmetrical spatial distribution */
   }
   .bn-tab span {
     display: none !important;
   }
   .bn-tab {
     flex: 1 !important;
-    height: 44px !important;
-    max-width: 44px !important;
+    height: 48px !important;
+    max-width: 48px !important;
+    min-width: 48px !important;
     border-radius: 50% !important;
-    color: #8892b0 !important;
+    color: rgba(
+      218,
+      226,
+      253,
+      0.6
+    ) !important; /* Soft periwinkle passive state */
     background: transparent !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border: none !important;
+    outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
+    transition:
+      background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.2s !important;
   }
   .bn-tab i {
-    font-size: 1.4rem !important;
+    font-size: 1.5rem !important; /* Balances Tabler layout vectors perfectly */
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     margin: 0 !important;
   }
   .bn-tab.bn-tab--active {
-    background: #adc6ff !important;
-    color: #0b1120 !important;
+    background: #adc6ff !important; /* Solid light blue active circular container */
+    color: #0b1326 !important; /* Ultra-dark navy for high contrast icon */
   }
-  .bn-tab.bn-tab--active i,
-  .bn-tab.bn-tab-aia.bn-tab--active i,
-  .bn-tab.bn-tab-aia:hover i {
+  .bn-tab.bn-tab--active i {
+    color: #0b1326 !important;
     filter: none !important;
   }
   .bn-add-ring {
     background: transparent !important;
     box-shadow: none !important;
-    width: auto !important;
-    height: auto !important;
+    width: 100% !important;
+    height: 100% !important;
     color: inherit !important;
     border-radius: 0 !important;
     margin: 0 !important;
@@ -744,11 +757,11 @@
     justify-content: center !important;
   }
   .bn-tab.bn-tab--fab {
-    flex: 1 !important;
+    max-width: 48px !important;
+    min-width: 48px !important;
   }
   .bn-tab.bn-tab--fab i {
-    font-size: 1.8rem !important;
-    font-weight: 300 !important;
+    font-size: 1.6rem !important;
   }
 
   /* ── Modals & Bottom Sheets (Z-Index Hierarchy) ──────────────── */
@@ -1165,16 +1178,20 @@
     color: #4f46e5 !important;
     border-color: rgba(79, 70, 229, 0.25) !important;
   }
+
   [data-theme="light"] .bottom-nav {
     background: #ffffff !important;
-    border-color: rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06) !important;
   }
   [data-theme="light"] .bn-tab {
-    color: #94a3b8 !important;
+    color: #64748b !important;
   }
   [data-theme="light"] .bn-tab.bn-tab--active {
-    background: #4f46e5 !important;
+    background: #4f46e5 !important; /* Premium Indigo solid circle */
+    color: #ffffff !important;
+  }
+  [data-theme="light"] .bn-tab.bn-tab--active i {
     color: #ffffff !important;
   }
 }
