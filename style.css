@@ -4193,75 +4193,6 @@ select.form-input option,
 }
 
 /* ════════════════════════════════════════════════════════════
-    RESPONSIVE
-    ════════════════════════════════════════════════════════════ */
-
-@media (max-width: 1080px) {
-  .db-grid {
-    grid-template-columns: 1fr;
-  }
-  .db-right {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-  .topbar {
-    padding: 0 0.95rem;
-  }
-  .topbar-search {
-    width: 130px;
-  }
-  .topbar-search:focus-within {
-    width: 165px;
-  }
-  .db-body {
-    padding: 0.95rem;
-    padding-bottom: 74px;
-  }
-  .db-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-  .db-bottom-row {
-    grid-template-columns: 1fr;
-  }
-  .db-right {
-    display: flex;
-    flex-direction: column;
-  }
-  .desktop-only {
-    display: none !important;
-  }
-  .txn-mobile-list {
-    display: block;
-  }
-  .table-wrapper {
-    display: none;
-  }
-  .ask-bl-panel {
-    width: 100%;
-  }
-  .ask-bl-fab {
-    bottom: 4.8rem;
-    right: 0.95rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .db-stats {
-    grid-template-columns: 1fr;
-  }
-  .db-title {
-    font-size: 1.2rem;
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
     MISSING COMPAT — biometric setup, card-switcher, receipt, etc.
     ════════════════════════════════════════════════════════════ */
 
@@ -4759,29 +4690,6 @@ select.form-input option,
 
 [data-theme="light"] .biometric-btn {
   background: rgba(59, 130, 246, 0.08);
-}
-
-/* ═══ ADDITIONAL RESPONSIVE ══════════════════════════════════ */
-
-@media (max-width: 640px) {
-  .db-grid {
-    gap: 0.8rem;
-  }
-  .card-stack {
-    height: 155px;
-  }
-  .cs-main {
-    bottom: 12px;
-  }
-  .topbar-title {
-    font-size: 0.8rem;
-  }
-  .db-panel-title {
-    font-size: 0.82rem;
-  }
-  .ask-bl-panel {
-    border-radius: 22px 22px 0 0;
-  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -6380,47 +6288,6 @@ select.form-input option,
   animation-delay: 0.18s;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-    RESPONSIVE ADJUSTMENTS
-    ═══════════════════════════════════════════════════════════════ */
-
-@media (max-width: 1100px) {
-  .db-grid {
-    grid-template-columns: 1fr 300px;
-    gap: var(--space-md);
-  }
-  .topbar-search {
-    width: 300px;
-  }
-}
-
-@media (max-width: 900px) {
-  .topbar {
-    grid-template-columns: auto 1fr auto;
-  }
-  .topbar-search {
-    width: 100%;
-  }
-  .db-grid {
-    grid-template-columns: 1fr;
-  }
-  .db-right {
-    order: -1;
-  }
-  .db-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .db-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-  .db-stats .db-stat-card:last-child {
-    grid-column: span 2;
-  }
-}
-
 /* FIX: Sidebar containment */
 
 /* ═══════════════════════════════════════════════
@@ -6884,38 +6751,6 @@ select.form-input option,
   }
 }
 
-/* ═══════════════════════════════════════════
-    CARD FLIP — MOBILE REFINEMENTS
-    ═══════════════════════════════════════════ */
-
-/* Fix topbar on mobile — prevent overlap */
-
-@media (max-width: 768px) {
-  .topbar {
-    display: flex !important;
-    grid-template-columns: unset !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
-    padding: 0 1rem !important;
-  }
-
-  .topbar-search {
-    display: none !important;
-  }
-
-  #headerDate {
-    display: block !important;
-  }
-}
-
-/* Card width — constrained and centered */
-
-/* Arrows — smaller, subtle, below card */
-
-/* Dots — centered under card */
-
-/* Card internal spacing */
-
 /* ═══════════════════════════════════════════════════════════════
     ADAPTIVE LAYOUT — STATE-DRIVEN DASHBOARD GRID
     ═══════════════════════════════════════════════════════════════ */
@@ -7309,20 +7144,6 @@ mark.rp-hl {
 [data-theme="light"] mark.rp-hl {
   background: rgba(79, 110, 247, 0.18);
   color: #3b5bdb;
-}
-
-/* ================================
-    TRANSACTION SEARCH RESPONSIVE
-  ================================ */
-
-/* Base (desktop already good, just ensure full width) */
-
-/* Focus glow (premium feel) */
-
-.search-wrapper:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(79, 110, 247, 0.15);
-  background: rgba(79, 110, 247, 0.06);
 }
 
 /* ================================
@@ -8665,71 +8486,6 @@ mark.txn-page-hl {
   color: #dc2626;
 }
 
-/* ── Responsive — Mobile ─────────────────────────────────── */
-
-@media (max-width: 768px) {
-  .sp-sidebar-spacer {
-    display: none;
-  }
-
-  .sp-header {
-    padding: 0 1.25rem;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .sp-title {
-    font-size: 1.08rem;
-  }
-
-  .sp-subtitle {
-    display: none;
-  }
-
-  .sp-header-badge {
-    display: none;
-  }
-
-  .sp-groups {
-    padding: 1.5rem 1rem 6rem;
-    gap: 1.75rem;
-    max-width: 100%;
-  }
-
-  /* Mobile: taller rows for touch */
-  .sp-row {
-    min-height: 72px;
-    padding: 0 1.1rem;
-    gap: 1rem;
-  }
-
-  .sp-row-title {
-    font-size: 0.94rem;
-  }
-
-  .sp-row-sub {
-    font-size: 0.76rem;
-  }
-
-  .sp-row-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    font-size: 0.86rem;
-  }
-
-  .sp-group-label {
-    font-size: 0.65rem;
-    padding: 0 0.25rem 0.75rem;
-  }
-
-  .sp-group-body {
-    border-radius: 16px;
-  }
-}
-
 /* ── Responsive — Wide Desktop ───────────────────────────── */
 
 @media (min-width: 1200px) {
@@ -9153,29 +8909,6 @@ mark.txn-page-hl {
 [data-theme="light"] .blcurr-item,
 [data-theme="light"] .blfaq-item {
   border-top-color: rgba(0, 0, 0, 0.06);
-}
-
-/* ── Mobile ──────────────────────────────────────────────────── */
-
-@media (max-width: 480px) {
-  .blsm-content {
-    max-height: 92vh;
-    border-radius: 20px 20px 0 0;
-    margin-bottom: 0;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 100%;
-    transform: translateY(24px);
-  }
-  .blsm {
-    align-items: flex-end;
-    padding: 0;
-  }
-  .blsm--open .blsm-content {
-    transform: translateY(0);
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -10183,32 +9916,6 @@ mark.txn-page-hl {
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* ────────────────────────────────────────────────────────────────
-   RESPONSIVE — Keep consistent on mobile too
-   ──────────────────────────────────────────────────────────────── */
-
-@media (max-width: 640px) {
-  [data-theme="light"] .blsm-content {
-    background: #ffffff;
-  }
-
-  [data-theme="light"] .ask-bl-panel {
-    border-top: 1px solid rgba(15, 23, 42, 0.09);
-    border-left: none;
-    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.09);
-  }
-
-  [data-theme="light"] .bn-sheet {
-    border-top: 1px solid rgba(15, 23, 42, 0.07);
-  }
-}
-
-[data-theme="light"] .donut-chart canvas,
-[data-theme="light"] #donutChart,
-[data-theme="light"] [id*="donut"],
-[data-theme="light"] [id*="Donut"] {
-  border: none !important;
-}
 /* ═══════════════════════════════════════════════════════════════
    END OF LIGHT MODE REFINEMENT
    ════════════════════════════════════*/
@@ -12160,31 +11867,6 @@ textarea.form-input:focus {
 }
 .bn-settings-danger {
   color: var(--exp) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   25. MOBILE RESPONSIVE — stat cards & grid below 768px
-   ─────────────────────────────────────────────────────────────*/
-@media (max-width: 768px) {
-  .sidebar {
-    display: none !important;
-  }
-
-  .main-area {
-    margin-left: 0 !important;
-  }
-
-  .db-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .db-stats {
-    grid-template-columns: 1fr !important;
-  }
-
-  .db-greeting-name {
-    font-size: 1.5rem !important;
-  }
 }
 
 /* ─────────────────────────────────────────────────────────────
