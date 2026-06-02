@@ -1630,3 +1630,19 @@
     padding: 0 16px !important;
   }
 }
+
+/* ==========================================================================
+    Lock Screen Overlap
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  #lockScreen,
+  .lock-screen {
+    z-index: 99999 !important;
+  }
+
+  body.is-locked .bottom-nav,
+  body.locked .bottom-nav {
+    display: none !important;
+  }
+}
