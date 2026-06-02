@@ -1459,3 +1459,363 @@
     border-color: rgba(0, 0, 0, 0.08) !important;
   }
 }
+
+/* ==========================================================================
+   REPORT FULL PAGE — Complete Component Styles
+   Matches reference design: dark theme with donut chart + category insights
+   ========================================================================== */
+
+/* ── Report Page Header (rph-*) ──────────────────────────────────── */
+.rph-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rph-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.rph-back-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rph-profile-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b5bdb, #4f6ef7);
+  border: 2px solid rgba(79, 110, 247, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.rph-title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--t1, #e6edf3);
+  margin: 0;
+}
+
+.rph-bell-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.15s;
+}
+
+/* ── Summary Stat Cards (card-income / card-expenses / card-savings) ── */
+.summary-stat.card-income .summary-value.positive,
+.summary-stat.card-income .summary-value {
+  color: #4edea3;
+}
+.summary-stat.card-expenses .summary-value.negative,
+.summary-stat.card-expenses .summary-value {
+  color: #ff7b8a;
+}
+.summary-stat.card-savings .summary-value.primary,
+.summary-stat.card-savings .summary-value {
+  color: #adc6ff;
+}
+
+/* ── Report Chart Section — Dark background matching reference ─── */
+@media (max-width: 768px) {
+  .report-chart-section {
+    background: var(--mob-surface, #111827) !important;
+    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.055)) !important;
+    border-radius: 20px !important;
+    margin: 14px 18px !important;
+    padding: 20px 16px !important;
+    box-shadow: none !important;
+  }
+
+  .report-section-title {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: rgba(230, 237, 243, 0.42) !important;
+    margin-bottom: 20px;
+  }
+}
+
+/* ── Chart Viewport Wrapper — Fixed size donut container ─────────── */
+.chart-viewport-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 20px;
+}
+
+.chart-viewport-wrapper canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── Chart Center Metrics — Total in donut center ───────────────── */
+.chart-center-metrics {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ccm-amount {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--t1, #e6edf3);
+  line-height: 1.1;
+}
+
+.ccm-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(230, 237, 243, 0.4);
+  margin-top: 3px;
+}
+
+/* ── Chart Legend — 2-column dot grid ───────────────────────────── */
+.chart-flex-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  padding: 0 8px;
+  margin-top: 4px;
+}
+
+.cfl-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: rgba(230, 237, 243, 0.72);
+  font-weight: 500;
+}
+
+.cfl-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Category Insights Section ───────────────────────────────────── */
+.report-insights-section {
+  margin: 0 18px 14px;
+}
+
+.insights-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Top Spending Card — Inner elements ──────────────────────────── */
+.tsc-bg-watermark {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 4rem;
+  color: rgba(255, 180, 171, 0.07);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tsc-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+}
+
+.tsc-merchant-name {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--t1, #e6edf3);
+  margin: 4px 0 0;
+  letter-spacing: -0.01em;
+}
+
+.tsc-date-stamp {
+  font-size: 0.75rem;
+  color: rgba(230, 237, 243, 0.45);
+  margin: 3px 0 0;
+}
+
+.tsc-amount {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  color: #ff7b8a;
+}
+
+.tsc-amount.negative {
+  color: #ff7b8a;
+}
+
+.tsc-actions-row {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.tsc-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.tsc-btn--primary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(230, 237, 243, 0.8);
+}
+.tsc-btn--primary:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tsc-btn--secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
+  color: rgba(230, 237, 243, 0.55);
+}
+.tsc-btn--secondary:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Report Action Footer — Download PDF button ──────────────────── */
+.report-action-footer {
+  margin: 8px 18px 20px;
+}
+
+.report-download-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  color: #818cf8;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: all 0.15s;
+}
+.report-download-btn:active {
+  background: rgba(99, 102, 241, 0.16);
+}
+
+/* ── Light theme overrides ───────────────────────────────────────── */
+[data-theme="light"] .rph-back-btn,
+[data-theme="light"] .rph-bell-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .rph-title {
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .ccm-amount {
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .ccm-label {
+  color: rgba(15, 23, 42, 0.45) !important;
+}
+
+[data-theme="light"] .cfl-item {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .chart-flex-legend {
+  background: transparent;
+}
+
+[data-theme="light"] .tsc-merchant-name {
+  color: #191c1e !important;
+}
+
+[data-theme="light"] .tsc-date-stamp {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .tsc-btn--primary {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .tsc-btn--secondary {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .report-section-title {
+  color: #64748b !important;
+}
