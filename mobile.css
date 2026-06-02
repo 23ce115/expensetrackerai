@@ -1681,3 +1681,32 @@
     box-sizing: border-box !important;
   }
 }
+
+/* ==========================================================================
+   Boxed Recent Transactions Panel
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .db-recent-card {
+    background: var(--mob-surface, #111827) !important;
+    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.055)) !important;
+    border-radius: 20px !important; /* Matches Stats and My Card */
+    margin: 14px 18px 30px !important; /* 18px sides to match other cards */
+    padding: 16px 0 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .db-recent-hdr {
+    padding: 0 18px 12px !important;
+  }
+
+  .db-recent-item:last-child {
+    border-bottom: none !important;
+  }
+
+  [data-theme="light"] .db-recent-card {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  }
+}
