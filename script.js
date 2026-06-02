@@ -4355,8 +4355,8 @@ async function _applyMigrationVault(password, userId) {
 /* ── Sign out ── */
 async function doSignOut() {
   try {
-    stopCloudSync();
-    saveToStorage();
+    if (typeof stopCloudSync === "function") stopCloudSync();
+    if (typeof saveToStorage === "function") saveToStorage();
     sessionPin = null;
     cards = [];
     activeCardIdx = 0;
@@ -4368,8 +4368,19 @@ async function doSignOut() {
     syncConfig = defaultSyncConfig();
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(AUTH_MODE_KEY);
-    const client = getBLClient();
-    await client.auth.signOut();
+    [
+      "bl_last_email",
+      "bl_is_google_auth",
+      "bl_has_stored_creds",
+      "bl_has_webauthn",
+      "bl_webauthn_cred_id",
+      "bl_webauthn_pwd_vault",
+      "bl_webauthn_rp_id",
+    ].forEach((key) => localStorage.removeItem(key));
+    try {
+      const client = typeof getBLClient === "function" ? getBLClient() : null;
+      client?.auth?.signOut?.().catch(() => {});
+    } catch (_) {}
     location.reload();
   } catch (e) {
     console.warn("Sign out error", e);
@@ -6716,37 +6727,93 @@ function renderMonthlySummary() {
   const biggest = [...tx.filter((t) => t.type === "expense")].sort(
     (a, b) => Math.abs(b.amount) - Math.abs(a.amount),
   )[0];
+
   document.getElementById("summaryInc").textContent = fmt(inc);
   document.getElementById("summaryExp").textContent = fmt(exp);
+
+  // Refined Savings Rate to align with the new 3-Column Prose layout metrics
   const surplusEl = document.getElementById("summaryRate");
   if (net >= 0) {
-    surplusEl.textContent = "+" + fmt(net) + " Surplus";
+    surplusEl.textContent = (inc > 0 ? rate : 0) + "%";
     surplusEl.className = "summary-value positive";
   } else {
-    surplusEl.textContent = "-" + fmt(Math.abs(net)) + " Deficit";
+    surplusEl.textContent = "0%";
     surplusEl.className = "summary-value negative";
   }
-  document.getElementById("summaryTopCat").textContent = topCat
-    ? `${topCat[0]} (${fmt(topCat[1])})`
-    : "—";
-  document.getElementById("summaryBiggest").textContent = biggest
-    ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
-    : "—";
-  // Pie chart — shared helper
+
+  // Fallback structural safety mappings (prevents legacy reference errors)
+  if (document.getElementById("summaryTopCat")) {
+    document.getElementById("summaryTopCat").textContent = topCat
+      ? `${topCat[0]} (${fmt(topCat[1])})`
+      : "—";
+  }
+  if (document.getElementById("summaryBiggest")) {
+    document.getElementById("summaryBiggest").textContent = biggest
+      ? `${biggest.description || biggest.category} (${fmt(Math.abs(biggest.amount))})`
+      : "—";
+  }
+
+  // Render original pie canvas data
   _renderSummaryPie(sortedCats, exp);
-  // Legend list below pie
-  document.getElementById("summaryCatList").innerHTML =
-    sortedCats.length === 0
-      ? '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem 0;">No expenses this month</p>'
-      : sortedCats
-          .map(
-            ([c]) =>
-              `<div style="display:flex;align-items:center;gap:.35rem;">
-            <span style="width:10px;height:10px;border-radius:50%;background:${getCatColor(c)};flex-shrink:0;display:inline-block;"></span>
-            <span style="font-size:.75rem;color:#e2e8f0;">${c}</span>
-          </div>`,
-          )
-          .join("");
+
+  // ── NEW STITCH DESIGN PROGRESS BAR GENERATOR ──
+  const catListContainer = document.getElementById("summaryCatList");
+  if (catListContainer) {
+    if (!sortedCats.length) {
+      catListContainer.innerHTML =
+        '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1.5rem 0;">No expenses this month</p>';
+    } else {
+      catListContainer.innerHTML = sortedCats
+        .map(([c, a]) => {
+          const pct = exp > 0 ? Math.round((a / exp) * 100) : 0;
+          const budget = categoryBudgets[c] || 0;
+
+          // Dynamically configure limits vs standard totals
+          const budgetLabel =
+            budget > 0
+              ? "₹" + budget.toLocaleString("en-IN") + " LIMIT"
+              : "NO LIMIT";
+          const barWidthPercent =
+            budget > 0 ? Math.min((a / budget) * 100, 100) : pct;
+          const trackColor = budget > 0 && a > budget ? "#ff7b8a" : "#adc6ff";
+          const progressLabel =
+            budget > 0
+              ? Math.round((a / budget) * 100) + "% OF BUDGET"
+              : pct + "% OF TOTAL";
+
+          return `
+          <div class="cat-row">
+            <div class="cat-row-top">
+              <span class="cat-name">${c}</span>
+              <span class="cat-amt">₹${a.toLocaleString("en-IN")}</span>
+            </div>
+            <div class="cat-budget-bar">
+              <div class="cat-budget-fill" style="width: ${barWidthPercent}%; background-color: ${trackColor};"></div>
+            </div>
+            <div class="cat-row-bottom">
+              <span>${progressLabel}</span>
+              <span>${budgetLabel}</span>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+    }
+  }
+
+  // ── NEW TOP SPENDING HIGHLIGHT EXTRACTION ──
+  const topCard = document.getElementById("premiumTopSpendingSection");
+  if (topCard) {
+    if (biggest && Math.abs(biggest.amount) > 0) {
+      document.getElementById("premiumTopSpendingName").textContent =
+        biggest.description || biggest.category;
+      document.getElementById("premiumTopSpendingAmt").textContent =
+        "-₹" + Math.abs(biggest.amount).toLocaleString("en-IN");
+      topCard.style.display = "block";
+    } else {
+      topCard.style.display = "none";
+    }
+  }
 }
 async function downloadReport() {
   const modal = document.querySelector("#summaryModal .modal-content");
