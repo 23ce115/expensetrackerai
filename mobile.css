@@ -1498,3 +1498,48 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   Scroll Padding & Banner Overlaps
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .db-body {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .db-grid::after {
+    content: "";
+    display: block;
+    height: 90px;
+    width: 100%;
+  }
+
+  .sp-body,
+  .txn-page-body,
+  .rtp-body {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .bl-offline-banner {
+    position: relative !important;
+    top: 0 !important;
+    z-index: 50 !important;
+  }
+
+  .topbar {
+    z-index: 1000 !important;
+  }
+
+  .modal-content,
+  .bn-sheet,
+  .bn-settings-panel {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .bottom-nav {
+    position: fixed !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 9999 !important;
+  }
+}
