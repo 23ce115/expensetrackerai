@@ -1632,77 +1632,106 @@
       </div>
     </div>
 
-<!-- ═══════════════════ REFINED MONTHLY SUMMARY MODAL ═══════════════════ -->
-<div id="summaryModal" class="modal">
-  <div class="modal-content modal-content--lg">
-    <div class="modal-header">
-      <h2 class="modal-title" id="summaryModalTitle">
-        <i class="ti ti-chart-pie" style="color: #adc6ff; margin-right: 0.5rem"></i>Monthly Report
-      </h2>
-      <button class="close-btn" onclick="closeModal('summaryModal')">&times;</button>
+<!-- ═══════════════════════════════════════════════════════════════════
+     DEDICATED FULL-SCREEN REPORT VIEW
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="reportFullPage" class="report-page" style="display: none;">
+  <!-- Fixed Top Navigation Header Bar -->
+  <header class="report-page-header">
+    <div class="rph-left">
+      <button class="rph-back-btn" onclick="closeReportFullPage()" aria-label="Back to dashboard">
+        <i class="ti ti-arrow-left"></i>
+      </button>
+      <div class="rph-profile-circle">
+        <span id="reportAvatarInitial">S</span>
+      </div>
+      <h1 class="rph-title">Monthly Report</h1>
     </div>
+    <button class="rph-bell-btn" onclick="notify('No new report notifications','info')" aria-label="Notifications">
+      <i class="ti ti-bell"></i>
+    </button>
+  </header>
+
+  <!-- Scrollable Report Data Viewport -->
+  <div class="report-page-body">
     
-    <div class="modal-body" style="padding: 1rem 0;">
-      <!-- Month Switcher -->
-      <div class="summary-month-nav">
-        <button class="summary-month-btn" onclick="shiftSummaryMonth(-1)">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <span class="summary-month-title" id="summaryMonthTitle">March 2026</span>
-        <button class="summary-month-btn" onclick="shiftSummaryMonth(1)">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
+    <!-- Month Timeline Switcher Widget -->
+    <div class="summary-month-nav">
+      <button class="summary-month-btn" onclick="shiftSummaryMonth(-1)" aria-label="Previous month">
+        <i class="ti ti-chevron-left"></i>
+      </button>
+      <span class="summary-month-title" id="summaryMonthTitle">September 2025</span>
+      <button class="summary-month-btn" onclick="shiftSummaryMonth(1)" aria-label="Next month">
+        <i class="ti ti-chevron-right"></i>
+      </button>
+    </div>
 
-      <!-- Financial Overview Grid (Stitch 3-Column Prose Layout) -->
-      <div class="summary-grid"> 
-        <div class="summary-stat">
-          <div class="summary-label">Income</div>
-          <div class="summary-value positive" id="summaryInc">₹0</div>
-        </div>
-        <div class="summary-stat">
-          <div class="summary-label">Expenses</div>
-          <div class="summary-value negative" id="summaryExp">₹0</div>
-        </div>
-        <div class="summary-stat">
-          <div class="summary-label">Savings</div>
-          <div class="summary-value positive" id="summaryRate">—</div>
-        </div>
+    <!-- Financial Prose Overview Grid (3-Column Stitch Architecture) -->
+    <div class="summary-grid"> 
+      <div class="summary-stat card-income">
+        <div class="summary-label">Income</div>
+        <div class="summary-value positive" id="summaryInc">+₹0</div>
       </div>
-
-      <!-- Spending Breakdown Visualizer Wrapper -->
-      <div class="report-chart-section">
-        <div class="sf-section-title" id="summaryBreakdownTitle" style="margin-top: 0; margin-bottom: 1rem">
-          Expense Breakdown
-        </div>
-        <div style="position:relative; width:100%; max-width:240px; height:240px; margin:0 auto 1.5rem;">
-          <canvas id="summaryPieCanvas"></canvas>
-        </div>
-        <!-- Advanced Category Breakdown List Container -->
-        <div id="summaryCatList" style="display: flex; flex-direction: column; width: 100%;"></div>
+      <div class="summary-stat card-expenses">
+        <div class="summary-label">Expenses</div>
+        <div class="summary-value negative" id="summaryExp">-₹0</div>
       </div>
-
-      <!-- Premium Top Spending Highlight Card -->
-      <div class="top-spending-card" id="premiumTopSpendingSection" style="display: none;">
-        <span class="highlight-badge">Highest This Month</span>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-          <div>
-            <h3 class="summary-value" id="premiumTopSpendingName" style="font-size: 1.2rem; margin-bottom: 2px;">—</h3>
-            <p style="font-size: 0.75rem; color: var(--t3);">Peak Outflow Event</p>
-          </div>
-          <span class="summary-value negative" id="premiumTopSpendingAmt" style="font-size: 1.25rem;">₹0</span>
-        </div>
+      <div class="summary-stat card-savings">
+        <div class="summary-label">Savings</div>
+        <div class="summary-value primary" id="summaryRate">0%</div>
       </div>
     </div>
 
-    <div class="modal-footer" style="gap: 0.75rem;">
-      <button class="btn btn-secondary" onclick="closeModal('summaryModal')" style="flex: 1; justify-content: center;">
-        Close
-      </button>
-      <button class="btn" onclick="downloadReport()" style="flex: 1; justify-content: center; display: inline-flex; align-items: center; gap: .5rem; background: linear-gradient(135deg,#2f3aa3,#4f6ef7); color: #fff; border-radius: 12px; padding: .75rem; font-weight: 600; box-shadow: 0 4px 14px rgba(79,110,247,0.25); cursor: pointer">
-        <i class="fas fa-download" style="font-size: .8rem"></i> Download PDF
+    <!-- Spending Breakdown Analytics Card -->
+    <div class="report-chart-section">
+      <div class="report-section-title">SPENDING BREAKDOWN</div>
+      <div class="chart-viewport-wrapper">
+        <canvas id="summaryPieCanvas"></canvas>
+        <div class="chart-center-metrics">
+          <span class="ccm-amount" id="chartCenterTotalDisplay">₹0</span>
+          <span class="ccm-label">TOTAL</span>
+        </div>
+      </div>
+      <!-- Flex Grid Legend Array Container -->
+      <div id="summaryLegendContainer" class="chart-flex-legend"></div>
+    </div>
+
+    <!-- Category Insights Progress Flow Section -->
+    <div class="report-insights-section">
+      <div class="report-section-title">CATEGORY INSIGHTS</div>
+      <div id="summaryCatList" class="insights-rows-container"></div>
+    </div>
+
+    <!-- Premium Top Spending Highlight Box Layout -->
+    <div class="top-spending-card" id="premiumTopSpendingSection" style="display: none;">
+      <div class="tsc-bg-watermark">
+        <i class="ti ti-alert-triangle"></i>
+      </div>
+      <div class="tsc-header-row">
+        <div>
+          <span class="highlight-badge">HIGHEST THIS MONTH</span>
+          <h3 class="tsc-merchant-name" id="premiumTopSpendingName">—</h3>
+          <p class="tsc-date-stamp" id="premiumTopSpendingDate">Peak outflow event</p>
+        </div>
+        <span class="tsc-amount negative" id="premiumTopSpendingAmt">-₹0</span>
+      </div>
+      <div class="tsc-actions-row">
+        <button class="tsc-btn tsc-btn--primary" onclick="notify('Receipt image rendering engine initialized','info')">
+          <i class="ti ti-receipt"></i> VIEW RECEIPT
+        </button>
+        <button class="tsc-btn tsc-btn--secondary" onclick="notify('Transaction flagged for resolution','warn')">
+          <i class="ti ti-flag"></i> DISPUTE
+        </button>
+      </div>
+    </div>
+
+    <!-- Document Assembly Action Footnote Footer -->
+    <div class="report-action-footer">
+      <button class="report-download-btn" onclick="downloadReport()">
+        <i class="ti ti-download"></i> DOWNLOAD FULL PDF REPORT
       </button>
     </div>
+
   </div>
 </div>
     <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CHANGE PIN MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
