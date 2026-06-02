@@ -2,10 +2,7 @@
    BlueLedger — Mobile & Tablet UI Renovation
    Inspired by Stitch AI "Financier Elite" reference design
    ───────────────────────────────────────────────────────────────────
-   Load AFTER style.css  (append to <head> or import as last sheet)
    Targets: ≤768px (mobile) and 768px–1080px (tablet)
-   Principle: Full-bleed, edge-to-edge. Deep navy. Elite type.
-              Card as hero. Stats as prose. Activity as feed.
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Mobile Design Tokens ──────────────────────────────────────── */
@@ -29,12 +26,8 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    TABLET  (768 – 1080px)
-   Two-column collapses to wider single-column; sidebar stays but
-   collapses to icon-only at 1080 and hides below 768.
    ═══════════════════════════════════════════════════════════════════ */
-
 @media (max-width: 1080px) and (min-width: 769px) {
-  /* Sidebar: slimmer, no label text */
   .sidebar {
     width: 64px !important;
     min-width: 64px !important;
@@ -47,64 +40,65 @@
     align-items: center;
   }
   .sidebar-brand-name,
-  .sidebar-brand-sub {
-    display: none;
-  }
+  .sidebar-brand-sub,
   .sidebar-upgrade-card {
     display: none;
   }
-
-  /* Grid: single column, max-width centered */
   .db-grid {
-    grid-template-columns: 1fr;
-    max-width: 700px;
-    margin: 0 auto;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
   }
   .db-right {
-    order: -1;
+    order: 0;
   }
-
-  /* Main area: use safe horizontal padding */
   .db-body {
-    padding: 1.25rem 1.5rem 1.5rem;
+    padding: 16px 20px 24px;
   }
-
-  /* Topbar: compact */
   .topbar {
     padding: 0 1.5rem;
     height: 58px;
   }
+  .db-card-panel,
+  .db-recent-card {
+    padding: 16px !important;
+  }
+  .db-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .db-stats .db-stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+  #chartContainer {
+    max-height: 200px;
+  }
+  .topbar-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 0.68rem;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   MOBILE  (≤768px) — Full redesign
+   MOBILE  (≤768px) — Full Redesign
    ═══════════════════════════════════════════════════════════════════ */
-
 @media (max-width: 768px) {
-  /* ── Global body / overflow ──────────────────────────────────── */
+  /* ── Global ──────────────────────────────────────────────────── */
   body {
     overflow: hidden;
     background: var(--mob-bg);
   }
-
-  /* Disable cursor glow on touch */
   body::after {
     display: none;
   }
-
-  /* ── App layout: full-screen vertical stack ─────────────────── */
   .app-layout {
     flex-direction: column;
     height: 100dvh;
     overflow: hidden;
   }
-
-  /* ── Desktop sidebar: completely hidden ─────────────────────── */
   .sidebar {
     display: none !important;
   }
-
-  /* ── Main area: takes full width ────────────────────────────── */
   .main-area {
     flex: 1;
     width: 100%;
@@ -114,11 +108,17 @@
     overflow: hidden;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     TOPBAR — Financier Elite style
-     Profile avatar left | Brand title centre | Bell right
-     ════════════════════════════════════════════════════════════ */
+  /* ── Lock Screen (Highest Priority) ──────────────────────────── */
+  #lockScreen,
+  .lock-screen {
+    z-index: 99999 !important;
+  }
+  body.is-locked .bottom-nav,
+  body.locked .bottom-nav {
+    display: none !important;
+  }
 
+  /* ── Topbar ──────────────────────────────────────────────────── */
   .topbar {
     height: 62px;
     min-height: 62px;
@@ -129,22 +129,17 @@
     background: var(--mob-bg);
     border-bottom: none;
     position: relative;
-    z-index: 50;
+    z-index: 1000 !important;
     flex-shrink: 0;
     gap: 0;
   }
-
-  /* Hide the date block (too busy for mobile topbar) */
-  .topbar-date-block {
-    display: none;
-  }
-
-  /* Hide card switcher in topbar (card stack replaces it) */
-  #cardSwitcher {
+  .topbar-date-block,
+  #cardSwitcher,
+  .sidebar-upgrade-card,
+  .topbar-search,
+  #topbarSearch {
     display: none !important;
   }
-
-  /* Brand name injected as topbar title */
   .topbar::before {
     content: "BlueLedger";
     position: absolute;
@@ -157,8 +152,6 @@
     color: var(--t1, #e6edf3);
     pointer-events: none;
   }
-
-  /* Avatar: circular, left side */
   .topbar-avatar {
     width: 36px;
     height: 36px;
@@ -171,70 +164,79 @@
     order: -1;
     cursor: pointer;
   }
-
-  /* Right side: sync status (hidden) + bell icon */
   .topbar-right {
     display: flex;
     align-items: center;
     gap: 10px;
   }
-
-  /* Sync status pill: compact on mobile */
   #blSyncStatus {
     font-size: 0.62rem;
     padding: 3px 8px;
     border-radius: 50px;
     white-space: nowrap;
   }
-
-  /* Offline banner: stays at top */
   .bl-offline-banner {
-    top: 62px;
+    position: relative !important;
+    top: 0 !important;
+    z-index: 50 !important;
     font-size: 0.75rem;
     padding: 8px var(--mob-px);
   }
 
-  /* ════════════════════════════════════════════════════════════
-     SCROLLABLE DASHBOARD BODY
-     ════════════════════════════════════════════════════════════ */
-
+  /* ── Dashboard Body ──────────────────────────────────────────── */
   .db-body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    padding: 0 0
-      calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 12px);
+    padding: 0 0 calc(120px + env(safe-area-inset-bottom, 0px)) !important;
     scroll-behavior: smooth;
   }
-
-  /* ── Smooth scrollbar ────────────────────────────────────── */
   .db-body::-webkit-scrollbar {
     width: 0;
   }
-
-  /* ── Main content container ──────────────────────────────── */
   .main-content {
     padding: 0;
   }
-
-  /* ── Desktop greeting: hidden ────────────────────────────── */
   .db-above-grid-greeting {
     display: none !important;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     MOBILE GREETING — above card stack, inside db-right
-     ════════════════════════════════════════════════════════════ */
+  /* ── Dashboard Grid ──────────────────────────────────────────── */
+  .db-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .db-grid::after {
+    content: "";
+    display: block;
+    height: 90px;
+    width: 100%;
+  }
+  .db-right {
+    order: -1;
+    padding: 0;
+    width: 100% !important;
+    display: block !important;
+  }
+  .db-left {
+    padding: 0;
+  }
+  .db-left .db-stats {
+    display: none !important;
+  }
 
+  /* ── Mobile Greeting ─────────────────────────────────────────── */
   .db-mobile-greeting {
     display: block;
     padding: 18px var(--mob-px) 4px;
     border-bottom: none;
     margin-bottom: 0;
+    animation: mobFadeUp 0.3s ease both;
+    animation-delay: 0.05s;
   }
-
   .db-mobile-greeting .db-greeting-name {
     font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
     font-size: 1.55rem;
@@ -247,7 +249,6 @@
     margin-bottom: 2px;
     line-height: 1.1;
   }
-
   .db-mobile-greeting .db-greeting-sub {
     font-size: 0.8rem;
     color: rgba(230, 237, 243, 0.38);
@@ -255,131 +256,99 @@
     letter-spacing: 0;
   }
 
-  /* Light mode greeting */
-  [data-theme="light"] .db-mobile-greeting .db-greeting-name {
-    background: linear-gradient(110deg, #0f172a 0%, #3b5bdb 45%, #0f172a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  /* ── Card Hero Panel ─────────────────────────────────────────── */
+  .db-card-panel {
+    background: var(--mob-surface, #111827) !important;
+    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.05)) !important;
+    border-radius: 20px !important;
+    margin: 14px 18px !important;
+    padding: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    animation: mobFadeUp 0.3s ease both;
+    animation-delay: 0.1s;
   }
-  [data-theme="light"] .db-mobile-greeting .db-greeting-sub {
-    color: #777587;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     DASHBOARD GRID — single-column, right col first
-     ════════════════════════════════════════════════════════════ */
-
-  .db-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  /* Right column (card + stats) floats to top */
-  .db-right {
-    order: -1;
-    padding: 0;
-  }
-
-  /* Left column (chart, insights, recent) below */
-  .db-left {
-    padding: 0;
-  }
-
-  /* Hide desktop stat cards (mobile uses .db-mobile-stats) */
-  .db-left .db-stats {
-    display: none !important;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     HERO CARD PANEL — full-bleed, no panel chrome
-     ════════════════════════════════════════════════════════════ */
-
-  @media (max-width: 768px) {
-    .db-card-panel {
-      background: var(--mob-surface, #111827) !important;
-      border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.05)) !important;
-      border-radius: 20px !important; /* Matches the stats radius */
-      margin: 14px 18px !important; /* Matches the stats margin */
-      padding: 16px !important; /* Inner breathing room */
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    .db-card-panel .db-panel-hdr {
-      display: flex !important;
-      margin-bottom: 12px !important;
-      padding-bottom: 0 !important;
-    }
-
-    [data-theme="light"] .db-card-panel {
-      background: #ffffff !important;
-      border-color: rgba(0, 0, 0, 0.08) !important;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
-    }
-  }
-
   .db-card-panel::before {
     display: none !important;
   }
-
-  /* Panel header: hide the "My Card" label on mobile for cleaner look */
   .db-card-panel .db-panel-hdr {
-    display: none;
+    display: flex !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 0 !important;
   }
-
-  /* Card stack: full-width hero layout */
-  .card-stack-v2 {
-    height: 196px;
+  .card-stack-v2,
+  .cs-flip-scene,
+  .cs-flip-card,
+  .card-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .card-stack-v2,
+  .cs-flip-scene {
+    height: 215px !important;
+    min-height: 215px !important;
     margin: 0;
     border-radius: var(--mob-r-card);
     perspective: 1000px;
   }
-
-  /* Flip scene: full width */
-  .cs-flip-scene {
-    height: 196px;
-  }
-
-  .cs-flip-card {
+  .cs-flip-card,
+  .card-item {
+    padding: 20px 24px !important;
     border-radius: var(--mob-r-card) !important;
     box-shadow:
       0 24px 56px rgba(0, 0, 0, 0.55),
       0 4px 16px rgba(0, 0, 0, 0.3),
       0 1px 0 rgba(255, 255, 255, 0.08) inset !important;
   }
-
-  /* Old card-item stacking (if used) */
-  .card-item {
-    border-radius: var(--mob-r-card) !important;
+  .cs-flip-card h2,
+  .card-item h2,
+  .card-balance-val,
+  [class*="balance"] {
+    font-size: 1.75rem !important;
+    line-height: 1.1 !important;
+    margin-top: 4px !important;
   }
-
-  /* Card action buttons: horizontal row, subtle */
+  .cs-flip-card .card-number,
+  .card-item .card-number,
+  [class*="number"] {
+    font-size: 1.1rem !important;
+    letter-spacing: 2px !important;
+  }
+  .cs-flip-card .card-label,
+  .card-item .card-label,
+  [class*="label"] {
+    font-size: 0.65rem !important;
+  }
+  .card-chip,
+  [class*="chip"] {
+    transform: scale(0.85) !important;
+    transform-origin: left bottom !important;
+  }
+  .card-logo,
+  [class*="logo"] {
+    transform: scale(0.85) !important;
+    transform-origin: right top !important;
+  }
   .card-action-row {
     display: flex;
     gap: 8px;
     margin-top: 10px;
     justify-content: flex-end;
   }
-
   .card-action-btn {
     font-size: 0.72rem;
     padding: 5px 12px;
     border-radius: 20px;
     gap: 5px;
   }
-
   .card-action-btn i {
     font-size: 0.68rem;
   }
-
-  /* Dot indicators: centered below card */
   .card-stack-dots {
     margin-top: 10px;
     gap: 5px;
   }
-
-  /* Nav arrows: smaller on mobile */
   .cs-flip-nav {
     bottom: -2px;
   }
@@ -389,11 +358,7 @@
     font-size: 0.72rem;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     STAT CARDS — "Financier Elite" inline stat layout
-     Two cols (Income + Expense) then Net full-width
-     ════════════════════════════════════════════════════════════ */
-
+  /* ── Stat Cards (Income/Expense/Net) ─────────────────────────── */
   .db-mobile-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -403,8 +368,9 @@
     border-radius: var(--mob-r-card);
     overflow: hidden;
     border: 1px solid var(--mob-border);
+    animation: mobFadeUp 0.3s ease both;
+    animation-delay: 0.15s;
   }
-
   .db-mobile-stats .db-stat-card {
     background: var(--mob-surface) !important;
     border: none !important;
@@ -417,12 +383,9 @@
     position: relative;
     overflow: hidden;
   }
-
   .db-mobile-stats .db-stat-card::before {
     display: none !important;
   }
-
-  /* Full-width net balance card */
   .db-mobile-stats .db-stat-card:last-child {
     grid-column: 1 / -1;
     border-top: 1px solid var(--mob-border) !important;
@@ -432,28 +395,22 @@
     gap: 12px;
     padding: 14px 16px !important;
   }
-
   .db-mobile-stats .db-stat-card:last-child .dsc-icon {
     flex-shrink: 0;
   }
-
   .db-mobile-stats .db-stat-card:last-child .dsc-label {
     flex: none;
     margin-bottom: 0;
     margin-right: 8px;
   }
-
   .db-mobile-stats .db-stat-card:last-child .amount {
     margin-left: auto;
     font-size: 1.15rem;
   }
-
   .db-mobile-stats .db-stat-card:last-child .change,
   .db-mobile-stats .db-stat-card:last-child #dashNetSignMobile {
     display: none;
   }
-
-  /* Stat card icon: small, pill-style */
   .db-mobile-stats .dsc-icon {
     width: 28px;
     height: 28px;
@@ -462,8 +419,6 @@
     margin-bottom: 10px;
     flex-shrink: 0;
   }
-
-  /* Label: ALL CAPS micro-label */
   .db-mobile-stats .dsc-label {
     font-size: 0.62rem;
     font-weight: 700;
@@ -472,8 +427,6 @@
     color: rgba(230, 237, 243, 0.42);
     margin-bottom: 4px;
   }
-
-  /* Amount: large, bold */
   .db-mobile-stats .amount {
     font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
     font-size: 1.4rem;
@@ -482,16 +435,12 @@
     line-height: 1;
     margin: 0;
   }
-
   .db-mobile-stats .income-amount {
     color: var(--mob-inc) !important;
   }
-
   .db-mobile-stats .expense-amount {
     color: var(--mob-exp) !important;
   }
-
-  /* Change row: small, subtle */
   .db-mobile-stats .change {
     font-size: 0.67rem;
     margin-top: 4px;
@@ -501,7 +450,623 @@
     text-overflow: ellipsis;
   }
 
-  /* Light mode stat cards */
+  /* ── Recent Transactions Card ────────────────────────────────── */
+  .db-recent-card {
+    background: var(--mob-surface, #111827) !important;
+    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.055)) !important;
+    border-radius: 20px !important;
+    margin: 14px 18px 30px !important;
+    padding: 16px 0 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    animation: mobFadeUp 0.3s ease both;
+    animation-delay: 0.2s;
+  }
+  .db-recent-card::before {
+    display: none !important;
+  }
+  .db-recent-hdr {
+    padding: 0 18px 12px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .db-recent-title {
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(230, 237, 243, 0.42);
+  }
+  .db-recent-all {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mob-accent);
+    opacity: 0.85;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .db-recent-all:active {
+    opacity: 0.5;
+  }
+  .db-recent-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px var(--mob-px);
+    border-bottom: 1px solid var(--mob-border);
+    transition: background 0.1s;
+    position: relative;
+  }
+  .db-recent-item:last-child {
+    border-bottom: none !important;
+  }
+  .db-recent-item:active {
+    background: rgba(255, 255, 255, 0.025);
+  }
+  .db-recent-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    background: var(--mob-surface-hi);
+    border: 1px solid var(--mob-border);
+  }
+  .db-recent-icon.income {
+    background: rgba(78, 222, 163, 0.1);
+    border-color: rgba(78, 222, 163, 0.18);
+    color: var(--mob-inc);
+  }
+  .db-recent-icon.expense {
+    background: rgba(255, 123, 138, 0.1);
+    border-color: rgba(255, 123, 138, 0.18);
+    color: var(--mob-exp);
+  }
+  .db-recent-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .db-recent-desc {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--t1, #e6edf3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .db-recent-meta {
+    font-size: 0.75rem;
+    color: rgba(230, 237, 243, 0.38);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .db-recent-amt {
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .db-recent-amt.income {
+    color: var(--mob-inc);
+  }
+  .db-recent-amt.expense {
+    color: var(--mob-exp);
+  }
+  .db-recent-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 0;
+    color: rgba(230, 237, 243, 0.22);
+    font-size: 0.82rem;
+  }
+  .db-recent-empty i {
+    font-size: 1.8rem;
+    opacity: 0.3;
+  }
+
+  /* ── Chart Card ──────────────────────────────────────────────── */
+  .db-chart-card {
+    margin: 0 var(--mob-px) 4px;
+    border-radius: var(--mob-r-card) !important;
+    padding: 16px !important;
+    background: var(--mob-surface) !important;
+    border-color: var(--mob-border) !important;
+    animation: mobFadeUp 0.3s ease both;
+    animation-delay: 0.25s;
+  }
+  .db-chart-card::before {
+    display: none !important;
+  }
+  #chartContainer {
+    max-height: 180px;
+  }
+  #chartContainer canvas {
+    max-height: 180px !important;
+  }
+  .dcc-header {
+    margin-bottom: 12px;
+  }
+  .dcc-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .dcc-legend span {
+    font-size: 0.68rem;
+  }
+  .chart-period-tabs,
+  .period-tabs {
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .chart-period-btn,
+  .period-btn {
+    font-size: 0.68rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    height: auto;
+  }
+
+  /* ── Expense Categories Panel ────────────────────────────────── */
+  .db-panel.section-expenses {
+    margin: 4px var(--mob-px);
+    border-radius: var(--mob-r-card) !important;
+    padding: 16px !important;
+    background: var(--mob-surface) !important;
+    border-color: var(--mob-border) !important;
+  }
+  .db-panel.section-expenses::before {
+    display: none !important;
+  }
+  .db-panel-hdr {
+    margin-bottom: 10px;
+  }
+  .db-panel-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .db-panel-sub {
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+  }
+  .total-expenses {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+  }
+  .expense-categories li {
+    padding: 9px 0;
+    font-size: 0.82rem;
+  }
+  .exp-bar {
+    height: 3px;
+    margin-top: 4px;
+    border-radius: 2px;
+  }
+  .exp-cat-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .exp-cat-amt {
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+  }
+
+  /* ── Insights Card ───────────────────────────────────────────── */
+  .insights-card {
+    margin: 4px var(--mob-px);
+    border-radius: var(--mob-r-card) !important;
+    padding: 16px !important;
+    background: var(--mob-surface) !important;
+    border-color: var(--mob-border) !important;
+  }
+  .insights-card::before {
+    display: none !important;
+  }
+
+  /* ── Pill-Shaped Bottom Navigation (Reference Match) ─────────── */
+  .bottom-nav {
+    background: #1e2235 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 40px !important;
+    margin: 0 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    height: 64px !important;
+    padding: 0 12px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    display: flex !important;
+    position: fixed !important;
+    z-index: 9999 !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+  }
+  .bn-tab span {
+    display: none !important;
+  }
+  .bn-tab {
+    flex: 1 !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    border-radius: 50% !important;
+    color: #8892b0 !important;
+    background: transparent !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .bn-tab i {
+    font-size: 1.4rem !important;
+    margin: 0 !important;
+  }
+  .bn-tab.bn-tab--active {
+    background: #adc6ff !important;
+    color: #0b1120 !important;
+  }
+  .bn-tab.bn-tab--active i,
+  .bn-tab.bn-tab-aia.bn-tab--active i,
+  .bn-tab.bn-tab-aia:hover i {
+    filter: none !important;
+  }
+  .bn-add-ring {
+    background: transparent !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    color: inherit !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .bn-tab.bn-tab--fab {
+    flex: 1 !important;
+  }
+  .bn-tab.bn-tab--fab i {
+    font-size: 1.8rem !important;
+    font-weight: 300 !important;
+  }
+
+  /* ── Modals & Bottom Sheets (Z-Index Hierarchy) ──────────────── */
+  .modal,
+  .overlay,
+  .bn-settings-panel,
+  .bn-sheet,
+  .ms-card {
+    z-index: 10005 !important;
+  }
+  .modal-content {
+    z-index: 10006 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 28px 28px 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-height: 92dvh !important;
+    overflow-y: auto !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .modal.open .modal-content,
+  .modal[style*="flex"] .modal-content {
+    animation: slideUpModal 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  }
+  @keyframes slideUpModal {
+    from {
+      transform: translateY(100%);
+      opacity: 0.5;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  .modal-header {
+    padding: 18px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: inherit;
+    border-bottom: 1px solid var(--mob-border);
+  }
+  .modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .modal-body {
+    padding: 16px 20px;
+  }
+  .modal-footer {
+    padding: 12px 20px 20px;
+    border-top: 1px solid var(--mob-border);
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+  }
+  .form-input,
+  select.form-input,
+  .modal-content input,
+  .modal-content select {
+    height: 50px !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    padding: 0 16px !important;
+    border-radius: 12px;
+  }
+  .form-label {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .btn {
+    height: 48px;
+    font-size: 0.9rem;
+    border-radius: 14px;
+  }
+
+  /* ── Bottom Sheets ───────────────────────────────────────────── */
+  .bn-sheet {
+    border-radius: 28px 28px 0 0;
+    padding: 0 var(--mob-px) calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    background: var(--mob-surface, #111827);
+    border-color: var(--mob-border);
+  }
+  .bn-sheet-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+  .bn-sheet-title {
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .bn-sheet-title-row {
+    padding: 16px 0 12px;
+  }
+  .bn-ring-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .bn-ring-card {
+    border-radius: 18px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 120px;
+    transition:
+      transform 0.12s,
+      opacity 0.12s;
+  }
+  .bn-ring-card:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
+  .bn-ring-income {
+    background: rgba(78, 222, 163, 0.1);
+    border: 1px solid rgba(78, 222, 163, 0.2);
+  }
+  .bn-ring-expense {
+    background: rgba(255, 123, 138, 0.1);
+    border: 1px solid rgba(255, 123, 138, 0.2);
+  }
+  .bn-ring-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .bn-ring-income .bn-ring-icon {
+    background: rgba(78, 222, 163, 0.15);
+    color: var(--mob-inc);
+  }
+  .bn-ring-expense .bn-ring-icon {
+    background: rgba(255, 123, 138, 0.15);
+    color: var(--mob-exp);
+  }
+  .bn-ring-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--t1);
+    line-height: 1.1;
+  }
+  .bn-ring-sub {
+    font-size: 0.72rem;
+    color: var(--t3);
+    margin-top: -6px;
+  }
+  .bn-sheet-btn {
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--mob-border);
+    transition: background 0.12s;
+  }
+  .bn-sheet-btn:active {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .bn-sheet-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+  .bn-sheet-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .bn-sheet-sub {
+    font-size: 0.72rem;
+    color: var(--t3);
+  }
+
+  /* ── Settings Panel ──────────────────────────────────────────── */
+  .bn-settings-panel {
+    border-radius: 28px 28px 0 0;
+    padding: 0 var(--mob-px) calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    background: var(--mob-surface, #111827);
+    border-color: var(--mob-border);
+    max-height: 88vh;
+  }
+  .bn-settings-section {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(230, 237, 243, 0.3);
+    margin: 16px 0 6px;
+    padding: 0 4px;
+  }
+  .bn-settings-row {
+    border-radius: 12px;
+    padding: 13px 12px;
+    gap: 12px;
+    font-size: 0.88rem;
+    margin-bottom: 2px;
+    transition: background 0.12s;
+  }
+  .bn-settings-row:active {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ── Full-Page Screens ───────────────────────────────────────── */
+  .sp-page,
+  .txn-page-body,
+  .rtp-body {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .sp-header {
+    padding: 16px var(--mob-px) 12px;
+    border-bottom: 1px solid var(--mob-border);
+  }
+  .sp-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .sp-body {
+    padding: 12px var(--mob-px);
+  }
+  .sp-search-bar,
+  .txn-search-wrap {
+    border-radius: 14px !important;
+    height: 44px;
+  }
+  .txn-mobile-card {
+    padding: 12px var(--mob-px);
+    border-radius: 0;
+  }
+  .txn-mobile-card:first-child {
+    padding-top: 14px;
+  }
+  .txn-mobile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+  }
+  .txn-mobile-desc {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .txn-mobile-cat {
+    font-size: 0.72rem;
+  }
+  .txn-mobile-amt {
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+  }
+  .txn-mobile-date {
+    font-size: 0.68rem;
+  }
+
+  /* ── AI Assistant Overlay ────────────────────────────────────── */
+  .aia-overlay,
+  [class*="ai-assistant"] .overlay {
+    border-radius: 0 !important;
+  }
+
+  /* ── Monthly Summary Card ────────────────────────────────────── */
+  .monthly-summary-card,
+  .ms-card {
+    border-radius: 28px 28px 0 0;
+    margin: 0;
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+
+  /* ── Toasts & Notification positioning ───────────────────────── */
+  .toast-container,
+  [class*="toast"],
+  .notification,
+  .notify-wrap {
+    bottom: calc(
+      var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 20px
+    ) !important;
+  }
+  .card-options-menu,
+  [class*="card-options"] {
+    bottom: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+  #budgetModal .modal-content {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  #inlineSummaryPanel {
+    margin: 4px var(--mob-px);
+    border-radius: var(--mob-r-card) !important;
+  }
+
+  /* ── Light Mode Mobile Overrides ─────────────────────────────── */
+  [data-theme="light"] .db-mobile-greeting .db-greeting-name {
+    background: linear-gradient(110deg, #0f172a 0%, #3b5bdb 45%, #0f172a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  [data-theme="light"] .db-mobile-greeting .db-greeting-sub {
+    color: #777587;
+  }
   [data-theme="light"] .db-mobile-stats {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.07);
@@ -521,171 +1086,12 @@
   [data-theme="light"] .db-mobile-stats .expense-amount {
     color: #ba1a1a !important;
   }
-
-  /* ════════════════════════════════════════════════════════════
-     RECENT TRANSACTIONS CARD — "Recent Activity" style
-     ════════════════════════════════════════════════════════════ */
-
-  .db-recent-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 4px 0 0 !important;
-    margin: 0 !important;
-  }
-
-  .db-recent-card::before {
-    display: none !important;
-  }
-
-  .db-recent-hdr {
-    padding: 6px var(--mob-px) 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .db-recent-title {
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(230, 237, 243, 0.42);
-  }
-
-  .db-recent-all {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--mob-accent);
-    opacity: 0.85;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-
-  .db-recent-all:active {
-    opacity: 0.5;
-  }
-
   [data-theme="light"] .db-recent-title {
     color: rgba(25, 28, 30, 0.42);
   }
-
   [data-theme="light"] .db-recent-all {
     color: var(--accent);
   }
-
-  /* Individual recent-txn items */
-  .db-recent-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 13px var(--mob-px);
-    border-bottom: 1px solid var(--mob-border);
-    transition: background 0.1s;
-    position: relative;
-  }
-
-  .db-recent-item:last-child {
-    border-bottom: none;
-  }
-
-  .db-recent-item:active {
-    background: rgba(255, 255, 255, 0.025);
-  }
-
-  /* Icon circle */
-  .db-recent-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 0.9rem;
-    background: var(--mob-surface-hi);
-    border: 1px solid var(--mob-border);
-  }
-
-  .db-recent-icon.income {
-    background: rgba(78, 222, 163, 0.1);
-    border-color: rgba(78, 222, 163, 0.18);
-    color: var(--mob-inc);
-  }
-
-  .db-recent-icon.expense {
-    background: rgba(255, 123, 138, 0.1);
-    border-color: rgba(255, 123, 138, 0.18);
-    color: var(--mob-exp);
-  }
-
-  /* Text content */
-  .db-recent-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .db-recent-desc {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--t1, #e6edf3);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-  }
-
-  .db-recent-meta {
-    font-size: 0.75rem;
-    color: rgba(230, 237, 243, 0.38);
-    margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Amount */
-  .db-recent-amt {
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    flex-shrink: 0;
-    text-align: right;
-  }
-
-  .db-recent-amt.income {
-    color: var(--mob-inc);
-  }
-
-  .db-recent-amt.expense {
-    color: var(--mob-exp);
-  }
-
-  /* Empty state */
-  .db-recent-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 32px 0;
-    color: rgba(230, 237, 243, 0.22);
-    font-size: 0.82rem;
-  }
-
-  .db-recent-empty i {
-    font-size: 1.8rem;
-    opacity: 0.3;
-  }
-
-  /* Light mode recent */
   [data-theme="light"] .db-recent-item {
     border-bottom-color: rgba(0, 0, 0, 0.05);
   }
@@ -715,1063 +1121,60 @@
   [data-theme="light"] .db-recent-amt.expense {
     color: #ba1a1a;
   }
-
-  /* ════════════════════════════════════════════════════════════
-     CHART CARD — compact, no tall empty space
-     ════════════════════════════════════════════════════════════ */
-
-  .db-chart-card {
-    margin: 0 var(--mob-px) 4px;
-    border-radius: var(--mob-r-card) !important;
-    padding: 16px !important;
-    background: var(--mob-surface) !important;
-    border-color: var(--mob-border) !important;
+  [data-theme="light"] .db-card-panel {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   }
-
-  .db-chart-card::before {
-    display: none !important;
-  }
-
-  #chartContainer {
-    max-height: 180px;
-  }
-
-  #chartContainer canvas {
-    max-height: 180px !important;
-  }
-
-  .dcc-header {
-    margin-bottom: 12px;
-  }
-
-  .dcc-title {
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0;
-  }
-
-  .dcc-legend span {
-    font-size: 0.68rem;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     EXPENSE CATEGORIES PANEL
-     ════════════════════════════════════════════════════════════ */
-
-  .db-panel.section-expenses {
-    margin: 4px var(--mob-px);
-    border-radius: var(--mob-r-card) !important;
-    padding: 16px !important;
-    background: var(--mob-surface) !important;
-    border-color: var(--mob-border) !important;
-  }
-
-  .db-panel.section-expenses::before {
-    display: none !important;
-  }
-
-  .db-panel-hdr {
-    margin-bottom: 10px;
-  }
-
-  .db-panel-title {
-    font-size: 0.82rem;
-    font-weight: 700;
-  }
-
-  .db-panel-sub {
-    font-size: 0.72rem;
-    margin-bottom: 6px;
-  }
-
-  .total-expenses {
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  }
-
-  .expense-categories li {
-    padding: 9px 0;
-    font-size: 0.82rem;
-  }
-
-  .exp-bar {
-    height: 3px;
-    margin-top: 4px;
-    border-radius: 2px;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     INSIGHTS CARD
-     ════════════════════════════════════════════════════════════ */
-
-  .insights-card {
-    margin: 4px var(--mob-px);
-    border-radius: var(--mob-r-card) !important;
-    padding: 16px !important;
-    background: var(--mob-surface) !important;
-    border-color: var(--mob-border) !important;
-  }
-
-  .insights-card::before {
-    display: none !important;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     BOTTOM NAVIGATION — Floating pill, Financier Elite style
-     ════════════════════════════════════════════════════════════ */
-
-  .bottom-nav {
-    display: flex !important;
-    position: fixed;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    left: var(--mob-px);
-    right: var(--mob-px);
-    height: var(--mob-nav-h);
-    background: rgba(17, 24, 37, 0.92);
-    backdrop-filter: blur(32px) saturate(160%);
-    -webkit-backdrop-filter: blur(32px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.5),
-      0 2px 12px rgba(0, 0, 0, 0.3),
-      0 1px 0 rgba(255, 255, 255, 0.06) inset;
-    z-index: 200;
-    padding: 0 8px;
-    align-items: center;
-    justify-content: space-around;
-    gap: 0;
-  }
-
-  /* Each tab button */
-  .bn-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    padding: 0;
-    transition:
-      background 0.18s,
-      color 0.18s,
-      transform 0.12s;
-    border: none;
-    background: none;
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: rgba(230, 237, 243, 0.32);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .bn-tab i {
-    font-size: 1.15rem;
-    transition:
-      transform 0.18s,
-      color 0.18s;
-  }
-
-  .bn-tab:active {
-    transform: scale(0.9);
-  }
-
-  /* Active tab: accent highlight */
-  .bn-tab.bn-tab--active {
-    color: var(--mob-accent);
-    background: var(--mob-accent-dim);
-  }
-
-  .bn-tab.bn-tab--active i {
-    filter: drop-shadow(0 0 6px rgba(173, 198, 255, 0.55));
-    transform: translateY(-1px);
-  }
-
-  /* AI tab: brain glow */
-  .bn-tab.bn-tab-aia.bn-tab--active i,
-  .bn-tab.bn-tab-aia:hover i {
-    filter: drop-shadow(0 0 7px rgba(167, 139, 250, 0.6));
-  }
-
-  /* FAB add button: circle with accent gradient */
-  .bn-tab.bn-tab--fab {
-    background: none !important;
-  }
-
-  .bn-add-ring {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #3b5bdb 0%, #4f6ef7 100%);
-    box-shadow:
-      0 6px 20px rgba(79, 110, 247, 0.45),
-      0 2px 8px rgba(79, 110, 247, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.05rem;
-    color: white;
-    transition:
-      transform 0.15s,
-      box-shadow 0.15s;
-  }
-
-  .bn-tab.bn-tab--fab:active .bn-add-ring {
-    transform: scale(0.88);
-    box-shadow: 0 3px 10px rgba(79, 110, 247, 0.3);
-  }
-
-  /* Hide the "Add" text label below FAB */
-  .bn-tab.bn-tab--fab span {
-    display: none;
-  }
-
-  /* Light mode bottom nav */
-  [data-theme="light"] .bottom-nav {
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(0, 0, 0, 0.08);
-    box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.12),
-      0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-
-  [data-theme="light"] .bn-tab {
-    color: rgba(25, 28, 30, 0.3);
-  }
-
-  [data-theme="light"] .bn-tab.bn-tab--active {
-    color: var(--accent, #4f46e5);
-    background: rgba(79, 70, 229, 0.08);
-  }
-
-  [data-theme="light"] .bn-tab.bn-tab--active i {
-    filter: drop-shadow(0 0 5px rgba(79, 70, 229, 0.4));
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     BOTTOM SHEETS — improved mobile feel
-     ════════════════════════════════════════════════════════════ */
-
-  .bn-sheet {
-    border-radius: 28px 28px 0 0;
-    padding: 0 var(--mob-px)
-      calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
-    background: var(--mob-surface, #111827);
-    border-color: var(--mob-border);
-  }
-
-  .bn-sheet-handle {
-    width: 40px;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.12);
-    margin: 12px auto 0;
-    flex-shrink: 0;
-  }
-
-  .bn-sheet-title {
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-
-  .bn-sheet-title-row {
-    padding: 16px 0 12px;
-  }
-
-  /* Ring cards for income/expense selection */
-  .bn-ring-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 8px;
-  }
-
-  .bn-ring-card {
-    border-radius: 18px;
-    padding: 20px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    min-height: 120px;
-    transition:
-      transform 0.12s,
-      opacity 0.12s;
-  }
-
-  .bn-ring-card:active {
-    transform: scale(0.96);
-    opacity: 0.85;
-  }
-
-  .bn-ring-income {
-    background: rgba(78, 222, 163, 0.1);
-    border: 1px solid rgba(78, 222, 163, 0.2);
-  }
-
-  .bn-ring-expense {
-    background: rgba(255, 123, 138, 0.1);
-    border: 1px solid rgba(255, 123, 138, 0.2);
-  }
-
-  .bn-ring-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-  }
-
-  .bn-ring-income .bn-ring-icon {
-    background: rgba(78, 222, 163, 0.15);
-    color: var(--mob-inc);
-  }
-
-  .bn-ring-expense .bn-ring-icon {
-    background: rgba(255, 123, 138, 0.15);
-    color: var(--mob-exp);
-  }
-
-  .bn-ring-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--t1);
-    line-height: 1.1;
-  }
-
-  .bn-ring-sub {
-    font-size: 0.72rem;
-    color: var(--t3);
-    margin-top: -6px;
-  }
-
-  /* Sheet buttons (Report options) */
-  .bn-sheet-btn {
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--mob-border);
-    transition: background 0.12s;
-  }
-
-  .bn-sheet-btn:active {
-    background: rgba(255, 255, 255, 0.07);
-  }
-
-  .bn-sheet-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-  }
-
-  .bn-sheet-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .bn-sheet-sub {
-    font-size: 0.72rem;
-    color: var(--t3);
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     SETTINGS PANEL — slide-up sheet
-     ════════════════════════════════════════════════════════════ */
-
-  .bn-settings-panel {
-    border-radius: 28px 28px 0 0;
-    padding: 0 var(--mob-px)
-      calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
-    background: var(--mob-surface, #111827);
-    border-color: var(--mob-border);
-    max-height: 88vh;
-  }
-
-  .bn-settings-section {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(230, 237, 243, 0.3);
-    margin: 16px 0 6px;
-    padding: 0 4px;
-  }
-
-  .bn-settings-row {
-    border-radius: 12px;
-    padding: 13px 12px;
-    gap: 12px;
-    font-size: 0.88rem;
-    margin-bottom: 2px;
-    transition: background 0.12s;
-  }
-
-  .bn-settings-row:active {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     MODALS — full-screen bottom sheet on mobile
-     ════════════════════════════════════════════════════════════ */
-
-  .modal-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    border-radius: 28px 28px 0 0 !important;
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    max-height: 92dvh !important;
-    overflow-y: auto !important;
-  }
-
-  /* Slide up animation */
-  .modal.open .modal-content,
-  .modal[style*="flex"] .modal-content {
-    animation: slideUpModal 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-  }
-
-  @keyframes slideUpModal {
-    from {
-      transform: translateY(100%);
-      opacity: 0.5;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .modal-header {
-    padding: 18px 20px 12px;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background: inherit;
-    border-bottom: 1px solid var(--mob-border);
-  }
-
-  .modal-title {
-    font-size: 1rem;
-    font-weight: 700;
-  }
-
-  .modal-body {
-    padding: 16px 20px;
-  }
-
-  .modal-footer {
-    padding: 12px 20px 20px;
-    border-top: 1px solid var(--mob-border);
-    position: sticky;
-    bottom: 0;
-    background: inherit;
-  }
-
-  /* Form inputs: taller touch targets */
-  .form-input {
-    height: 48px;
-    font-size: 0.9rem;
-    border-radius: 12px;
-    padding: 0 14px;
-  }
-
-  select.form-input {
-    padding: 0 14px;
-  }
-
-  .form-label {
-    font-size: 0.7rem;
-    margin-bottom: 6px;
-  }
-
-  .form-group {
-    margin-bottom: 14px;
-  }
-
-  /* Buttons: taller */
-  .btn {
-    height: 48px;
-    font-size: 0.9rem;
-    border-radius: 14px;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     TOAST NOTIFICATIONS — above bottom nav
-     ════════════════════════════════════════════════════════════ */
-
-  .toast-container,
-  [class*="toast"] {
-    bottom: calc(
-      var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 20px
-    ) !important;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     FULL-PAGE SCREENS (Transactions, Settings page, etc.)
-     ════════════════════════════════════════════════════════════ */
-
-  /* Transactions full page */
-  .sp-page {
-    padding-bottom: calc(
-      var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px
-    );
-  }
-
-  .sp-header {
-    padding: 16px var(--mob-px) 12px;
-    border-bottom: 1px solid var(--mob-border);
-  }
-
-  .sp-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-
-  .sp-body {
-    padding: 12px var(--mob-px);
-  }
-
-  /* Search bar */
-  .sp-search-bar,
-  .txn-search-wrap {
-    border-radius: 14px !important;
-    height: 44px;
-  }
-
-  /* Transaction mobile cards */
-  .txn-mobile-card {
-    padding: 12px var(--mob-px);
-    border-radius: 0;
-  }
-
-  .txn-mobile-card:first-child {
-    padding-top: 14px;
-  }
-
-  .txn-mobile-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    font-size: 0.82rem;
-  }
-
-  .txn-mobile-desc {
-    font-size: 0.88rem;
-    font-weight: 600;
-  }
-
-  .txn-mobile-cat {
-    font-size: 0.72rem;
-  }
-
-  .txn-mobile-amt {
-    font-size: 0.92rem;
-    font-weight: 700;
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  }
-
-  .txn-mobile-date {
-    font-size: 0.68rem;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     AI ASSISTANT PANEL — full screen on mobile
-     ════════════════════════════════════════════════════════════ */
-
-  .aia-overlay,
-  [class*="ai-assistant"] .overlay {
-    border-radius: 0 !important;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     MONTHLY SUMMARY / REPORT — bottom sheet
-     ════════════════════════════════════════════════════════════ */
-
-  .monthly-summary-card,
-  .ms-card {
-    border-radius: 28px 28px 0 0;
-    margin: 0;
-    max-height: 90dvh;
-    overflow-y: auto;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     SMOOTH REVEAL ANIMATIONS for mobile
-     ════════════════════════════════════════════════════════════ */
-
-  @keyframes mobFadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .db-mobile-greeting {
-    animation: mobFadeUp 0.3s ease both;
-    animation-delay: 0.05s;
-  }
-
-  .db-card-panel {
-    animation: mobFadeUp 0.3s ease both;
-    animation-delay: 0.1s;
-  }
-
-  .db-mobile-stats {
-    animation: mobFadeUp 0.3s ease both;
-    animation-delay: 0.15s;
-  }
-
-  .db-recent-card {
-    animation: mobFadeUp 0.3s ease both;
-    animation-delay: 0.2s;
-  }
-
-  .db-chart-card {
-    animation: mobFadeUp 0.3s ease both;
-    animation-delay: 0.25s;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     MISC — hide desktop-only elements
-     ════════════════════════════════════════════════════════════ */
-
-  /* Hide sidebar upgrade card + topbar-only elements */
-  .sidebar-upgrade-card,
-  .topbar-search,
-  #topbarSearch {
-    display: none !important;
-  }
-
-  /* Inline report (right col) — show but compact */
-  #inlineSummaryPanel {
-    margin: 4px var(--mob-px);
-    border-radius: var(--mob-r-card) !important;
-  }
-
-  /* Card options menu: position above nav */
-  .card-options-menu,
-  [class*="card-options"] {
-    bottom: calc(var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
-  }
-
-  /* Budget modal: ensure it doesn't hide behind bottom nav */
-  #budgetModal .modal-content {
-    padding-bottom: calc(
-      var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px
-    );
-  }
-
-  /* Notification / toast above nav */
-  .notification,
-  .notify-wrap {
-    bottom: calc(
-      var(--mob-nav-h) + env(safe-area-inset-bottom, 0px) + 16px
-    ) !important;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     CHART PERIOD PILL TABS — compact mobile version
-     ════════════════════════════════════════════════════════════ */
-
-  .chart-period-tabs,
-  .period-tabs {
-    gap: 4px;
-    margin-bottom: 12px;
-  }
-
-  .chart-period-btn,
-  .period-btn {
-    font-size: 0.68rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    height: auto;
-  }
-
-  /* ════════════════════════════════════════════════════════════
-     BUDGET BARS in expense category list
-     ════════════════════════════════════════════════════════════ */
-
-  .exp-cat-name {
-    font-size: 0.82rem;
-    font-weight: 600;
-  }
-
-  .exp-cat-amt {
-    font-size: 0.82rem;
-    font-weight: 700;
-    font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   TABLET FINE-TUNING (768px – 1080px)
-   Card stack as hero, 2-col stat cards, recent txn feed
-   ═══════════════════════════════════════════════════════════════════ */
-
-@media (min-width: 769px) and (max-width: 1080px) {
-  .db-body {
-    padding: 16px 20px 24px;
-  }
-
-  /* Two-col grid with wider left */
-  .db-grid {
-    grid-template-columns: 1fr 320px;
-    gap: 20px;
-    align-items: start;
-  }
-
-  /* Right col first on tablet too */
-  .db-right {
-    order: 0; /* natural order on tablet (right side) */
-  }
-
-  /* Card panel */
-  .db-card-panel {
-    padding: 16px !important;
-  }
-
-  /* Stat cards: 2-col grid on tablet */
-  .db-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .db-stats .db-stat-card:last-child {
-    grid-column: 1 / -1;
-  }
-
-  /* Recent card */
-  .db-recent-card {
-    padding: 16px !important;
-  }
-
-  /* Chart */
-  #chartContainer {
-    max-height: 200px;
-  }
-
-  /* Topbar: hide avatar label */
-  .topbar-avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 0.68rem;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SAFE-AREA  (notch / home-bar devices)
-   ═══════════════════════════════════════════════════════════════════ */
-
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  @media (max-width: 768px) {
-    .bottom-nav {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .topbar {
-      padding-top: env(safe-area-inset-top, 0px);
-    }
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   ACCESSIBILITY — reduced motion
-   ═══════════════════════════════════════════════════════════════════ */
-
-@media (prefers-reduced-motion: reduce) {
-  .db-mobile-greeting,
-  .db-card-panel,
-  .db-mobile-stats,
-  .db-recent-card,
-  .db-chart-card {
-    animation: none !important;
-  }
-
-  .bn-tab,
-  .card-item,
-  .cs-flip-card,
-  .bn-ring-card,
-  .bn-sheet,
-  .bn-settings-panel {
-    transition: none !important;
-  }
-}
-
-/* ==========================================================================
-   Scroll Padding & Banner Overlaps
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  .db-body {
-    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-
-  .db-grid::after {
-    content: "";
-    display: block;
-    height: 90px;
-    width: 100%;
-  }
-
-  .sp-body,
-  .txn-page-body,
-  .rtp-body {
-    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-
-  .bl-offline-banner {
-    position: relative !important;
-    top: 0 !important;
-    z-index: 50 !important;
-  }
-
-  .topbar {
-    z-index: 1000 !important;
-  }
-
-  .modal-content,
-  .bn-sheet,
-  .bn-settings-panel {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-
-  .bottom-nav {
-    position: fixed !important;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-    z-index: 9999 !important;
-  }
-}
-
-/* ==========================================================================
-    Z-Index Layering (Sheets Over Nav)
-   ========================================================================== */
-@media (max-width: 768px) {
-  /* 1. Elevate Modals and Bottom Sheets OVER the navigation bar */
-  .modal,
-  .overlay,
-  .bn-settings-panel,
-  .bn-sheet,
-  .ms-card {
-    z-index: 10005 !important;
-  }
-
-  .modal-content {
-    z-index: 10006 !important;
-  }
-
-  .bn-settings-panel,
-  .bn-sheet,
-  .modal-content {
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
-
-/* ==========================================================================
-    Card Squishing & Form Inputs
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  .card-stack-v2,
-  .cs-flip-scene {
-    height: 215px !important;
-    min-height: 215px !important;
-  }
-
-  .cs-flip-card,
-  .card-item {
-    padding: 20px 24px !important;
-    box-sizing: border-box !important;
-  }
-
-  .cs-flip-card h2,
-  .card-item h2,
-  .card-balance-val,
-  [class*="balance"] {
-    font-size: 1.75rem !important; /* Smaller balance text */
-    line-height: 1.1 !important;
-    margin-top: 4px !important;
-  }
-
-  .cs-flip-card .card-number,
-  .card-item .card-number,
-  [class*="number"] {
-    font-size: 1.1rem !important; /* Smaller card number */
-    letter-spacing: 2px !important;
-  }
-
-  .cs-flip-card .card-label,
-  .card-item .card-label,
-  [class*="label"] {
-    font-size: 0.65rem !important;
-  }
-
-  .card-chip,
-  [class*="chip"] {
-    transform: scale(0.85) !important;
-    transform-origin: left bottom !important;
-  }
-
-  .card-logo,
-  [class*="logo"] {
-    transform: scale(0.85) !important;
-    transform-origin: right top !important;
-  }
-
-  .form-input,
-  select.form-input,
-  .modal-content input,
-  .modal-content select {
-    height: 50px !important;
-    line-height: normal !important;
-    box-sizing: border-box !important;
-    font-size: 16px !important; /* 16px prevents iOS from auto-zooming */
-    padding: 0 16px !important;
-  }
-}
-
-/* ==========================================================================
-    Lock Screen Overlap
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  #lockScreen,
-  .lock-screen {
-    z-index: 99999 !important;
-  }
-
-  body.is-locked .bottom-nav,
-  body.locked .bottom-nav {
-    display: none !important;
-  }
-}
-
-/* ==========================================================================
-    Full-Width Card Stack
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  .db-right {
-    width: 100% !important;
-    display: block !important;
-  }
-
-  .card-stack-v2,
-  .cs-flip-scene,
-  .cs-flip-card,
-  .card-item {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important; /* Removes any minimum width constraints */
-    box-sizing: border-box !important;
-  }
-}
-
-/* ==========================================================================
-   Boxed Recent Transactions Panel
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  .db-recent-card {
-    background: var(--mob-surface, #111827) !important;
-    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.055)) !important;
-    border-radius: 20px !important; /* Matches Stats and My Card */
-    margin: 14px 18px 30px !important; /* 18px sides to match other cards */
-    padding: 16px 0 8px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-  }
-
-  .db-recent-hdr {
-    padding: 0 18px 12px !important;
-  }
-
-  .db-recent-item:last-child {
-    border-bottom: none !important;
-  }
-
   [data-theme="light"] .db-recent-card {
     background: #ffffff !important;
     border-color: rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   }
-}
-
-/* ==========================================================================
-    Light Mode Panels & Bottom Nav Overrides
-   ========================================================================== */
-
-@media (max-width: 768px) {
   [data-theme="light"] .db-chart-card,
   [data-theme="light"] .db-panel.section-expenses {
     background: #ffffff !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
   }
-
   [data-theme="light"] .db-panel.section-expenses .db-panel-title,
   [data-theme="light"] .db-panel.section-expenses .total-expenses,
   [data-theme="light"] .db-panel.section-expenses .exp-cat-amt,
   [data-theme="light"] .db-panel.section-expenses .pv-value {
     color: #191c1e !important;
   }
-
   [data-theme="light"] .db-panel.section-expenses .db-panel-sub,
   [data-theme="light"] .db-panel.section-expenses .exp-cat-name,
   [data-theme="light"] .db-panel.section-expenses .pv-label,
-  [data-theme="light"] .db-panel.section-expenses p /* Catches "No expenses this period" */ {
+  [data-theme="light"] .db-panel.section-expenses p {
     color: #64748b !important;
   }
-
   [data-theme="light"] .db-chart-card .dcc-title {
     color: #191c1e !important;
   }
-
   [data-theme="light"] .db-chart-card .dcc-legend span,
   [data-theme="light"] .db-chart-card .cpc-btn {
     color: #475569 !important;
   }
-
   [data-theme="light"] .db-chart-card .cpc-btn {
     background: #f2f4f6 !important;
     border-color: rgba(0, 0, 0, 0.08) !important;
   }
-
   [data-theme="light"] .db-chart-card .cpc-btn--active {
     background: rgba(79, 70, 229, 0.1) !important;
     color: #4f46e5 !important;
     border-color: rgba(79, 70, 229, 0.25) !important;
   }
-
   [data-theme="light"] .bottom-nav {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
   }
-
   [data-theme="light"] .bn-tab {
-    color: #64748b !important;
+    color: #94a3b8 !important;
   }
-
   [data-theme="light"] .bn-tab.bn-tab--active {
-    color: #4f46e5 !important;
-  }
-
-  [data-theme="light"] .bn-tab.bn-tab--active i {
-    filter: none !important;
+    background: #4f46e5 !important;
+    color: #ffffff !important;
   }
 }
