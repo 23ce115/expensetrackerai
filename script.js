@@ -6689,10 +6689,17 @@ function setSummaryModalMeta(reportTitle, breakdownTitle, showNav = true) {
 
 function openMonthlySummary() {
   setSummaryModalMeta("Monthly Report", "Expense Breakdown", true);
+
   summaryMonth = new Date().getMonth();
   summaryYear = new Date().getFullYear();
+
   renderMonthlySummary();
-  openModal("summaryModal");
+
+  const reportPage = document.getElementById("reportFullPage");
+
+  if (reportPage) {
+    reportPage.style.display = "flex";
+  }
 }
 function shiftSummaryMonth(dir) {
   summaryMonth += dir;
@@ -6813,7 +6820,11 @@ function renderMonthlySummary() {
       const dateEl = document.getElementById("premiumTopSpendingDate");
       if (dateEl && biggest.date) {
         const d = new Date(biggest.date + "T00:00:00");
-        dateEl.textContent = d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        dateEl.textContent = d.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
       }
       topCard.style.display = "block";
     } else {
@@ -7355,7 +7366,8 @@ function _renderSummaryPie(sortedCats, exp) {
   // Update center total display
   const centerTotal = document.getElementById("chartCenterTotalDisplay");
   if (centerTotal) {
-    centerTotal.textContent = exp > 0 ? "₹" + exp.toLocaleString("en-IN") : "₹0";
+    centerTotal.textContent =
+      exp > 0 ? "₹" + exp.toLocaleString("en-IN") : "₹0";
   }
 
   // Update legend
@@ -7365,7 +7377,10 @@ function _renderSummaryPie(sortedCats, exp) {
       legendContainer.innerHTML = "";
     } else {
       legendContainer.innerHTML = sortedCats
-        .map(([c]) => `<div class="cfl-item"><span class="cfl-dot" style="background:${getCatColor(c)}"></span><span>${c}</span></div>`)
+        .map(
+          ([c]) =>
+            `<div class="cfl-item"><span class="cfl-dot" style="background:${getCatColor(c)}"></span><span>${c}</span></div>`,
+        )
         .join("");
     }
   }
@@ -7559,9 +7574,17 @@ function closeActionSheet() {
 function openModal(id, options = {}) {
   closeBnSheet();
   closeAddTargetSheet();
-  document.getElementById(id).style.display = "block";
+
+  const modal = document.getElementById(id);
+
+  if (!modal) {
+    console.error(`Modal '${id}' not found`);
+    return;
+  }
+
+  modal.style.display = "block";
   document.body.style.overflow = "hidden";
-  syncFabVisibility();
+
   const t = todayStr();
   if (id === "incomeModal") {
     ["incomeAmount", "incomeDesc"].forEach(
