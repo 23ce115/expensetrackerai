@@ -296,13 +296,27 @@
      HERO CARD PANEL — full-bleed, no panel chrome
      ════════════════════════════════════════════════════════════ */
 
-  .db-card-panel {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 12px var(--mob-px) 8px !important;
-    margin: 0 !important;
+  @media (max-width: 768px) {
+    .db-card-panel {
+      background: var(--mob-surface, #111827) !important;
+      border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.05)) !important;
+      border-radius: 20px !important; /* Matches the stats radius */
+      margin: 14px 18px !important; /* Matches the stats margin */
+      padding: 16px !important; /* Inner breathing room */
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .db-card-panel .db-panel-hdr {
+      display: flex !important;
+      margin-bottom: 12px !important;
+      padding-bottom: 0 !important;
+    }
+
+    [data-theme="light"] .db-card-panel {
+      background: #ffffff !important;
+      border-color: rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    }
   }
 
   .db-card-panel::before {
