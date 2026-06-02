@@ -1400,19 +1400,19 @@
     Mobile-First Viewport Scaffolding Fixes
    ========================================================================== */
 @media (max-width: 768px) {
+  /* ── Dark mode (default) ── */
   .report-page {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: #0b1120 !important; /* Rich deep slate background matching layout tokens */
+    background: #0b1120 !important;
     z-index: 10000 !important;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  /* Fixed Top Control Header Bar */
   .report-page-header {
     height: 64px;
     display: flex;
@@ -1425,7 +1425,6 @@
     flex-shrink: 0;
   }
 
-  /* Core Data View Scroll Container */
   .report-page-body {
     flex: 1;
     overflow-y: auto;
@@ -1434,29 +1433,48 @@
     padding: 14px 0 calc(100px + env(safe-area-inset-bottom, 0px)) 0 !important;
   }
 
-  /* Stark White Card Core Breakdown Window */
+  /* Dark-mode chart section */
   .report-chart-section {
-    background: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    border-radius: 24px !important;
+    background: var(--mob-surface, #111827) !important;
+    border: 1px solid var(--mob-border, rgba(255, 255, 255, 0.055)) !important;
+    border-radius: 20px !important;
     margin: 14px 18px !important;
     padding: 20px 16px !important;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03) !important;
+    box-shadow: none !important;
   }
 
   .report-section-title {
     font-family: "Space Grotesk", sans-serif !important;
-    font-size: 0.72rem !important;
+    font-size: 0.68rem !important;
     font-weight: 700 !important;
-    letter-spacing: 0.06em !important;
-    color: #1e293b !important; /* Stark contrast title header */
-    margin-bottom: 16px;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: rgba(230, 237, 243, 0.42) !important;
+    margin-bottom: 20px;
   }
 
-  /* Unified light-theme text styling inside breakdown modules */
+  /* ── Light mode overrides for entire report page ── */
+  [data-theme="light"] .report-page {
+    background: #f1f5f9 !important;
+  }
+
+  [data-theme="light"] .report-page-header {
+    background: rgba(248, 250, 252, 0.92) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.07) !important;
+  }
+
+  [data-theme="light"] .report-page-body {
+    background: #f1f5f9;
+  }
+
   [data-theme="light"] .report-chart-section {
     background: #ffffff !important;
-    border-color: rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(0, 0, 0, 0.07) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  [data-theme="light"] .report-section-title {
+    color: #64748b !important;
   }
 }
 
@@ -1768,54 +1786,139 @@
   background: rgba(99, 102, 241, 0.16);
 }
 
-/* ── Light theme overrides ───────────────────────────────────────── */
+/* ── Light theme overrides — full report page ────────────────────── */
+
+/* Header buttons */
 [data-theme="light"] .rph-back-btn,
 [data-theme="light"] .rph-bell-btn {
-  background: rgba(0, 0, 0, 0.04) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .rph-back-btn:active,
+[data-theme="light"] .rph-bell-btn:active {
+  background: rgba(0, 0, 0, 0.09) !important;
+}
+
+/* Header title */
+[data-theme="light"] .rph-title {
+  color: #0f172a !important;
+}
+
+/* Month nav */
+[data-theme="light"] .summary-month-nav {
+  background: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.07) !important;
+}
+[data-theme="light"] .summary-month-title {
+  color: #0f172a !important;
+}
+[data-theme="light"] .summary-month-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #475569 !important;
+}
+
+/* Stat cards */
+[data-theme="light"] .summary-stat {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+[data-theme="light"] .summary-label {
   color: #64748b !important;
 }
-
-[data-theme="light"] .rph-title {
-  color: #191c1e !important;
+[data-theme="light"] .summary-value {
+  color: #0f172a !important;
+}
+[data-theme="light"] .summary-stat.card-income .summary-value {
+  color: #059669 !important;
+}
+[data-theme="light"] .summary-stat.card-expenses .summary-value {
+  color: #dc2626 !important;
+}
+[data-theme="light"] .summary-stat.card-savings .summary-value {
+  color: #2563eb !important;
 }
 
+/* Chart center */
 [data-theme="light"] .ccm-amount {
-  color: #191c1e !important;
+  color: #0f172a !important;
 }
-
 [data-theme="light"] .ccm-label {
   color: rgba(15, 23, 42, 0.45) !important;
 }
 
+/* Legend */
 [data-theme="light"] .cfl-item {
   color: #334155 !important;
 }
 
-[data-theme="light"] .chart-flex-legend {
-  background: transparent;
+/* Category rows */
+[data-theme="light"] .cat-row {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .cat-name {
+  color: #0f172a !important;
+}
+[data-theme="light"] .cat-amt {
+  color: #0f172a !important;
+}
+[data-theme="light"] .cat-budget-bar {
+  background: rgba(0, 0, 0, 0.07) !important;
+}
+[data-theme="light"] .cat-row-bottom {
+  color: #64748b !important;
 }
 
+/* Category insights section */
+[data-theme="light"] .report-insights-section .report-section-title {
+  color: #64748b !important;
+}
+
+/* Top spending card */
+[data-theme="light"] .top-spending-card {
+  background: linear-gradient(
+    135deg,
+    rgba(186, 26, 26, 0.04),
+    transparent
+  ) !important;
+  border-color: rgba(186, 26, 26, 0.12) !important;
+}
+[data-theme="light"] .highlight-badge {
+  background: rgba(186, 26, 26, 0.08) !important;
+  color: #ba1a1a !important;
+}
 [data-theme="light"] .tsc-merchant-name {
-  color: #191c1e !important;
+  color: #0f172a !important;
 }
-
 [data-theme="light"] .tsc-date-stamp {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
-
+[data-theme="light"] .tsc-amount,
+[data-theme="light"] .tsc-amount.negative {
+  color: #dc2626 !important;
+}
+[data-theme="light"] .tsc-bg-watermark {
+  color: rgba(186, 26, 26, 0.06) !important;
+}
 [data-theme="light"] .tsc-btn--primary {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.09) !important;
   color: #1e293b !important;
 }
-
 [data-theme="light"] .tsc-btn--secondary {
-  background: rgba(0, 0, 0, 0.02) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
   border-color: rgba(0, 0, 0, 0.06) !important;
   color: #64748b !important;
 }
 
-[data-theme="light"] .report-section-title {
-  color: #64748b !important;
+/* Download button */
+[data-theme="light"] .report-download-btn {
+  background: rgba(79, 70, 229, 0.07) !important;
+  border-color: rgba(79, 70, 229, 0.18) !important;
+  color: #4f46e5 !important;
+}
+[data-theme="light"] .report-download-btn:active {
+  background: rgba(79, 70, 229, 0.12) !important;
 }
