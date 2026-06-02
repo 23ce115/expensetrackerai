@@ -31,11 +31,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style (16).css" />
     <link rel="stylesheet" href="ai-assistant.css">
     <link rel="stylesheet" href="sync-status.css">
-    <link rel="stylesheet" href="mobile.css">
-    
 
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
@@ -875,29 +873,25 @@
       <div id="cardSwitcherLegacy"></div>
     </div>
 
-   <!-- ═══════════════ 5-TAB BOTTOM NAV (mobile) ═══════════════ -->
-    <nav class="bottom-nav" id="bottomNav" style="display: none">
-      <button
-        class="bn-tab bn-tab--active"
-        id="bnHome"
-        onclick="bnSwitch('home')"
-      >
-        <i class="fas fa-home"></i><span>Home</span>
-      </button>
-      <button class="bn-tab" id="bnReport" onclick="bnSwitch('report')">
-        <i class="fas fa-chart-pie"></i><span>Report</span>
-      </button>
-      <button class="bn-tab bn-tab--fab" id="bnAdd" onclick="bnSwitch('add')">
-        <div class="bn-add-ring"><i class="fas fa-plus"></i></div>
-        <span>Add</span>
-      </button>
-      <button class="bn-tab bn-tab-aia" id="bnAI" onclick="openAIAssistant()">
-        <i class="fas fa-brain"></i><span>AI</span>
-      </button>
-      <button class="bn-tab" id="bnSettings" onclick="bnSwitch('settings')">
-        <i class="fas fa-cog"></i><span>Settings</span>
-      </button>
-    </nav>
+  <!-- ═══════════════ 5-TAB BOTTOM NAV (mobile) ═══════════════ -->
+<nav class="bottom-nav" id="bottomNav" style="display: none">
+  <button class="bn-tab bn-tab--active" id="bnHome" onclick="bnSwitch('home')">
+    <i class="ti ti-layout-grid"></i><span>Home</span>
+  </button>
+  <button class="bn-tab" id="bnReport" onclick="bnSwitch('report')">
+    <i class="ti ti-trending-up"></i><span>Report</span>
+  </button>
+  <button class="bn-tab bn-tab--fab" id="bnAdd" onclick="bnSwitch('add')">
+    <div class="bn-add-ring"><i class="ti ti-plus"></i></div>
+    <span>Add</span>
+  </button>
+  <button class="bn-tab bn-tab-aia" id="bnAI" onclick="openAIAssistant()">
+    <i class="ti ti-eye"></i><span>AI</span>
+  </button>
+  <button class="bn-tab" id="bnSettings" onclick="bnSwitch('settings')">
+    <i class="ti ti-user"></i><span>Settings</span>
+  </button>
+</nav>
 
     <!-- Add sheet -->
     <div
@@ -2338,14 +2332,14 @@
     <script src="blueledger-db.js"></script>
 
     <!-- Chart.js CDN is already loaded in <head> — do NOT load it again -->
-    <script src="utils.js"></script>
-    <script src="ai.js"></script>
-    <script src="voice.js"></script>
-    <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
-    <script src="card-stack-logic.js"></script>
+    <script src="utils (1).js"></script>
+    <script src="ai (2).js"></script>
+    <script src="voice (1).js"></script>
+    <script src="charts (8).js"></script><!-- FIX: was "chart.js" (wrong name) -->
+    <script src="card-stack-logic (3).js"></script>
 
     <!-- CORE APP -->
-    <script src="script.js"></script>
+    <script src="script (19).js"></script>
 
     <!-- 4. ★ CHANGE: Add NEW core sync patch AFTER script.js -->
     <script src="script-db-patch.js"></script>
@@ -2356,7 +2350,7 @@
     <script src="ai-assistant-db-patch.js"></script>
 
     <!-- INIT -->
-    <script src="main.js"></script>
+    <script src="main (4).js"></script>
 
 
     <script>
