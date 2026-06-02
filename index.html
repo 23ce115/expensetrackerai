@@ -476,6 +476,47 @@
             <i class="fas fa-tags"></i>
           </button>
         </nav>
+
+        <nav class="bg-surface-container-low dark:bg-surface-container-low fixed left-0 top-0 h-full w-20 hidden md:flex flex-col border-r border-border-low items-center py-lg gap-xl z-50">
+  <div class="flex flex-col items-center gap-sm">
+    <img alt="Premium user avatar" class="w-10 h-10 rounded-full border border-border-low object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0yw_fjSvH4elA5zhOUIzk7y7uuG0inSI47AlWDUJe4vDitNxNyK8RClV6V9v5PnhPfuHjPZ7A7TZG_qpbKbys1pBqC99OBegYJV0uNkyxjYJksXCFkWYZXkcysd9WLIz-3hWtsBY73rxn807wTdy2ce5Dgq0yUKjVa9OM3vYfikeZ0F1peCfigSm4eynlYSHuxMK0EREIq5Qxqt2gb4Srch3-KnWkXyMT2GojitE3tOVHfTpbg_U0BDOaaSliz7GrL_YYENsBk3M">
+  </div>
+  
+  <div class="flex flex-col gap-md w-full px-sm">
+    <button class="text-primary bg-primary-container/10 rounded-xl w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-200" title="Dashboard">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+    </button>
+    <button class="text-on-surface-variant w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-200 rounded-xl" title="Analytics">
+      <span class="material-symbols-outlined">insights</span>
+    </button>
+    <button class="text-on-surface-variant w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-200 rounded-xl" title="Wallets">
+      <span class="material-symbols-outlined">account_balance_wallet</span>
+    </button>
+    <button class="text-on-surface-variant w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-200 rounded-xl" title="Insights">
+      <span class="material-symbols-outlined">psychology</span>
+    </button>
+  </div>
+
+  <div class="w-full px-sm flex flex-col gap-sm border-t border-border-low/60 pt-md">
+    <span class="text-[10px] text-center font-bold tracking-widest text-primary/60 block">AI LOG</span>
+    
+    <button onclick="handleDesktopVoiceLog()" class="text-on-surface-variant hover:text-primary bg-surface-container-high/40 rounded-xl w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-all active:scale-95 duration-200 relative group" title="Voice Quick-Log">
+      <span class="material-symbols-outlined transition-transform group-hover:scale-105">mic</span>
+      <span class="absolute right-1 top-1 w-2 h-2 bg-primary rounded-full animate-ping"></span>
+    </button>
+    
+    <button onclick="triggerDesktopReceiptScan()" class="text-on-surface-variant hover:text-primary bg-surface-container-high/40 rounded-xl w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-all active:scale-95 duration-200 group relative" title="Scan Receipt / Invoice">
+      <span class="material-symbols-outlined transition-transform group-hover:scale-105">photo_camera</span>
+    </button>
+    
+    <input type="file" id="desktopReceiptInput" accept="image/*" class="hidden" onchange="processDesktopReceipt(event)">
+  </div>
+  <div class="mt-auto w-full px-sm pb-md">
+    <button class="text-on-surface-variant w-full h-12 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-200 rounded-xl" title="Settings">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </div>
+</nav>
         <div class="sidebar-upgrade-card">
           <div class="sidebar-upgrade-title">Premium Upgrade</div>
           <div class="sidebar-upgrade-sub">Unlock advanced AI predictive analytics.</div>
@@ -2333,6 +2374,7 @@
     <script src="utils.js"></script>
     <script src="ai.js"></script>
     <script src="voice.js"></script>
+    <script src="receipt.js"></script>
     <script src="charts.js"></script><!-- FIX: was "chart.js" (wrong name) -->
     <script src="card-stack-logic.js"></script>
 
