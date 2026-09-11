@@ -23,9 +23,9 @@
 
 (function () {
   /* ── Config ──────────────────────────────────────────────── */
-  const SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
+  const SUPABASE_URL = "https://jxexvlhgmdxckyqybeyz.supabase.co";
   const SUPABASE_ANON =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZXh2bGhnbWR4Y2t5cXliZXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDAwODksImV4cCI6MjEwNDcxNjA4OX0.fHya5a5K6OrIAZlDiMH89Febpa3HKWdLApq3Mh5Og4s";
 
   /* ── Sync-status element IDs (optional, add to your HTML) ── */
   const SYNC_EL_ID = "blSyncStatus";
