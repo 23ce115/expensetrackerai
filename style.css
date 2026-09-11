@@ -13862,3 +13862,254 @@ textarea.form-input:focus {
 /* ═══════════════════════════════════════════════════════════════
    END LIGHT MODE MASTER OVERRIDES
    ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP: FULL-SCREEN MONTHLY REPORT PAGE (#reportFullPage)
+   These rules previously only existed inside mobile.css's
+   `@media (max-width: 768px)` block, so on desktop the report
+   page had no positioning/background/z-index at all — it rendered
+   in normal document flow instead of as a full-screen overlay,
+   and its decorative watermark icon (.tsc-bg-watermark) bled
+   through behind the dashboard cards. Mobile.css's !important
+   rules still safely override these below 768px.
+   ═══════════════════════════════════════════════════════════════ */
+
+.report-page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0b1120;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.report-page-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  background: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.report-page-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 0 60px 0;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.summary-month-nav {
+  background: var(--bg-card-hi, #111827);
+  border: 1px solid var(--border-md, rgba(255, 255, 255, 0.055));
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.summary-month-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--t1, #dae2fd);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.summary-stat {
+  background: var(--bg-card-hi, #111827);
+  border: 1px solid var(--border-md, rgba(255, 255, 255, 0.055));
+  border-radius: 14px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.summary-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3, #8e90a0);
+}
+
+.summary-value {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.report-chart-section {
+  background: var(--bg-card-hi, #111827);
+  border: 1px solid var(--border-md, rgba(255, 255, 255, 0.055));
+  border-radius: 20px;
+  margin: 0 0 14px;
+  padding: 20px 16px;
+  box-shadow: none;
+}
+
+.report-section-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(230, 237, 243, 0.42);
+  margin-bottom: 20px;
+}
+
+.cat-row {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cat-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cat-name {
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--t1, #dae2fd);
+}
+
+.cat-amt {
+  font-family: "Courier New", monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--t1, #dae2fd);
+}
+
+.cat-budget-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 99px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.cat-budget-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease-in-out;
+}
+
+.cat-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--t3, #8e90a0);
+  text-transform: uppercase;
+}
+
+.top-spending-card {
+  background: linear-gradient(135deg, rgba(255, 180, 171, 0.05), transparent);
+  border: 1px solid rgba(255, 180, 171, 0.15);
+  border-radius: 20px;
+  margin: 0 0 14px;
+  padding: 20px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-badge {
+  display: inline-block;
+  background: rgba(255, 180, 171, 0.1);
+  color: #ffb4ab;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+[data-theme="light"] .report-page {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .report-page-header {
+  background: rgba(248, 250, 252, 0.92);
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="light"] .summary-month-nav,
+[data-theme="light"] .summary-stat,
+[data-theme="light"] .report-chart-section {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .cat-row {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .summary-month-title,
+[data-theme="light"] .summary-value,
+[data-theme="light"] .cat-name,
+[data-theme="light"] .cat-amt {
+  color: #191c1e;
+}
+
+[data-theme="light"] .summary-label,
+[data-theme="light"] .cat-row-bottom,
+[data-theme="light"] .report-section-title {
+  color: #64748b;
+}
+
+[data-theme="light"] .cat-budget-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .top-spending-card {
+  background: linear-gradient(135deg, rgba(186, 26, 26, 0.04), transparent);
+  border-color: rgba(186, 26, 26, 0.12);
+}
+
+[data-theme="light"] .highlight-badge {
+  background: rgba(186, 26, 26, 0.08);
+  color: #ba1a1a;
+}
