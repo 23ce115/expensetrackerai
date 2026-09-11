@@ -42,10 +42,10 @@ function safeToggleClass(el, className, condition) {
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
 if (typeof BL_SUPABASE_URL === "undefined")
-  var BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
+  var BL_SUPABASE_URL = "https://jxexvlhgmdxckyqybeyz.supabase.co";
 if (typeof BL_SUPABASE_ANON_KEY === "undefined") {
   var BL_SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZXh2bGhnbWR4Y2t5cXliZXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDAwODksImV4cCI6MjEwNDcxNjA4OX0.fHya5a5K6OrIAZlDiMH89Febpa3HKWdLApq3Mh5Og4s";
 }
 if (typeof AUTH_MODE_KEY === "undefined") var AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
 if (typeof VERIFY_TOKEN_V2 === "undefined") var VERIFY_TOKEN_V2 = "BL_OK_v2";
@@ -8778,7 +8778,7 @@ async function confirmReset() {
     if (accessToken) {
       try {
         const res = await fetch(
-          "https://fptiscqzzimxxtgjejhz.supabase.co/functions/v1/delete-user",
+          "https://jxexvlhgmdxckyqybeyz.supabase.co/functions/v1/delete-user",
           {
             method: "POST",
             headers: {
