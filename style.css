@@ -10444,10 +10444,14 @@ mark.txn-page-hl {
   border-radius: 20px !important;
   overflow: hidden !important;
   padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
 }
 
 .add-txn-modal .modal-header {
   border-bottom: none !important;
+  flex-shrink: 0 !important;
 }
 
 .add-txn-modal .modal-title {
@@ -10461,6 +10465,9 @@ mark.txn-page-hl {
   display: flex !important;
   flex-direction: column !important;
   gap: 0.85rem !important;
+  overflow-y: auto !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
 }
 
 .add-txn-modal .modal-footer {
@@ -10468,6 +10475,7 @@ mark.txn-page-hl {
   gap: 0.75rem !important;
   border-top: 1px solid var(--border) !important;
   padding: 1rem 1.4rem !important;
+  flex-shrink: 0 !important;
   background: transparent !important;
 }
 
