@@ -5041,6 +5041,26 @@ function updateMyCardWidget() {
         if (cached?.firstName) return cached.firstName;
       } catch (e) {}
 
+      // ── Next-best fallback: derive a name from the account email ──
+      // e.g. "shrey.chauhan0902@gmail.com" → "Shrey"
+      try {
+        var email =
+          meta?.email || localStorage.getItem("bl_last_email") || "";
+        if (email && email.includes("@")) {
+          var local = email.split("@")[0];
+          // split on common separators, drop trailing digits/numbers-only chunks
+          var parts = local.split(/[._\-+]+/).filter(Boolean);
+          var candidate = parts.find((p) => /[a-zA-Z]{2,}/.test(p)) || "";
+          candidate = candidate.replace(/[0-9]+$/g, "");
+          if (candidate.length >= 2) {
+            return (
+              candidate.charAt(0).toUpperCase() +
+              candidate.slice(1).toLowerCase()
+            );
+          }
+        }
+      } catch (e) {}
+
       // ── Last-resort fallback: a card nickname/name, but never the bank name ──
       // NOTE: `userData` here is the *currently selected card's* data, not the
       // user's profile, so it is intentionally NOT used as a name source.
