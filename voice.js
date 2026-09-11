@@ -374,6 +374,11 @@ function _extractWordAmount(transcript) {
       `\\b(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})(?:\\s+of)?\\s+((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\b`,
       "i",
     ),
+    // "forty thousand salary" / "five hundred rent" — amount spoken BEFORE the action/category word
+    new RegExp(
+      `\\b((?:(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac|point|and)\\s+){0,10}(?:${VOICE_NUMBER_WORD_PATTERN}|hundred|thousand|lakh|lac))\\s+(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})\\b`,
+      "i",
+    ),
   ];
 
   for (const pattern of patterns) {
@@ -395,6 +400,11 @@ function _extractVoiceAmount(transcript) {
       "i",
     ),
     /\b(\d+(?:,\d+)*(?:\.\d+)?)\s+(?:on|for|towards|at|from)\b/i,
+    // "40000 salary" / "500 rent" — amount spoken BEFORE the action/category word
+    new RegExp(
+      `\\b(\\d+(?:,\\d+)*(?:\\.\\d+)?)\\s*(k|thousand|lakh|lac)?\\s+(?:${VOICE_EXPENSE_ACTION_PATTERN}|${VOICE_INCOME_ACTION_PATTERN})\\b`,
+      "i",
+    ),
   ];
 
   for (const pattern of patterns) {
