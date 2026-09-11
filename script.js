@@ -42,10 +42,10 @@ function safeToggleClass(el, className, condition) {
 
 /* ── BlueLedger hosted Supabase (hardcoded) ── */
 if (typeof BL_SUPABASE_URL === "undefined")
-  var BL_SUPABASE_URL = "https://jxexvlhgmdxckyqybeyz.supabase.co";
+  var BL_SUPABASE_URL = "https://fptiscqzzimxxtgjejhz.supabase.co";
 if (typeof BL_SUPABASE_ANON_KEY === "undefined") {
   var BL_SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZXh2bGhnbWR4Y2t5cXliZXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDAwODksImV4cCI6MjEwNDcxNjA4OX0.fHya5a5K6OrIAZlDiMH89Febpa3HKWdLApq3Mh5Og4s";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwdGlzY3F6emlteHh0Z2plamh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTcwMTgsImV4cCI6MjA5MDc3MzAxOH0.6BTK1JiEH9EvvEvp5sV41GF7gQcgUCPqKqDB4JhjQBE";
 }
 if (typeof AUTH_MODE_KEY === "undefined") var AUTH_MODE_KEY = "bl_auth_mode"; // "password" | "pin" (legacy)
 if (typeof VERIFY_TOKEN_V2 === "undefined") var VERIFY_TOKEN_V2 = "BL_OK_v2";
@@ -5030,27 +5030,31 @@ function updateMyCardWidget() {
 
   function _getFirstName() {
     try {
-      if (typeof userData !== "undefined" && userData && userData.name) {
-        return userData.name.trim().split(/\s+/)[0];
-      }
-      if (typeof cards !== "undefined" && cards.length) {
-        var card0 = cards[0].userData;
-        var n =
-          (card0 && card0.nickname && card0.nickname.trim()) ||
-          (card0 && card0.name && card0.name.trim());
-        // Skip all-caps bank names like AXIS, HDFC, SBI
-        if (n && /^[A-Z0-9 ]{1,10}$/.test(n.trim())) n = null;
-        if (n) return n.trim().split(/\s+/)[0];
-      }
+      // ── Real signed-up profile name takes priority (never card data) ──
       var meta = window._blUserMeta;
-      if (meta?.name) return meta.name.trim().split(/\s+/)[0];
       if (meta?.full_name) return meta.full_name.trim().split(/\s+/)[0];
+      if (meta?.name) return meta.name.trim().split(/\s+/)[0];
       try {
         var cached = JSON.parse(
           localStorage.getItem("bl_profile_cache_v1") || "null",
         );
         if (cached?.firstName) return cached.firstName;
       } catch (e) {}
+
+      // ── Last-resort fallback: a card nickname/name, but never the bank name ──
+      // NOTE: `userData` here is the *currently selected card's* data, not the
+      // user's profile, so it is intentionally NOT used as a name source.
+      if (typeof cards !== "undefined" && cards.length) {
+        var KNOWN_BANKS =
+          /^(axis|hdfc|sbi|icici|kotak|yes|idfc|indusind|pnb|boi|bob|canara|union|rbl|federal|au|idbi|citi|hsbc|standard chartered|amex|american express)$/i;
+        var card0 = cards[0].userData;
+        var n =
+          (card0 && card0.nickname && card0.nickname.trim()) ||
+          (card0 && card0.name && card0.name.trim());
+        // Skip bank/issuer names (all-caps like AXIS, HDFC, or title-case like Axis)
+        if (n && (/^[A-Z0-9 ]{1,12}$/.test(n) || KNOWN_BANKS.test(n))) n = null;
+        if (n) return n.trim().split(/\s+/)[0];
+      }
     } catch (e) {}
     return "";
   }
@@ -8774,7 +8778,7 @@ async function confirmReset() {
     if (accessToken) {
       try {
         const res = await fetch(
-          "https://jxexvlhgmdxckyqybeyz.supabase.co/functions/v1/delete-user",
+          "https://fptiscqzzimxxtgjejhz.supabase.co/functions/v1/delete-user",
           {
             method: "POST",
             headers: {
